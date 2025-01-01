@@ -17,6 +17,8 @@ class RedditNSFW:
         self.headers = {"User-Agent": self.user_agent}
 
     def get_image(self, type):
+        return "> Feature currently broken thanks to removal of `/random` endpoint on Reddit. [reddit.com/r/help/comments/1fojw02/cleaning_up_some_lowusage_features](https://www.reddit.com/r/help/comments/1fojw02/cleaning_up_some_lowusage_features/)."
+
         if type not in self.types:
             return "Invalid type."
     
