@@ -13,6 +13,7 @@ DEFAULT_CONFIG = {
     "rich_presence": True,
     "theme": "ghost",
     "gui": True,
+    "rich_embed_webhook": "",
     "message_settings": {
         "auto_delete_delay": 15,
         "style": "image"

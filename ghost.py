@@ -123,6 +123,9 @@ async def on_connect():
     if session_spoofing:
         console.print_info(f"Spoofing session as {session_spoofing_device}")
 
+    if cfg.get("message_settings")["style"] == "embed" and cfg.get("rich_embed_webhook") == "":
+        console.print_error("Rich embed webhook not set! Using codeblock mode instead.")
+
     notifier.Notifier.send("Ghost", text)
 
 @ghost.event
