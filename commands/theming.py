@@ -141,5 +141,58 @@ class Theming(commands.Cog):
     async def textmode(self, ctx):
         await self.theme_set(ctx=ctx, subkey="style", value="codeblock")
 
+    @commands.command(name="richembedmode", description="Set your theme style to embed.", usage="", aliases=["embedmode"])
+    async def richembedmode(self, ctx):
+        cfg = config.Config()
+
+        if cfg.get("rich_embed_webhook") == "":
+            await cmdhelper.send_message(ctx, {
+                "title": "Theme",
+                "description": "You need to set a rich embed webhook in your config before you can use the rich embed mode! Use the `richembedwebhook` command to set it.",
+                "colour": "#ff0000",
+                "footer": cfg.theme.footer,
+            })
+            return
+        
+        await self.theme_set(ctx=ctx, subkey="style", value="embed")
+
+    @commands.command(name="richembedwebhook", description="Set your rich embed webhook.", usage="[webhook]")
+    async def richembedwebhook(self, ctx, webhook_url: str = None):
+        cfg = config.Config()
+        
+        if webhook_url is None:
+            await cmdhelper.send_message(ctx, {
+                "title": "Theme",
+                "description": "You need to provide a webhook URL!",
+                "colour": "#ff0000",
+                "footer": cfg.theme.footer,
+            })
+            return
+        
+        elif not webhook_url.startswith("https://discord.com/api/webhooks/") or len(webhook_url.split("/")) != 7:
+            await cmdhelper.send_message(ctx, {
+                "title": "Theme",
+                "description": "Invalid webhook URL!",
+                "colour": "#ff0000",
+                "footer": cfg.theme.footer,
+            })
+            return
+
+        cfg.set("rich_embed_webhook", webhook_url)
+        cfg.save()
+
+        try:
+            webhook = discord.Webhook.from_url(webhook_url, session=self.bot._connection)
+            desc = f"Rich embed webhook set!\nID: {webhook.id}"
+        except:
+            desc = "Rich embed webhook set!"
+
+        await cmdhelper.send_message(ctx, {
+            "title": "Theme",
+            "description": desc,
+            "colour": cfg.theme.colour,
+            "footer": cfg.theme.footer,
+        })
+
 def setup(bot):
     bot.add_cog(Theming(bot))
