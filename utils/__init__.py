@@ -1,3 +1,9 @@
+headless = False
+try:
+    import tkinter
+except ModuleNotFoundError:
+    headless = True
+
 from .cmdhelper import *
 from .codeblock import Codeblock
 from .config import Config, PRODUCTION
@@ -11,4 +17,4 @@ from .soundboard import Soundboard, Sound
 from .privnote import Privnote
 from .webhook import Webhook
 from .sessionspoof import patch_identify
-from .gui import GhostGUI
+if not headless: from .gui import GhostGUI

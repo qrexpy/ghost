@@ -13,6 +13,12 @@ import json
 import string
 import logging
 
+headless = False
+try:
+    import tkinter
+except ModuleNotFoundError:
+    headless = True
+
 from discord.errors import LoginFailure
 from discord.ext import commands
 
@@ -28,7 +34,7 @@ from utils import codeblock
 from utils import cmdhelper
 from utils import imgembed
 from utils import sessionspoof
-from utils import gui as ghost_gui
+if not headless: from utils import gui as ghost_gui
 
 # import utils as ghost_utils
 import commands as ghost_commands
@@ -60,7 +66,7 @@ ghost = commands.Bot(
     status=discord.Status.try_value(status)
 )
 
-gui = ghost_gui.GhostGUI(ghost)
+if not headless: gui = ghost_gui.GhostGUI(ghost)
 user = requests.get("https://discord.com/api/users/@me", headers={"Authorization": cfg.get("token")}).json()
 rpc_log = ""
 
@@ -83,7 +89,7 @@ for script_file in os.listdir("scripts"):
 
 @ghost.event
 async def on_connect():
-    gui.bot_started = True
+    if not headless: gui.bot_started = True
 
     await ghost.add_cog(ghost_commands.Account(ghost))
     await ghost.add_cog(ghost_commands.Fun(ghost))
@@ -157,6 +163,9 @@ while token == "":
     cfg.save()
 
 try:
-    gui.run()
+    if not headless:
+        gui.run()
+    else:
+        ghost.run(token, log_handler=console.handler)
 except Exception as e:
     console.print_error(str(e))
