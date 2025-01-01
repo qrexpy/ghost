@@ -424,6 +424,7 @@ class GhostGUI:
             "theme": "Theme",
             "rich_presence": "Enable rich presence",
             "gui": "Enable GUI",
+            "rich_embed_webhook": "Rich embed webhook",
             "message_settings.auto_delete_delay": "Auto delete delay",
         }
 
