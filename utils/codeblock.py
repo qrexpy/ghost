@@ -15,4 +15,4 @@ class Codeblock:
         elif self.description != "" and self.footer == "":
             return f"> ```ini\n> [ {self.title} ]{self.extra_title}``````{self.style}\n> {self.description}```"
         else:
-            return f"""> ```ini\n> [ {self.title} ]{self.extra_title}``````{self.style}\n> {self.description}``````ini\n> # {self.footer}```"""
+            return f"""> ```ini\n> [ {self.title} ]{self.extra_title}``````{self.style}\n> {self.description}``````ini\n> ; {self.footer}```"""
