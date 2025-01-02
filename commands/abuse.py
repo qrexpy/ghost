@@ -35,6 +35,12 @@ class Abuse(commands.Cog):
             "codeblock_desc": pages["codeblock"][selected_page - 1]
         }, extra_title=f"Page {selected_page}/{len(pages['image'])}")
 
+    @commands.command(name="spam", description="Spam a channel.", usage="[amount] [message]")
+    async def spam(self, ctx, amount: int, *, message: str):
+        for _ in range(amount):
+            await ctx.send(message)
+            await asyncio.sleep(.5)
+
     @commands.command(name="servernuke", description="Nuke a server.", usage="", aliases=["nukeserver"])
     async def servernuke(self, ctx):
         if ctx.author.guild_permissions.administrator:
