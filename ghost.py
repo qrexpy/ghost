@@ -81,7 +81,7 @@ if cfg.get("rich_presence"):
         )
         rpc_log = "Rich Presence connected succesfully!"
     except Exception as e:
-        rpc_log = f"Rich Presence failed to connect: {e}"
+        rpc_log = e
 
 for script_file in os.listdir("scripts"):
     if script_file.endswith(".py"):
