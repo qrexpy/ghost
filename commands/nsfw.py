@@ -95,34 +95,49 @@ class NSFW(commands.Cog):
     
     @commands.command(name="hentai", description="Get a random hentai image.", usage="")
     async def hentai(self, ctx):
-        r = requests.get("https://nekobot.xyz/api/image?type=hentai")
+        r = requests.get(f"https://nekobot.xyz/api/image?type={random.choice(['hentai', 'hass', 'hboobs', 'hmidriff', 'hthigh', 'hanal'])}")
         data = r.json()
         await ctx.send(data["message"])
 
     @commands.command(name="thighs", description="Get a random thighs pic.", aliases=["thigh"],usage="")
     async def thigh(self, ctx):
-        data = self.reddit_client.thighs()
-        await ctx.send(data)
+        # data = self.reddit_client.thighs()
+        # await ctx.send(data)
+        r = requests.get("https://nekobot.xyz/api/image?type=thigh")
+        data = r.json()
+        await ctx.send(data["message"])
 
     @commands.command(name="ass", description="Get a random ass pic.", usage="")
     async def ass(self, ctx):
-        data = self.reddit_client.ass()
-        await ctx.send(data)     
+        # data = self.reddit_client.ass()
+        # await ctx.send(data)     
+        r = requests.get("https://nekobot.xyz/api/image?type=ass")
+        data = r.json()
+        await ctx.send(data["message"])
 
     @commands.command(name="boobs", description="Get a random tit pic.", usage="", aliases=["tits", "tittys", "titty"])
     async def boobs(self, ctx):
-        data = self.reddit_client.boobs()
-        await ctx.send(data)     
+        # data = self.reddit_client.boobs()
+        # await ctx.send(data)     
+        r = requests.get("https://nekobot.xyz/api/image?type=boobs")
+        data = r.json()
+        await ctx.send(data["message"])
 
     @commands.command(name="pussy", description="Get a random pussy pic.", usage="")
     async def pussy(self, ctx):
-        data = self.reddit_client.pussy()
-        await ctx.send(data)     
+        # data = self.reddit_client.pussy()
+        # await ctx.send(data)     
+        r = requests.get("https://nekobot.xyz/api/image?type=pussy")
+        data = r.json()
+        await ctx.send(data["message"])
 
     @commands.command(name="porn", description="Get a random porn gif.", usage="", aliases=["porngif"])
     async def porn(self, ctx):
-        data = self.reddit_client.porn()
-        await ctx.send(data)     
+        # data = self.reddit_client.porn()
+        # await ctx.send(data)     
+        r = requests.get("https://nekobot.xyz/api/image?type=pgif")
+        data = r.json()
+        await ctx.send(data["message"])
 
     @commands.command(name="neko", description="Get a random neko image.", usage="")
     async def neko(self, ctx):
