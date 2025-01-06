@@ -140,8 +140,6 @@ async def on_command(ctx):
 
 @ghost.event
 async def on_command_error(ctx, error):
-    cfg = config.Config()
-
     try:
         await ctx.message.delete()
     except Exception as e:
