@@ -10,20 +10,24 @@ from . import config
 from . import imgembed
 from . import webhook
 
-def format_time(seconds):
+def format_time(seconds, short_form=True):
     minutes, seconds = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 24)
-    seconds = round(seconds, 2)
+    hours, minutes   = divmod(minutes, 60)
+    days, hours      = divmod(hours, 24)
+    
+    seconds = int(seconds)
+    minutes = int(minutes)
+    hours   = int(hours)
+    days    = int(days)
 
     if days:
-        return f"{days}d, {hours}h, {minutes}m"
+        return f"{days}d, {hours}h, {minutes}m" if short_form else f"{days} days, {hours} hours, {minutes} mins"
     elif hours:
-        return f"{hours}h, {minutes}m"
+        return f"{hours}h, {minutes}m" if short_form else f"{hours} hours, {minutes} mins"
     elif minutes:
-        return f"{minutes}m, {seconds}s"
+        return f"{minutes}m, {seconds}s" if short_form else f"{minutes} mins, {seconds} secs"
     else:
-        return f"{seconds}s"
+        return f"{seconds}s" if short_form else f"{seconds} seconds"
 
 def remove_emojis(text):
     emoji_pattern = re.compile(
@@ -139,7 +143,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
         msg_style = "codeblock"
 
     if msg_style == "codeblock":
-        description = re.sub(r"[*_~`]", "", codeblock_desc)
+        description = re.sub(r"[*_~`]", "", codeblock_desc).lower()
         if title == theme.title: title = theme.emoji + " " + title
 
         # if theres only one line in the description, remove it and make the extra title the description
@@ -147,7 +151,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
             extra_title = description
             description = ""
 
-        msg = await ctx.send(str(codeblock.Codeblock(title=title.lower(), description=description.lower(), extra_title=extra_title)), delete_after=delete_after)
+        msg = await ctx.send(str(codeblock.Codeblock(title=title.lower(), description=description.lower(), extra_title=extra_title.lower())), delete_after=delete_after)
     elif msg_style == "image":
         if theme.emoji in title:
             title = title.replace(theme.emoji, "")
