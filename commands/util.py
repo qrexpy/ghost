@@ -93,8 +93,8 @@ class Util(commands.Cog):
         
         await cmdhelper.send_message(ctx, {
             "title": cfg.theme.title,
-            "description": "restarting ghost...",
-        })
+            "description": "restarting ghost..." if cfg.get("message_settings")["style"] == "image" else ""
+        }, extra_title="restarting ghost...")
         
         os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -105,8 +105,8 @@ class Util(commands.Cog):
         if output:
             await cmdhelper.send_message(ctx, {
                 "title": cfg.theme.title,
-                "description": "quitting ghost...",
-            })
+                "description": "quitting ghost..." if cfg.get("message_settings")["style"] == "image" else ""
+            }, extra_title="quitting ghost...")
 
         sys.exit()
 
