@@ -293,7 +293,7 @@ class Fun(commands.Cog):
             "Date of birth": dob.strftime("%d/%m/%Y"),
             "Current age": f"{age} years old",
             "Phone number": phone,
-            "Address": f"{address['address1']}, {address['city']}, {address['state']} {address['zip']}"
+            "Address": address
         }
 
         longest_key = max([len(key) for key in info])
