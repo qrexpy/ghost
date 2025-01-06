@@ -266,7 +266,7 @@ class Util(commands.Cog):
     @commands.command(name="uptime", description="View the bot's uptime", usage="")
     async def uptime(self, ctx):
         uptime = time.time() - self.bot.start_time
-        uptime = cmdhelper.format_time(uptime)
+        uptime = cmdhelper.format_time(uptime, short_form=False)
 
         await cmdhelper.send_message(ctx, {
             "title": "Uptime",
