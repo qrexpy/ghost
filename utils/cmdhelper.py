@@ -97,7 +97,7 @@ async def rich_embed(ctx, embed):
             if resp.status_code == 200:
                 await asyncio.sleep(cfg.get("message_settings")["auto_delete_delay"])
                 try:
-                    requests.delete(f"https://discord.com/api/v9/channels/{ctx.channel.id}/messages/{resp.json()['id']}", headers={"Authorization": self.cfg.get("token")})
+                    requests.delete(f"https://discord.com/api/v9/channels/{ctx.channel.id}/messages/{resp.json()['id']}", headers={"Authorization": cfg.get("token")})
                 except:
                     pass
         
