@@ -21,11 +21,11 @@ class Sniper(commands.Cog):
         pages = cmdhelper.generate_help_pages(self.bot, "Sniper")
 
         await cmdhelper.send_message(ctx, {
-            "title": f"{cfg.theme.emoji} sniper commands",
-            "description": pages["image"][selected_page - 1],
-            "footer": f"Page {selected_page}/{len(pages['image'])}",
-            "codeblock_desc": pages["codeblock"][selected_page - 1]
-        }, extra_title=f"Page {selected_page}/{len(pages['image'])}")
+            "title": f"🔫 sniper commands",
+            "description": pages[cfg.get("message_settings")["style"]][selected_page - 1 if selected_page - 1 < len(pages[cfg.get("message_settings")["style"]]) else 0],
+            "footer": f"Page {selected_page}/{len(pages[cfg.get('message_settings')['style']])}",
+            "codeblock_desc": pages["codeblock"][selected_page - 1 if selected_page - 1 < len(pages["codeblock"]) else 0]
+        }, extra_title=f"Page {selected_page}/{len(pages['codeblock'])}")
 
     @commands.command(name="snipers", description="List all snipers.", usage="")
     async def snipers(self, ctx):

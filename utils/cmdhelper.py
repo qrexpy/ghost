@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import asyncio
 import discord
@@ -9,64 +10,65 @@ from . import config
 from . import imgembed
 from . import webhook
 
+def remove_emojis(text):
+    emoji_pattern = re.compile(
+        "["
+        "\U0001F600-\U0001F64F"  # Emoticons
+        "\U0001F300-\U0001F5FF"  # Symbols & Pictographs
+        "\U0001F680-\U0001F6FF"  # Transport & Map Symbols
+        "\U0001F700-\U0001F77F"  # Alchemical Symbols
+        "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+        "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+        "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        "\U0001FA00-\U0001FA6F"  # Chess Symbols
+        "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        "\U00002702-\U000027B0"  # Dingbats
+        "\U000024C2-\U0001F251"  # Enclosed Characters
+        "]+",
+        flags=re.UNICODE
+    )
+    return emoji_pattern.sub(r'', text)
+
 def cog_desc(cmd, desc):
     return f"{desc}\n{cmd}"
 
-def get_command_help(cmd):
-    prefix = ""
-
-    if cmd.parent is not None:
-        prefix = f"{cmd.parent.name} {cmd.name}"
-    else:
-        prefix = f"{cmd.name}"
-
-    return prefix
-
-def generate_help_pages(bot, cog):
-    pages = []
-    pages_2 = []
-    commands = bot.get_cog(cog).walk_commands()
-    commands_formatted = []
-    commands_formatted_2 = []
-    commands_2 = []
-    spacing = 0
+def generate_help_pages(bot, cog_name):
+    get_command_full_name = lambda cmd: f"{cmd.parent.name} {cmd.name}" if cmd.parent else cmd.name
+    commands = bot.get_cog(cog_name).walk_commands()
+    command_details = []
+    max_name_length = 0
 
     for cmd in commands:
-        if cmd.name.lower() != cog.lower():
-            prefix = get_command_help(cmd)
+        if cmd.name.lower() != cog_name.lower():
+            full_name = get_command_full_name(cmd)
+            max_name_length = max(max_name_length, len(full_name))
+            command_details.append((full_name, cmd.description))
 
-            if len(prefix) > spacing:
-                spacing = len(prefix)
+    formatted_commands = []
+    formatted_commands_codeblock = []
 
-            commands_2.append([prefix, cmd.description])
+    for name, description in command_details:
+        padded_name = name.ljust(max_name_length)
+        formatted_commands_codeblock.append(f"{padded_name} :: {description}")
+        formatted_commands.append(f"**{bot.command_prefix}{name}** {description}")
 
-    for cmd in commands_2:
-        commands_formatted_2.append(f"{cmd[0]}{' ' * (spacing - len(cmd[0]))} :: {cmd[1]}")
-        commands_formatted.append(f"**{bot.command_prefix}{cmd[0]}** {cmd[1]}")
+    def split_into_pages(commands_list, max_length):
+        pages = []
+        current_page = ""
+        for cmd in commands_list:
+            if len(current_page) + len(cmd) > max_length:
+                pages.append(current_page)
+                current_page = ""
+            current_page += f"{cmd}\n"
+        if current_page:
+            pages.append(current_page)
+        return pages
 
-    commands_str = ""
-    for cmd in commands_formatted:
-        if len(commands_str) + len(cmd) > 300:
-            pages.append(commands_str)
-            commands_str = ""
+    codeblock_pages = split_into_pages(formatted_commands_codeblock, 1000)
+    image_pages = split_into_pages(formatted_commands, 400)
+    embed_pages = split_into_pages(formatted_commands, 1000)
 
-        commands_str += f"{cmd}\n"
-
-    if len(commands_str) > 0:
-        pages.append(commands_str)
-
-    commands_str = ""
-    for cmd in commands_formatted_2:
-        if len(commands_str) + len(cmd) > 500:
-            pages_2.append(commands_str)
-            commands_str = ""
-
-        commands_str += f"{cmd}\n"
-
-    if len(commands_str) > 0:
-        pages_2.append(commands_str)
-
-    return {"codeblock": pages_2, "image": pages}
+    return {"codeblock": codeblock_pages, "image": image_pages, "embed": embed_pages}
 
 async def rich_embed(ctx, embed):
     cfg = config.Config()
@@ -122,6 +124,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
     if msg_style == "codeblock":
         description = description.replace("*", "")
         description = description.replace("`", "")
+        if title == theme.title: title = theme.emoji + " " + title
 
         msg = await ctx.send(str(codeblock.Codeblock(title=title, description=codeblock_desc, extra_title=extra_title)), delete_after=delete_after)
     elif msg_style == "image":
@@ -129,6 +132,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
             title = title.replace(theme.emoji, "")
         
         title = title.lstrip()
+        title = remove_emojis(title)
         embed2 = imgembed.Embed(title=title, description=description, colour=colour)
         embed2.set_footer(text=footer)
         embed2.set_thumbnail(url=thumbnail)
@@ -137,6 +141,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
         msg = await ctx.send(file=discord.File(embed_file, filename="embed.png"), delete_after=delete_after)
         os.remove(embed_file)
     elif msg_style == "embed" and cfg.get("rich_embed_webhook") != "":
+        if title == theme.title: title = theme.emoji + " " + title
         embed = discord.Embed(title=title, description=description, colour=discord.Color.from_str(colour))
         embed.set_footer(text=footer)
         embed.set_thumbnail(url=thumbnail)
