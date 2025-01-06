@@ -11,7 +11,7 @@ from utils import imgembed
 class Theming(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.description = cmdhelper.cog_desc("theming", "Theme commands.")
+        self.description = cmdhelper.cog_desc("theming", "Theme commands")
         self.cfg = config.Config()
 
     @commands.command(name="theming", description="Theme commands.", aliases=["design"], usage="")

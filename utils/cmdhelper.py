@@ -64,6 +64,8 @@ def generate_help_pages(bot, cog_name):
 
     for name, description in command_details:
         padded_name = name.ljust(max_name_length)
+        if description.endswith("."):
+            description = description[:-1]
         formatted_commands_codeblock.append(f"{padded_name} :: {description}")
         formatted_commands.append(f"**{bot.command_prefix}{name}** {description}")
 
@@ -137,18 +139,22 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
         msg_style = "codeblock"
 
     if msg_style == "codeblock":
-        description = description.replace("*", "")
-        description = description.replace("`", "")
+        description = re.sub(r"[*_~`]", "", codeblock_desc)
         if title == theme.title: title = theme.emoji + " " + title
 
-        msg = await ctx.send(str(codeblock.Codeblock(title=title, description=codeblock_desc, extra_title=extra_title)), delete_after=delete_after)
+        # if theres only one line in the description, remove it and make the extra title the description
+        if len(description.split("\n")) == 1:
+            extra_title = description
+            description = ""
+
+        msg = await ctx.send(str(codeblock.Codeblock(title=title.lower(), description=description.lower(), extra_title=extra_title)), delete_after=delete_after)
     elif msg_style == "image":
         if theme.emoji in title:
             title = title.replace(theme.emoji, "")
         
         title = title.lstrip()
         title = remove_emojis(title)
-        embed2 = imgembed.Embed(title=title, description=description, colour=colour)
+        embed2 = imgembed.Embed(title=title.lower(), description=description.lower(), colour=colour)
         embed2.set_footer(text=footer)
         embed2.set_thumbnail(url=thumbnail)
         embed_file = embed2.save()
@@ -157,7 +163,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
         os.remove(embed_file)
     elif msg_style == "embed" and cfg.get("rich_embed_webhook") != "":
         if title == theme.title: title = theme.emoji + " " + title
-        embed = discord.Embed(title=title, description=description, colour=discord.Color.from_str(colour))
+        embed = discord.Embed(title=title.lower(), description=description.lower(), colour=discord.Color.from_str(colour))
         embed.set_footer(text=footer)
         embed.set_thumbnail(url=thumbnail)
 
