@@ -35,19 +35,32 @@ class Util(commands.Cog):
         cfg = config.Config()
 
         if ctx.invoked_subcommand is None:
-            new_cfg = cfg.config_without_theme_dict
-            new_cfg.pop("token")
+            sanitized_cfg = cfg.config.copy()
+            sanitized_cfg.pop("token")
+            sanitized_cfg["apis"] = {key: "******" for key in sanitized_cfg.get("apis", {})}
 
-            for api_key in new_cfg["apis"]:
-                new_cfg["apis"][api_key] = "******"
+            def redact_webhooks(d):
+                for key, value in d.items():
+                    if isinstance(value, dict):
+                        redact_webhooks(value)
+                    if "webhook" in key:
+                        d[key] = "******"
 
-            cfg_str = json.dumps(cfg.config_without_theme_dict, indent=4, sort_keys=False)[1:][:-1]
-            description = ""
+            redact_webhooks(sanitized_cfg)
 
-            for line in cfg_str.split("\n"):
-                description += line[4:] + "\n"
+            key_priority = {"prefix": 0, "theme": 1, "gui": 2, "rich_presence": 3}
+            key_priority.update({key: idx + 4 for idx, key in enumerate(sanitized_cfg) if key not in key_priority})
 
-            await ctx.send(str(codeblock.Codeblock(title="config", description=description, style="yaml")), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
+            sorted_cfg = dict(sorted(sanitized_cfg.items(), key=lambda item: key_priority.get(item[0], float('inf'))))
+            formatted_cfg = "\n".join(line[4:] for line in json.dumps(sorted_cfg, indent=4)[1:-1].split("\n"))
+
+            await ctx.send(str(codeblock.Codeblock(
+                title="config",
+                description=formatted_cfg,
+                style="json",
+                footer="use 'config set [key] [value]' to edit a value",
+                extra_title="sensitive data has been redacted"
+            )), delete_after=cfg.get("message_settings")["auto_delete_delay"])
 
     @config.command(name="set", description="Set a config value.", usage="[key] [value]")
     async def set(self, ctx, key, *, value):
