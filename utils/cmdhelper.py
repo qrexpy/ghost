@@ -10,6 +10,21 @@ from . import config
 from . import imgembed
 from . import webhook
 
+def format_time(seconds):
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    seconds = round(seconds, 2)
+
+    if days:
+        return f"{days}d, {hours}h, {minutes}m"
+    elif hours:
+        return f"{hours}h, {minutes}m"
+    elif minutes:
+        return f"{minutes}m, {seconds}s"
+    else:
+        return f"{seconds}s"
+
 def remove_emojis(text):
     emoji_pattern = re.compile(
         "["

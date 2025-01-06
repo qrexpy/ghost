@@ -2,6 +2,7 @@ import os
 import sys
 import discord
 import json
+import time
 import psutil
 import platform
 
@@ -127,13 +128,15 @@ class Util(commands.Cog):
     async def settings(self, ctx):
         cfg = config.Config()
         command_amount = len(self.bot.commands)
+        uptime = time.time() - self.bot.start_time
+        uptime = cmdhelper.format_time(uptime)
 
         info = {
             "Prefix": cfg.get("prefix"),
             "Rich Presence": cfg.get("rich_presence"),
             "Theme": cfg.theme.name,
             "Style": cfg.get("message_settings")["style"],
-            "Uptime": str(psutil.Process().create_time() - psutil.boot_time()).split(".")[0],
+            "Uptime": uptime,
             "Command Amount": command_amount,
         }
 
@@ -262,13 +265,12 @@ class Util(commands.Cog):
 
     @commands.command(name="uptime", description="View the bot's uptime", usage="")
     async def uptime(self, ctx):
-        uptime = psutil.boot_time()
-        uptime = psutil.Process().create_time() - uptime
-        uptime = str(uptime).split(".")[0]
+        uptime = time.time() - self.bot.start_time
+        uptime = cmdhelper.format_time(uptime)
 
         await cmdhelper.send_message(ctx, {
             "title": "Uptime",
-            "description": f"{uptime}",
+            "description": f"Ghost has been running for **{uptime}**"
         })
 
     @commands.command(name="allcmds", description="List all commands", usage="")

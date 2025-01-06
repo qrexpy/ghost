@@ -90,6 +90,7 @@ for script_file in os.listdir("scripts"):
 @ghost.event
 async def on_connect():
     if not headless: gui.bot_started = True
+    ghost.start_time = time.time()
 
     await ghost.add_cog(ghost_commands.Account(ghost))
     await ghost.add_cog(ghost_commands.Fun(ghost))
