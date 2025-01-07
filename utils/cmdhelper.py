@@ -10,6 +10,8 @@ from . import config
 from . import imgembed
 from . import webhook
 
+get_command_full_name = lambda cmd: f"{cmd.parent.name} {cmd.name}" if cmd.parent else cmd.name
+
 def format_time(seconds, short_form=True):
     minutes, seconds = divmod(seconds, 60)
     hours, minutes   = divmod(minutes, 60)
@@ -52,7 +54,6 @@ def cog_desc(cmd, desc):
     return f"{desc}\n{cmd}"
 
 def generate_help_pages(bot, cog_name):
-    get_command_full_name = lambda cmd: f"{cmd.parent.name} {cmd.name}" if cmd.parent else cmd.name
     commands = bot.get_cog(cog_name).walk_commands()
     command_details = []
     max_name_length = 0
