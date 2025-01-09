@@ -35,3 +35,4 @@ dist/*
 build/*
 events/.DS_Store
 config.json
+data/cache/*

@@ -1,6 +1,6 @@
 art
 colorama
-discord.py-self
+git+https://github.com/dolfies/discord.py-self.git
 Faker
 pypresence
 requests
