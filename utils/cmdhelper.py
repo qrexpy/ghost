@@ -129,56 +129,66 @@ async def rich_embed(ctx, embed):
 async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", delete_after=None):
     cfg = config.Config()
     theme = cfg.theme
+
     title = embed_obj.get("title", theme.title)
     description = embed_obj.get("description", "")
     colour = embed_obj.get("colour", theme.colour)
     footer = embed_obj.get("footer", theme.footer)
     thumbnail = embed_obj.get("thumbnail", theme.image)
     codeblock_desc = embed_obj.get("codeblock_desc", description)
-    if delete_after is None or delete_after is True:
+
+    if delete_after is None:
         delete_after = cfg.get("message_settings")["auto_delete_delay"]
     elif delete_after is False:
         delete_after = None
 
     msg_style = cfg.get("message_settings")["style"]
-
-    if msg_style == "embed" and cfg.get("rich_embed_webhook") == "":
+    if msg_style == "embed" and not cfg.get("rich_embed_webhook"):
         msg_style = "codeblock"
 
     if msg_style == "codeblock":
         description = re.sub(r"[*_~`]", "", codeblock_desc).lower()
-        if title == theme.title: title = theme.emoji + " " + title
+        if title == theme.title:
+            title = f"{theme.emoji} {title}"
 
-        # if theres only one line in the description, remove it and make the extra title the description
         if len(description.split("\n")) == 1:
             extra_title = description
             description = ""
 
-        msg = await ctx.send(str(codeblock.Codeblock(title=title.lower(), description=description.lower(), extra_title=extra_title.lower())), delete_after=delete_after)
+        msg = await ctx.send(
+            str(codeblock.Codeblock(
+                title=title.lower(),
+                description=description.lower(),
+                extra_title=extra_title.lower()
+            )),
+            delete_after=delete_after
+        )
+
     elif msg_style == "image":
-        if theme.emoji in title:
-            title = title.replace(theme.emoji, "")
-        
-        title = title.lstrip()
-        title = remove_emojis(title)
+        title = remove_emojis(title.replace(theme.emoji, "").lstrip())
         embed2 = imgembed.Embed(title=title.lower(), description=description.lower(), colour=colour)
         embed2.set_footer(text=footer)
         embed2.set_thumbnail(url=thumbnail)
         embed_file = embed2.save()
-        
+
         msg = await ctx.send(file=discord.File(embed_file, filename="embed.png"), delete_after=delete_after)
         os.remove(embed_file)
-    elif msg_style == "embed" and cfg.get("rich_embed_webhook") != "":
-        if title == theme.title: title = theme.emoji + " " + title
-        embed = discord.Embed(title=title.lower(), description=description.lower(), colour=discord.Color.from_str(colour))
+
+    elif msg_style == "embed" and cfg.get("rich_embed_webhook"):
+        if title == theme.title:
+            title = f"{theme.emoji} {title}"
+        embed = discord.Embed(
+            title=title.lower(),
+            description=description.lower(),
+            colour=discord.Color.from_str(colour)
+        )
         embed.set_footer(text=footer)
         embed.set_thumbnail(url=thumbnail)
 
         return await rich_embed(ctx, embed)
-    
-    if extra_message != "":
+
+    if extra_message:
         extra_msg = await ctx.send(extra_message, delete_after=delete_after)
         return msg, extra_msg
-    
-    return msg
 
+    return msg
