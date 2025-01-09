@@ -159,6 +159,23 @@ class Util(commands.Cog):
             self.bot.command_prefix = prefix
             cfg.set("prefix", prefix)
 
+    @commands.command(name="clearcache", description="Clear the cache", usage="")
+    async def clearcache(self, ctx):
+        if not os.listdir("data/cache"):
+            await cmdhelper.send_message(ctx, {
+                "title": "Cache",
+                "description": "Cache is already empty",
+            })
+            return
+
+        for file in os.listdir("data/cache"):
+            os.remove(f"data/cache/{file}")
+
+        await cmdhelper.send_message(ctx, {
+            "title": "Cache",
+            "description": "Cache cleared!",
+        })
+
     @commands.command(name="gui", description="Enable the GUI", usage="", aliases=["enablegui"])
     async def gui(self, ctx):
         cfg = config.Config()
