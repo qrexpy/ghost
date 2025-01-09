@@ -135,8 +135,10 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
     footer = embed_obj.get("footer", theme.footer)
     thumbnail = embed_obj.get("thumbnail", theme.image)
     codeblock_desc = embed_obj.get("codeblock_desc", description)
-    if delete_after is None:
+    if delete_after is None or delete_after is True:
         delete_after = cfg.get("message_settings")["auto_delete_delay"]
+    elif delete_after is False:
+        delete_after = None
 
     msg_style = cfg.get("message_settings")["style"]
 
