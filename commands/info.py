@@ -156,22 +156,23 @@ class Info(commands.Cog):
 
             for guild in bot_guilds:
                 text_channels = [channel for channel in await guild.fetch_channels() if isinstance(channel, discord.TextChannel)]
+                members = []
 
                 try:
-                    members = []
                     discord_members = await guild.fetch_members(channels=text_channels, cache=True, force_scraping=True, delay=0.1)
                     for member in discord_members:
                         if not member.bot: members.append({"id": member.id, "username": member.name})
-                    
-                    guilds_data.append({
-                        "id": guild.id,
-                        "name": guild.name,
-                        "members": members
-                    })
+
                     console.print_success(f"Fetched {len(members)} members from {guild.name}!")
                 except discord.InvalidData:
                     console.print_error(f"Failed to fetch members from {guild.name}.")
-                
+
+                guilds_data.append({
+                    "id": guild.id,
+                    "name": guild.name,
+                    "members": members
+                })
+
                 await asyncio.sleep(0.3)
 
             with open("data/cache/guilds.json", "w") as f:
@@ -220,7 +221,7 @@ class Info(commands.Cog):
             console.print_warning("The response is too large, sending as a file instead.")
             with open("mutual_server_members.json", "w") as f:
                 f.write(description)
-            
+
             await ctx.send(file=discord.File("mutual_server_members.json"), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
             os.remove("mutual_server_members.json")
             response_codeblock.description = "The data was too large, so it has been sent as a file instead."
@@ -256,7 +257,7 @@ class Info(commands.Cog):
             if str(channel.type) == "text":
                 if "ticket" in channel.name.lower():
                     tickets.append(f"#{channel.name}")
-        
+
         await cmdhelper.send_message(ctx, {
             "title": "Tickets",
             "description": "\n".join(tickets) if tickets else "There were no tickets found."
@@ -286,7 +287,7 @@ class Info(commands.Cog):
                 "description": "Invalid cryptocurrency."
             })
             return
-        
+
         data = resp.json()
         info = {
             "Name": currency,
