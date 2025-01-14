@@ -95,13 +95,13 @@ class Abuse(commands.Cog):
                 while "retry_after" in resp.json() or resp.status_code == 429:
                     await asyncio.sleep(resp.json()["retry_after"])
                     resp = requests.delete(f"{base_url}/channels/{channel_id}/messages/{message_id}", headers=headers)
-                
+
                 return resp
             except Exception as e:
                 return e
 
         async def channelping_thread(channel, user, ping_amount, delay):
-            for _ in range(ping_amount):  
+            for _ in range(ping_amount):
                 resp = requests.post(f"{base_url}/channels/{channel.id}/messages", json={"content": f"{users}"}, headers=headers)
 
                 if "retry_after" in resp.json():
@@ -128,22 +128,22 @@ class Abuse(commands.Cog):
             if str(channel.type) == "text":
                 if channel.permissions_for(ctx.guild.me).send_messages:
                     channels.append(channel)
-                    
+
         console.print_info(f"Sending {len(channels) * ping_amount} pings...")
 
         if threaded:
             for channel in channels:
                 _thread = threading.Thread(
-                    target=channelping_thread_middleman, 
+                    target=channelping_thread_middleman,
                     args=(
-                        channel, 
-                        users, 
-                        ping_amount, 
-                        channel.slowmode_delay if channel.slowmode_delay > default_delay else default_delay, 
-                        ), 
+                        channel,
+                        users,
+                        ping_amount,
+                        channel.slowmode_delay if channel.slowmode_delay > default_delay else default_delay,
+                        ),
                     daemon=True
                 )
-                
+
                 threads.append(_thread)
 
             for thread in threads:
@@ -163,6 +163,34 @@ class Abuse(commands.Cog):
         os.system("clear")
         print()
         console.print_banner()
+
+    @commands.command(name="massping", description="Ping every user in a server.", aliases=["hahafunny"], usage="[msg amount] [guild id]")
+    async def massping(self, ctx, message_amount=5, guild_id=None):
+        guild = ctx.guild
+        if guild_id:
+            guild = await self.bot.fetch_guild(guild_id)
+
+        text_channels = [channel for channel in await guild.fetch_channels() if isinstance(channel, discord.TextChannel)]
+        members = [f"<@{member.id}>" for member in await guild.fetch_members(channels=text_channels, cache=True, force_scraping=True, delay=0.1) if not member.bot]
+        message = ""
+        messages = []
+
+        for member in members:
+            if len(message) < 1950:
+                message += member
+            else:
+                messages.append(message)
+                message = ""
+
+        messages.append(message)
+
+        for _ in range(message_amount):
+            for message in messages:
+                try:
+                    await ctx.send(message, delete_after=0)
+                except Exception as e:
+                    return console.print_error("Failed to send mentions. Most likely due to mention limit set.")
+                await asyncio.sleep(0.75)
 
     @commands.command(name="pollspam", description="Flood a channel with polls.")
     async def pollspam(self, ctx):
@@ -198,7 +226,7 @@ class Abuse(commands.Cog):
                     if "missing permissions" in resp.content.lower():
                         console.print_error("Bot does not have the necessary permissions to manage messages.")
                         return resp.json()
-                    
+
                     console.print_error(f"Failed to create poll: {resp.json()}")
 
                 console.print_success(f"Poll created.")
