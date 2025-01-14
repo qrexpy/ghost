@@ -82,7 +82,7 @@ class GhostGUI:
         resp = requests.get("https://api.github.com/repos/bennyscripts/ghost/releases")
         if resp.status_code != 200:
             return "0", "Failed to get changelog."
-        
+
         data = resp.json()
 
         if len(data) == 0:
@@ -117,7 +117,7 @@ class GhostGUI:
         self.sidebar.pack(fill=ttk.BOTH, side=ttk.LEFT)
         self.sidebar.configure(style="dark.TFrame")
         self.sidebar.grid_propagate(False)
-        
+
         home_button = ttk.Button(self.sidebar, text="Home", command=self.draw_home)
         settings_button = ttk.Button(self.sidebar, text="Settings", command=self.draw_settings)
         theming_button = ttk.Button(self.sidebar, text="Theming", command=self.draw_theming)
@@ -145,14 +145,14 @@ class GhostGUI:
         main.pack(fill=ttk.BOTH, expand=True, padx=10, pady=10)
 
         return main
-    
+
     def clear_main(self):
         for widget in self.root.winfo_children():
             if isinstance(widget, ttk.Frame):
                 widget.destroy()
 
         self.draw_sidebar()
-    
+
     def draw_home(self):
         self.clear_main()
         main = self.draw_main()
@@ -161,7 +161,7 @@ class GhostGUI:
 
         title = ttk.Label(main, text=f"Ghost v{config.VERSION}", font=("Arial", 20, "bold"))
         subtitle = ttk.Label(main, text=config.MOTD, font=("Arial Italic", 14))
-        
+
         title.grid(row=0, column=0, sticky=ttk.NSEW)
         subtitle.grid(row=1, column=0, columnspan=2, sticky=ttk.NSEW)
 
@@ -205,7 +205,7 @@ class GhostGUI:
                     sniper.set(key, entry.instate(["selected"]))
 
             sniper.save()
-        
+
         title = ttk.Label(main, text="Snipers", font=("Arial", 20, "bold"))
         title.grid(row=0, column=0, sticky=ttk.NSEW)
 
@@ -247,7 +247,7 @@ class GhostGUI:
                         checkbox.invoke()
                     else:
                         for _ in range(2):
-                            checkbox.invoke() 
+                            checkbox.invoke()
 
                     snipers_tk_entries[sniper.name][key] = checkbox
                 else:
@@ -314,7 +314,7 @@ class GhostGUI:
             if cfg.theme.name.lower() == "ghost":
                 console.print_error("Cannot delete the default theme.")
                 return
-            
+
             cfg.delete_theme(cfg.theme.name)
             self.draw_theming()
 
@@ -322,13 +322,13 @@ class GhostGUI:
             if theme_name is None or theme_name == "":
                 console.print_error("Please enter a theme name.")
                 return
-            
+
             success = cfg.create_theme(theme_name)
-            
+
             if isinstance(success, bool) and not success:
                 console.print_error("Theme already exists.")
                 return
-            
+
             cfg.set_theme(success.name)
             cfg.save()
             self.draw_theming()
@@ -370,7 +370,7 @@ class GhostGUI:
         message_style_entry.menu = ttk.Menu(message_style_entry, tearoff=0)
         message_style_entry["menu"] = message_style_entry.menu
 
-        for style in ["codeblock", "image"]:
+        for style in ["codeblock", "image", "embed"]:
             message_style_entry.menu.add_command(label=style, command=lambda style=style: message_style_entry.configure(text=style))
 
         select_theme_label.grid(row=1, column=0, sticky=ttk.W, padx=(10, 0), pady=(10, 0))
@@ -394,7 +394,7 @@ class GhostGUI:
 
             label = ttk.Label(theme_frame, text=key.capitalize())
             label.configure(background=self.root.style.colors.get("secondary"))
-            
+
             label.grid(row=index + 4, column=0, sticky=ttk.W, padx=padding[0], pady=padding[1])
             entry.grid(row=index + 4, column=1, columnspan=2, sticky="we", padx=padding[0], pady=padding[1])
 
@@ -407,7 +407,7 @@ class GhostGUI:
         save_theme_label.configure(background=self.root.style.colors.get("secondary"))
         save_theme_button = ttk.Button(theme_frame, text="Save", style="success.TButton", command=save_theme)
         delete_theme_button = ttk.Button(theme_frame, text="Delete", style="danger.TButton", command=delete_theme)
-        
+
         save_theme_label.grid(row=len(theme_dict) + 6, column=0, columnspan=2, sticky=ttk.W, padx=(10, 0), pady=(0, 10))
         save_theme_button.grid(row=len(theme_dict) + 6, column=1, sticky=ttk.E, padx=(0, 5), pady=(0, 10))
         delete_theme_button.grid(row=len(theme_dict) + 6, column=2, sticky=ttk.E, padx=(0, 11), pady=(0, 10))
@@ -449,7 +449,7 @@ class GhostGUI:
 
             cfg.set("rich_presence", config_tk_entries["rich_presence"].instate(["selected"]), save=False)
             cfg.set("gui", config_tk_entries["gui"].instate(["selected"]), save=False)
-            
+
             cfg.save()
             cfg.check()
 
@@ -483,7 +483,7 @@ class GhostGUI:
 
             label = ttk.Label(config_frame, text=value)
             label.configure(background=self.root.style.colors.get("secondary"))
-            
+
             label.grid(row=index + 1, column=0, sticky=ttk.W, padx=padding[0], pady=padding[1])
             entry.grid(row=index + 1, column=1, sticky="we", padx=padding[0], pady=padding[1], columnspan=3)
 
@@ -549,7 +549,7 @@ class GhostGUI:
 
             label = ttk.Label(apis_frame, text=value)
             label.configure(background=self.root.style.colors.get("secondary"))
-            
+
             label.grid(row=index + 1, column=0, sticky=ttk.W, padx=(10, 5), pady=padding[1])
             entry.grid(row=index + 1, column=1, sticky="we", padx=(0, 10), pady=padding[1], columnspan=2)
 
@@ -569,7 +569,7 @@ class GhostGUI:
 
         session_spoofing_checkbox = ttk.Checkbutton(session_spoofing_frame, text="Enable session spoofing", style="success.TCheckbutton")
         session_spoofing_checkbox.grid(row=0, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
-        
+
         if cfg.get("session_spoofing"):
             session_spoofing_checkbox.invoke()
         else:
