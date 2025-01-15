@@ -1,6 +1,6 @@
 headless = False
 try:
-    import tkinter
+    import ttkbootstrap
 except ModuleNotFoundError:
     headless = True
 
