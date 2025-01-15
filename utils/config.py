@@ -4,9 +4,10 @@ import os
 from . import console
 from . import webhook as webhook_client
 
-MOTD = "over your entire life you could eat 10 spiders whilst asleep".lower()
-VERSION = "3.4.0"
-PRODUCTION = True
+MOTD = "A cockroach can live for weeks without its head".lower()
+PRODUCTION = False
+VERSION = "3.5.0"
+VERSION += "-dev" if not PRODUCTION else ""
 DEFAULT_CONFIG = {
     "token": "",
     "prefix": "",
@@ -67,10 +68,10 @@ class Theme:
                 "colour": self.colour,
                 "footer": self.footer
             }, f, indent=4)
-            
+
     def __str__(self):
         return self.name
-    
+
     def to_dict(self):
         return {
             "title": self.title,
@@ -98,20 +99,20 @@ class Sniper:
 
     def __str__(self):
         return self.name
-    
+
     def to_dict(self):
         return {
             "enabled": self.enabled,
             "ignore_invalid": self.ignore_invalid,
             "webhook": self.webhook
         }
-    
+
     def set(self, key, value):
         setattr(self, key, value)
 
     def get_webhook(self):
         return webhook_client.Webhook.from_url(self.webhook)
-    
+
     def set_webhook(self, webhook):
         try:
             self.webhook = webhook.url
@@ -130,7 +131,7 @@ class Sniper:
     def toggle(self):
         self.enabled = not self.enabled
         self.save()
-        
+
     def ignore_invalid(self):
         self.ignore_invalid = True
         self.save()
@@ -144,7 +145,7 @@ class Config:
         self.check()
         self.config = json.load(open("config.json"))
         self.theme = self.get_theme(self.config["theme"])
-    
+
     def check(self):
         if not os.path.exists("backups/"):
             os.mkdir("backups/")
@@ -158,7 +159,7 @@ class Config:
             open("data/sniped_codes.txt", "w").close()
         if not os.path.exists("data/privnote_saves.json"):
             json.dump({}, open("data/privnote_saves.json", "w"), indent=4)
-            
+
         if not os.path.exists("config.json"):
             with open("config.json", "w") as f:
                 json.dump(DEFAULT_CONFIG, f, indent=4)
@@ -167,7 +168,7 @@ class Config:
             os.makedirs("themes/")
         if not os.path.exists("themes/ghost.json"):
             json.dump(DEFAULT_THEME, open("themes/ghost.json", "w"), indent=4)
-            console.print_info("Created theme file")   
+            console.print_info("Created theme file")
 
         if os.path.exists("config.json"):
             self.config = json.load(open("config.json"))
@@ -186,12 +187,12 @@ class Config:
                             sniper_enabled = self.config[key][sniper]
                             self.config[key][sniper] = DEFAULT_CONFIG[key][sniper]
                             self.config[key][sniper]["enabled"] = sniper_enabled
-                        
+
                         self.config[key][sniper] = {**DEFAULT_CONFIG[key][sniper], **self.config[key][sniper]}
 
                 if key not in self.config:
                     self.config[key] = DEFAULT_CONFIG[key]
-                
+
             for key in self.config:
                 if key == "message_settings":
                     auto_delete_delay = self.config[key]["auto_delete_delay"]
@@ -229,7 +230,7 @@ class Config:
 
         if subkey:
             return self.config[key][subkey]
-        
+
         return self.config[key]
 
     def set(self, key, value, save=True) -> None:
@@ -244,16 +245,16 @@ class Config:
         if save:
             self.save()
 
-    def get_theme_file(self, theme):        
+    def get_theme_file(self, theme):
         return json.load(open(f"themes/{theme}.json")) if os.path.exists(f"themes/{theme}.json") else None
-    
+
     def save_theme_file(self, theme_name, new_obj) -> None:
         json.dump(new_obj, open(f"themes/{theme_name}.json", "w"), indent=4)
 
     def get_theme(self, theme_name):
         if not os.path.exists(f"themes/{theme_name}.json"):
             return Theme(**DEFAULT_THEME)
-                    
+
         theme_obj = self.get_theme_file(theme_name)
         theme_obj["name"] = theme_name
         return Theme(**theme_obj)
@@ -282,11 +283,11 @@ class Config:
     def get_sniper(self, sniper):
         if sniper not in self.config["snipers"]:
             return None
-        
+
         obj = self.config["snipers"].get(sniper)
         obj["name"] = sniper
         return Sniper(**obj)
-    
+
     def get_snipers(self):
         snipers = []
         for sniper in self.config["snipers"]:
@@ -295,10 +296,10 @@ class Config:
             snipers.append(Sniper(**obj))
 
         return snipers
-    
+
     def get_session_spoofing(self):
         return self.config["session_spoofing"]["enabled"], self.config["session_spoofing"]["device"]
-    
+
     def set_session_spoofing(self, enabled, device):
         self.config["session_spoofing"]["enabled"] = enabled
         self.config["session_spoofing"]["device"] = device
@@ -307,17 +308,17 @@ class Config:
     def create_theme(self, theme_name):
         if os.path.exists(f"themes/{theme_name}.json"):
             return False
-        
+
         theme_name = theme_name.replace(" ", "_")
 
         json.dump(DEFAULT_THEME, open(f"themes/{theme_name}.json", "w"), indent=4)
         theme = Theme(name=theme_name, **DEFAULT_THEME)
         return theme
-    
+
     @staticmethod
     def get_python_path():
         return os.path.dirname(os.path.realpath(__file__))
-    
+
     @staticmethod
     def quit():
         exit()
