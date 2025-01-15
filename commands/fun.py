@@ -46,7 +46,7 @@ class Fun(commands.Cog):
 
     @commands.command(name="rickroll", description="Never gonna give you up.", usage="")
     async def rickroll(self, ctx):
-        lyrics = requests.get("https://gist.githubusercontent.com/bennyscripts/c8f9a62542174cdfb45499fdf8719723/raw/2f6a8245c64c0ea3249814ad8e016ceac45473e0/rickroll.txt").text    
+        lyrics = requests.get("https://gist.githubusercontent.com/bennyscripts/c8f9a62542174cdfb45499fdf8719723/raw/2f6a8245c64c0ea3249814ad8e016ceac45473e0/rickroll.txt").text
         for line in lyrics.splitlines():
             await ctx.send(line)
             await asyncio.sleep(1)
@@ -79,7 +79,7 @@ class Fun(commands.Cog):
     @commands.command(name="howgay", description="Get the gayness of a user.", usage="[user]", aliases=["gay", "gayrating"])
     async def howgay(self, ctx, *, user: discord.User):
         gay_percentage = random.randint(0, 100)
-        
+
         embed = discord.Embed(title=f"how gay is {user.name}?", description=f"{user.name} is {gay_percentage}% gay!")
         await cmdhelper.send_message(ctx, embed.to_dict())
 
@@ -241,7 +241,7 @@ class Fun(commands.Cog):
     #     #     "yellow": {"codeblock": "fix", "prefix": "", "suffix": ""},
     #     #     "green": {"codeblock": "cs", "prefix": "'", "suffix": "'",},
     #     #     "blue": {"codeblock": "md", "prefix": "#", "suffix": ""}}
-        
+
     #     # emojis = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪"]
     #     emojis = ["🔴", "🟠", "🟡", "🟢", "🔵", "🟣"]
     #     message = await ctx.send(text)
@@ -261,7 +261,7 @@ class Fun(commands.Cog):
     #     message = await ctx.fetch_message(msg_id)
 
     #     # await message.add_reaction("🫡")
-        
+
     #     for _ in range(5):
     #         for emoji in emojis:
     #             reaction = await message.add_reaction(emoji)
@@ -312,7 +312,7 @@ class Fun(commands.Cog):
             embed = discord.Embed(title="Error", description="Too many requests, please try again later.")
             await cmdhelper.send_message(ctx, embed.to_dict())
             return
-        
+
         meme = random.choice(r.json()["data"]["children"])["data"]["url"]
         await ctx.send(meme)
 
@@ -344,7 +344,7 @@ class Fun(commands.Cog):
         r = requests.get("https://www.yomama-jokes.com/api/v1/jokes/random/")
         joke = r.json()["joke"]
         await ctx.send(joke)
-        
+
     @commands.command(name="8ball", description="Ask the magic 8ball a question.", usage="[question]", aliases=["magic8ball", "ask8ball"])
     async def eightball(self, ctx, *, question: str):
         responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it",
@@ -377,7 +377,7 @@ class Fun(commands.Cog):
                 "colour": "#ff0000"
             })
             return
-        
+
         if not voice_state:
             await cmdhelper.send_message(ctx, {
                 "title": "Play Sound",
@@ -385,7 +385,7 @@ class Fun(commands.Cog):
                 "colour": "#ff0000"
             })
             return
-        
+
         if not str(mp3_url).endswith("mp3"):
             await cmdhelper.send_message(ctx, {
                 "title": "Play Sound",
@@ -393,7 +393,7 @@ class Fun(commands.Cog):
                 "colour": "#ff0000"
             })
             return
-        
+
         sound_res = requests.get(mp3_url)
         if sound_res.status_code != 200:
             await cmdhelper.send_message(ctx, {
@@ -402,39 +402,30 @@ class Fun(commands.Cog):
                 "colour": "#ff0000"
             })
             return
-        
-        try:
-            with open("data/cache/mysound.mp3", "wb") as sound_file:
-                sound_file.write(sound_res.content)
 
-            soundeffects = soundboard.Soundboard(cfg.get("token"), ctx.guild.id, voice_state.channel.id)
-            sound = soundeffects.upload_sound("data/cache/mysound.mp3", "ghost_sound_player", volume=1, emoji_id=None)
+        with open("data/cache/mysound.mp3", "wb") as sound_file:
+            sound_file.write(sound_res.content)
 
-            if sound.id:
-                await cmdhelper.send_message(ctx, {
-                    "title": "Play Sound",
-                    "description": f"Sound file is being played"
-                })
-                
-                soundeffects.play_sound(sound.id, source_guild_id=ctx.guild.id)
-                soundeffects.delete_sound(sound.id)
-                os.remove("data/cache/mysound.mp3")
+        soundeffects = soundboard.Soundboard(cfg.get("token"), ctx.guild.id, voice_state.channel.id)
+        sound = soundeffects.upload_sound("data/cache/mysound.mp3", "ghost_sound_player", volume=1, emoji_id=None)
 
-            else:
-                await cmdhelper.send_message(ctx, {
-                    "title": "Play Sound",
-                    "description": f"Sound could not be played. Possible reasons include:\n- File is too long\n- File is over 512KB",
-                    "colour": "#ff0000"
-                })
-                return
-            
-        except Exception as e:
+        if sound.id:
+            await cmdhelper.send_message(ctx, {
+                "title": "Play Sound",
+                "description": f"Sound file is being played"
+            })
+
+            soundeffects.play_sound(sound.id, source_guild_id=ctx.guild.id)
+            soundeffects.delete_sound(sound.id)
+            os.remove("data/cache/mysound.mp3")
+
+        else:
             await cmdhelper.send_message(ctx, {
                 "title": "Play Sound",
                 "description": f"Sound could not be played. Possible reasons include:\n- File is too long\n- File is over 512KB",
                 "colour": "#ff0000"
             })
-            return            
+            return
 
 def setup(bot):
     bot.add_cog(Fun(bot))
