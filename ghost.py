@@ -15,7 +15,7 @@ import logging
 
 headless = False
 try:
-    import tkinter
+    import ttkbootstrap
 except ModuleNotFoundError:
     headless = True
 
@@ -43,7 +43,7 @@ import events as ghost_events
 if discord.__version__ < "2.0.0":
     for _ in range(100):
         console.print_error("Ghost only supports discord.py-self 2.0.0, please upgrade!")
-    
+
     sys.exit()
 
 cfg = config.Config()
@@ -120,7 +120,7 @@ async def on_connect():
 
     if cfg.get("rich_presence"):
         console.print_rpc(rpc_log)
-    
+
     if session_spoofing:
         console.print_info(f"Spoofing session as {session_spoofing_device}")
 
