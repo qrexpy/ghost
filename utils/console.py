@@ -24,31 +24,31 @@ def get_formatted_time():
 
 def print_banner():
     copyright_ = f"( Ghost v{config.VERSION} )"
-    banner = f""" ██████╗ ██╗  ██╗ ██████╗ ███████╗████████╗
-██╔════╝ ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝
-██║  ███╗███████║██║   ██║███████╗   ██║   
-██║   ██║██╔══██║██║   ██║╚════██║   ██║   
-╚██████╔╝██║  ██║╚██████╔╝███████║   ██║   
- ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   
+    total_width = 90
+    copyright_length = len(copyright_)
+    dashes_length = (total_width - copyright_length) // 2
+    dashes = "—" * dashes_length
+    banner_line = f"{dashes}{copyright_}{dashes}"
+
+    if len(banner_line) < total_width:
+        banner_line += "—"
+
+    banner = f"""   ██████╗ ██╗  ██╗ ██████╗ ███████╗████████╗
+  ██╔════╝ ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝
+  ██║  ███╗███████║██║   ██║███████╗   ██║
+  ██║   ██║██╔══██║██║   ██║╚════██║   ██║
+  ╚██████╔╝██║  ██║╚██████╔╝███████║   ██║
+   ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝
 
 """
     print(colorama.Fore.LIGHTBLUE_EX + colorama.Style.BRIGHT)
-
-    # banner = banner.replace("█", f"{colorama.Fore.LIGHTBLUE_EX}{colorama.Style.BRIGHT}█{colorama.Style.RESET_ALL}")
-    # banner = banner.replace("╗", f"{colorama.Fore.WHITE}{colorama.Style.DIM}╗{colorama.Style.RESET_ALL}")
-    # banner = banner.replace("║", f"{colorama.Fore.WHITE}{colorama.Style.DIM}║{colorama.Style.RESET_ALL}")
-    # banner = banner.replace("═", f"{colorama.Fore.WHITE}{colorama.Style.DIM}═{colorama.Style.RESET_ALL}")
-    # banner = banner.replace("╝", f"{colorama.Fore.WHITE}{colorama.Style.DIM}╝{colorama.Style.RESET_ALL}")
-    # banner = banner.replace("╔", f"{colorama.Fore.WHITE}{colorama.Style.DIM}╔{colorama.Style.RESET_ALL}")
-    # banner = banner.replace("╚", f"{colorama.Fore.WHITE}{colorama.Style.DIM}╚{colorama.Style.RESET_ALL}")
-    
     print(pystyle.Center.XCenter(banner))
-    
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}")
     print(pystyle.Center.XCenter(config.MOTD))
     print()
-    print(f"{colorama.Fore.BLUE}—————————————————————————————————————{copyright_}—————————————————————————————————————")
+    print(f"{colorama.Fore.BLUE}{banner_line}")
     print(f"{colorama.Style.RESET_ALL}")
+
 
 def print_color(color, text):
     print(color + text + colorama.Style.RESET_ALL)
@@ -80,5 +80,5 @@ def print_sniper(sniper, title, description: dict, success=True):
 
     for key, value in description.items():
         print(f"{' '*10} {colorama.Fore.LIGHTYELLOW_EX}{colorama.Style.NORMAL}{key}: {colorama.Style.RESET_ALL}{value}")
-    
+
     print()
