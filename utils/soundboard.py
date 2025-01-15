@@ -3,15 +3,11 @@ import base64
 import mimetypes
 
 class Sound:
-    def __init__(self, name, sound_id, volume, emoji_id, emoji_name, override_path, user_id, available):
+    def __init__(self, name, sound_id, volume, emoji_id):
         self.name = name
         self.id = sound_id
         self.volume = volume
         self.emoji_id = emoji_id
-        self.emoji_name = emoji_name
-        self.override_path = override_path
-        self.user_id = user_id
-        self.available = available
 
 class Soundboard:
     def __init__(self, token, guild_id, channel_id):
@@ -30,7 +26,7 @@ class Soundboard:
 
         content_type = mimetypes.guess_type(sound_file)[0]
         return f"data:{content_type};base64,{encoded}"
-    
+
     def upload_sound(self, sound_file, name, emoji_id, volume):
         endpoint = f"https://discord.com/api/v9/guilds/{self.guild_id}/soundboard-sounds"
         encoded = self.encode(sound_file)
@@ -50,24 +46,20 @@ class Soundboard:
                 name=data["name"],
                 sound_id=data["sound_id"],
                 volume=data["volume"],
-                emoji_id=data["emoji_id"],
-                emoji_name=data["emoji_name"],
-                override_path=data["override_path"],
-                user_id=data["user_id"],
-                available=data.get("available", False)
+                emoji_id=data["emoji_id"]
             )
-        
+
         else:
             return res
-        
+
     def delete_sound(self, sound_id):
         endpoint = f"https://discord.com/api/v9/guilds/{self.guild_id}/soundboard-sounds/{sound_id}"
         res = requests.delete(endpoint, headers=self.headers)
 
         return True if res.status_code == 204 else False
-    
+
     def play_sound(self, sound_id, source_guild_id = True, override_path = None):
-        endpoint = f"https://discord.com/api/v9/channels/{self.channel_id}/voice-channel-effects"
+        endpoint = f"https://discord.com/api/v9/channels/{self.channel_id}/send-soundboard-sound"
         data = {"sound_id": sound_id, "source_guild_id": self.guild_id, "override_path": override_path}
 
         if source_guild_id == False or source_guild_id == None:
@@ -75,7 +67,9 @@ class Soundboard:
         if override_path == None or override_path == False:
             data.pop("override_path")
 
-        return requests.post(endpoint, json=data, headers=self.headers)
+        resp = requests.post(endpoint, json=data, headers=self.headers)
+        # print(resp.text)
+        return resp
 
     def get_default_sounds(self):
         endpoint = f"https://discord.com/api/v9/soundboard-default-sounds"
