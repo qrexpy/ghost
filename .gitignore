@@ -37,3 +37,4 @@ events/.DS_Store
 config.json
 data/cache/*
 utils/memberfetch.py
+compile.bat
