@@ -6,7 +6,7 @@ from . import webhook as webhook_client
 
 MOTD = "A cockroach can live for weeks without its head".lower()
 PRODUCTION = False
-VERSION = "3.5.0"
+VERSION = "3.5.1"
 VERSION += "-dev" if not PRODUCTION else ""
 DEFAULT_CONFIG = {
     "token": "",
@@ -159,7 +159,6 @@ class Config:
             open("data/sniped_codes.txt", "w").close()
         if not os.path.exists("data/privnote_saves.json"):
             json.dump({}, open("data/privnote_saves.json", "w"), indent=4)
-
         if not os.path.exists("config.json"):
             with open("config.json", "w") as f:
                 json.dump(DEFAULT_CONFIG, f, indent=4)
