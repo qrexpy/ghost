@@ -365,6 +365,115 @@ class Fun(commands.Cog):
     async def hyperlink(self, ctx, link: str, *, text: str):
         await ctx.send(f"[{text}]({link})")
 
+    @commands.command(name="aura", description="Check a user's aura.", usage="[user]", aliases=["karma"])
+    async def aura(self, ctx, *, user: discord.User = None):
+        if user is None:
+            user = ctx.author
+
+        score = random.randint(-100, 100)
+        tiers = [((-100, -75), "terrible"), ((-75, -50), "bad"), ((-50, -25), "mild"), ((-25, 0), "okay"), ((0, 25), "good"), ((25, 50), "better"), ((50, 75), "great"), ((75, 100), "amazing")]
+        responses = requests.get("https://gist.githubusercontent.com/bennyscripts/d5d3f9007a39ed8254d80039a1fadb52/raw/c670914ee8a1dded4e6f2ec468827b5d807c3f52/karma_responses.json").json()
+        chosen_tier = "terrible"
+        for (low, high), tier in tiers:
+            if low <= score < high:
+                chosen_tier = tier
+
+        response = random.choice(responses[chosen_tier])
+        await ctx.send(f"{'You have' if user == ctx.author else user.name + ' has'} {score} {ctx.invoked_with}. {response}")
+
+    @commands.command(name="gyatt", description="See if they've got GYATTT", usage="[user]", aliases=["gyat"])
+    async def gyatt(self, ctx, *, user: discord.User = None):
+        if user is None:
+            user = ctx.author
+
+        score = random.randint(0, 10)
+        tiers = [((1, 3), "flat"), ((3, 5), "small"), ((5, 7), "big"), ((7, 8), "large"), ((8, 10), "massive")]
+        categories = {
+                "flat": {
+                        "gifs": [
+                                "https://tenor.com/view/butt-gif-11020650",
+                                "https://tenor.com/view/taylor-swift-concert-sing-hip-shake-live-gif-4844274",
+                                "https://tenor.com/view/no-ass-cant-twerk-twerk-gif-9749101",
+                                "https://tenor.com/view/your-butts-flat-ellen-how-i-met-your-father-you-have-a-flat-butt-you-didnt-have-a-fat-butt-gif-27469695",
+
+                        ],
+                        "responses": [
+                            "Bro's butt is flatter than my Wi-Fi connection 😭",
+                            "Bro, that’s flatter than my pancake this morning.",
+                            "You sure you're not just missing your butt cheeks?",
+                            "Not much to work with here, is there?",
+                            "That’s less of a butt and more of a speed bump.",
+                            "Did you forget to pack your backside today?"
+                        ]
+                },
+                "small": {
+                        "gifs": [
+                                "https://tenor.com/view/notting-hill-spike-piktroll-nice-firm-buttocks-gif-21660289",
+                                "https://tenor.com/view/nojuu-gif-20251727"
+                        ],
+                        "responses": [
+                            "It's there... barely, but it's there.",
+                            "Cute little thing you got there, like a button.",
+                            "Okay, so you’ve got a butt, but it’s on the shy side.",
+                            "Not bad, but it’s still in the ‘just starting’ stage.",
+                            "It’s like a snack, but I need a meal 🍑",
+                            "That's a nice start, just a few more squats away!"
+                        ]
+                },
+                "big": {
+                        "gifs": [
+                                "https://media.discordapp.net/attachments/1072589399142973451/1162537084775571496/itsy.gif?ex=678b94c7&is=678a4347&hm=5d2821898b16b48466a9d8c9ea13b9a96431b64eead8eb8e5888f32d55278c28&",
+                                "https://tenor.com/view/dog-toy-twerk-what-butt-gif-4580835"
+                        ],
+                        "responses": [
+                            "Now that’s what I call a proper package! 🫢",
+                            "Bro, you’re making people turn heads with that!",
+                            "I’m here for it. That’s a full-on masterpiece.",
+                            "You got some serious cake back there.",
+                            "You can feel the power in that booty.",
+                            "That’s a whole mood right there, I see you!"
+                        ]
+                },
+                "large": {
+                        "gifs": [
+                                "https://tenor.com/view/leslie-jordan-leslie-belly-dancing-belly-dance-dancing-gif-25526487",
+                                "https://tenor.com/view/nervous-gif-8791067696346074845",
+                                "https://tenor.com/view/deadpool-gif-6146788853958018304",
+                                "https://tenor.com/view/danse-dance-sexy-girl-black-gif-21636293"
+                        ],
+                        "responses": [
+                                "Oh lord have mercy bro has GYATTT",
+                                "Bro is packing some serious gyatt :flushed:",
+                                "nah man that is wild...",
+                                "i think i broke my neck",
+                                "😳🫨😫🥵"
+                        ]
+                },
+                "massive": {
+                        "gifs": [
+                                "https://tenor.com/view/yes-lawdd-butt-ass-walking-gif-16073853",
+                                "https://tenor.com/view/saturday-thicc-male-ass-glutes-gif-9253491003307436413",
+                                "https://tenor.com/view/muscle-bodybuilder-pecs-black-pec-bounce-gif-1076301405568312554"
+
+                        ],
+                        "responses": [
+                                "sit on my face :flushed:",
+                                "im weak bro wow"
+                        ]
+                }
+        }
+
+        chosen_tier = "small"
+        for (low, high), tier in tiers:
+            if low <= score < high:
+                chosen_tier = tier
+
+        gif = random.choice(categories[chosen_tier]["gifs"])
+        response = random.choice(categories[chosen_tier]["responses"])
+
+        await ctx.send(f"{user.mention} {response}")
+        await ctx.send(gif)
+
     @commands.command(name="playsound", description="Play a 5 second sound.", usage="[mp3_url]")
     async def playsound(self, ctx, mp3_url):
         cfg = config.Config()
