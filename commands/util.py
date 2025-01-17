@@ -82,7 +82,7 @@ class Util(commands.Cog):
             if key2[0] not in self.cfg.config or key2[1] not in self.cfg.config[key2[0]]:
                 await ctx.send(str(codeblock.Codeblock(title="error", extra_title="invalid key")), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
                 return
-        
+
         else:
             if key not in self.cfg.config:
                 await ctx.send(str(codeblock.Codeblock(title="error", extra_title="invalid key")), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
@@ -104,12 +104,12 @@ class Util(commands.Cog):
     @commands.command(name="restart", description="Restart the bot.", usage="", aliases=["reboot", "reload"])
     async def restart(self, ctx):
         cfg = config.Config()
-        
+
         await cmdhelper.send_message(ctx, {
             "title": cfg.theme.title,
             "description": "restarting ghost..." if cfg.get("message_settings")["style"] == "image" else ""
         }, extra_title="restarting ghost...")
-        
+
         os.execl(sys.executable, sys.executable, *sys.argv)
 
     @commands.command(name="quit", description="Quit the bot.", usage="", aliases=["exit"])
@@ -205,7 +205,7 @@ class Util(commands.Cog):
         })
 
         await self.restart(ctx)
-        
+
     @commands.command(name="specs", description="View your computer's specs", usage="")
     async def specs(self, ctx):
         os_logos = {
@@ -274,7 +274,7 @@ class Util(commands.Cog):
                 "description": f"Session spoofing is now {'enabled' if not spoofing else 'disabled'}\nRestarting to apply changes...",
                 "colour": "#00ff00" if not spoofing else "#ff0000"
             })
-        
+
         else:
             cfg.set_session_spoofing(spoofing, device)
 
