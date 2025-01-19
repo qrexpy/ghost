@@ -35,7 +35,18 @@ class Mod(commands.Cog):
             else:
                 return m.author == self.bot.user
 
-        deleted = await ctx.channel.purge(limit=number + 1, check=is_me)
+        deleted = []
+
+        if isinstance(ctx.channel, discord.DMChannel):
+            async for msg in ctx.channel.history(limit=number):
+                if msg.author == self.bot.user:
+                    deleted.append(msg)
+                    await msg.delete()
+                    await asyncio.sleep(0.75)
+
+        else:
+            deleted = await ctx.channel.purge(limit=number + 1, check=is_me)
+
         await cmdhelper.send_message(ctx, {
             "title": "Clear",
             "description": f"Cleared {len(deleted) - 1} messages."
@@ -88,7 +99,7 @@ class Mod(commands.Cog):
                 "colour": "ff0000"
             })
             return
-        
+
         await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=False)
         await cmdhelper.send_message(ctx, {
             "title": "Lock",
@@ -156,7 +167,7 @@ class Mod(commands.Cog):
                 "title": "Ban",
                 "description": f"Banned {member.name}"
             })
-            
+
         except Exception as e:
             await cmdhelper.send_message(ctx, {
                 "title": "Error",
@@ -173,7 +184,7 @@ class Mod(commands.Cog):
                 "colour": "ff0000"
             })
             return
-        
+
         resp = requests.get(f"https://discord.com/api/v9/users/{user_id}", headers={
             "Authorization": f"{self.cfg.get('token')}",
             "Content-Type": "application/json",
@@ -204,7 +215,7 @@ class Mod(commands.Cog):
                 "title": "Kick",
                 "description": f"Kicked {member.name}"
             })
-            
+
         except Exception as e:
             await cmdhelper.send_message(ctx, {
                 "title": "Error",
@@ -221,7 +232,7 @@ class Mod(commands.Cog):
                 "colour": "ff0000"
             })
             return
-        
+
         length = ""
 
         if time.endswith("s"):
@@ -278,7 +289,7 @@ class Mod(commands.Cog):
                 "description": "You need at least 2 options.",
                 "colour": "ff0000"
             })
-        
+
         description = ""
         for i, option in enumerate(options):
             description += f"{i + 1}. {option}\n"
