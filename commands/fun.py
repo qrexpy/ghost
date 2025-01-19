@@ -234,41 +234,47 @@ class Fun(commands.Cog):
         embed = discord.Embed(title=f"{sides} side dice", description=f"You rolled a {number}.")
         await cmdhelper.send_message(ctx, embed.to_dict())
 
-    # @commands.command(name="rainbow", description="Create rainbow text.", usage="[text]", aliases=["rainbowtext"])
-    # async def rainbow(self, ctx, *, text: str):
-    #     # colours = {"red": {"codeblock": "diff", "prefix": "-", "suffix": ""},
-    #     #     "orange": {"codeblock": "cs", "prefix": "#", "suffix": ""},
-    #     #     "yellow": {"codeblock": "fix", "prefix": "", "suffix": ""},
-    #     #     "green": {"codeblock": "cs", "prefix": "'", "suffix": "'",},
-    #     #     "blue": {"codeblock": "md", "prefix": "#", "suffix": ""}}
+    @commands.command(name="rainbow", description="Create rainbow text.", usage="[text]", aliases=["rainbowtext"])
+    async def rainbow(self, ctx, *, text: str):
+        colours = [
+            "\u001b[1;31m{TEXT}\u001b[0;0m",
+            "\u001b[1;33m{TEXT}\u001b[0;0m",
+            "\u001b[1;32m{TEXT}\u001b[0;0m",
+            "\u001b[1;36m{TEXT}\u001b[0;0m",
+            "\u001b[1;34m{TEXT}\u001b[0;0m",
+            "\u001b[1;36m{TEXT}\u001b[0;0m",
+            "\u001b[1;32m{TEXT}\u001b[0;0m",
+            "\u001b[1;33m{TEXT}\u001b[0;0m",
+            "\u001b[1;31m{TEXT}\u001b[0;0m"
+        ]
 
-    #     # emojis = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪"]
-    #     emojis = ["🔴", "🟠", "🟡", "🟢", "🔵", "🟣"]
-    #     message = await ctx.send(text)
+        message = await ctx.send(text)
 
-    #     for _ in range(5):
-    #         # for colour in colours:
-    #         #     colour = colours[colour]
-    #         #     await message.edit(content=f"""> ```{colour['codeblock']}\n> {colour['prefix']}{text}{colour['suffix']}```""")
-    #         #     await asyncio.sleep(1)
-    #         for emoji in emojis:
-    #             await message.edit(content=f"{emoji} {text}")
-    #             await asyncio.sleep(.75)
+        for _ in range(5):
+            for colour in colours:
+                await message.edit(f"> ```ansi\n> {colour.replace('{TEXT}', text)}```")
+                await asyncio.sleep(.5)
 
-    # @commands.command(name="rainbowreact", description="Create a rainbow reaction", usage=["[msg id]"])
-    # async def rainbowreact(self, ctx, *, msg_id: int):
-    #     emojis = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪"]
-    #     message = await ctx.fetch_message(msg_id)
+    @commands.command(name="rainbowreact", description="Create a rainbow reaction", usage=["[msg id]"])
+    async def rainbowreact(self, ctx, *, msg_id: int):
+        emojis = ["🟥", "🟧", "🟨", "🟩", "🟦", "🟪"]
+        message = await ctx.fetch_message(msg_id)
 
-    #     # await message.add_reaction("🫡")
+        if isinstance(message.channel, discord.DMChannel):
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": "You can't use this command in a DM."
+            })
 
-    #     for _ in range(5):
-    #         for emoji in emojis:
-    #             reaction = await message.add_reaction(emoji)
-    #             await asyncio.sleep(0.25)
-    #             await message.clear_reaction(emoji)
+        await message.add_reaction("🫡")
 
-    #     # await message.clear_reaction("🫡")
+        for _ in range(5):
+            for emoji in emojis:
+                reaction = await message.add_reaction(emoji)
+                await asyncio.sleep(0.25)
+                await message.clear_reaction(emoji)
+
+        await message.clear_reaction("🫡")
 
     def calculate_age(self, born):
         today = datetime.date.today()
@@ -458,7 +464,8 @@ class Fun(commands.Cog):
                         ],
                         "responses": [
                                 "sit on my face :flushed:",
-                                "im weak bro wow"
+                                "im weak bro wow",
+                                "my legs dont seem to function anymore"
                         ]
                 }
         }
