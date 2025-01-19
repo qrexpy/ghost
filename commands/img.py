@@ -4,6 +4,7 @@ import os
 import random
 import json
 import mimetypes
+import shutil
 
 from PIL import Image
 from discord.ext import commands
@@ -63,6 +64,98 @@ class Img(commands.Cog):
 
         await ctx.send(image, delete_after=cfg.get("message_settings")["auto_delete_delay"])
 
+    @commands.command(name="achievement", description="Make a custom Minecraft achievement.", aliases=["mcachievement"], usage="[icon] [text]")
+    async def achievement(self, ctx, given_icon: str = None, *, text: str = None):
+        base_url = "https://api.alexflipnote.dev/achievement"
+        session = requests.session()
+        icons = None
+        icons_resp = session.get(f"{base_url}?icon=0")
+        if icons_resp.status_code == 200:
+            icons = icons_resp.json()
+
+        icons_text = ""
+        for icon in icons:
+            icons_text += f"{icon} :: {icons[icon]}\n> "
+
+        if given_icon and not given_icon.isdigit():
+            for icon in icons:
+                if icons[icon].lower() == given_icon.lower():
+                    given_icon = icon
+
+        if not given_icon or not given_icon.isdigit() and given_icon.lower() not in [icons[i] for i in icons]:
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": f"Please chose an icon from the list below.",
+                    "colour": "ff0000"
+            }, extra_message=f"> ```asciidoc\n> {icons_text}```")
+
+        if not text:
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": "Please specify what text you want in the achievement",
+                    "colour": "ff0000"
+            })
+
+        achievement_resp = session.get(f"{base_url}?text={text.replace(' ', '+')}&icon={given_icon}", stream=True)
+        if achievement_resp.status_code == 200:
+            with open("data/cache/achievement.png", "wb") as photo_file:
+                shutil.copyfileobj(achievement_resp.raw, photo_file)
+
+            await ctx.send(file=discord.File(r"data/cache/achievement.png"))
+            os.remove("data/cache/achievement.png")
+        else:
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": "Failed to generate achievement. API must be down...",
+                    "colour": "ff0000"
+            })
+
+    @commands.command(name="challenge", description="Make a custom Minecraft challenge.", aliases=["mcchallenge"], usage="[icon] [text]")
+    async def challenge(self, ctx, given_icon: str = None, *, text: str = None):
+        base_url = "https://api.alexflipnote.dev/challenge"
+        session = requests.session()
+        icons = None
+        icons_resp = session.get(f"{base_url}?icon=0")
+        if icons_resp.status_code == 200:
+            icons = icons_resp.json()
+
+        icons_text = ""
+        for icon in icons:
+            icons_text += f"{icon} :: {icons[icon]}\n> "
+
+        if given_icon and not given_icon.isdigit():
+            for icon in icons:
+                if icons[icon].lower() == given_icon.lower():
+                    given_icon = icon
+
+        if not given_icon or not given_icon.isdigit() and given_icon.lower() not in [icons[i] for i in icons]:
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": f"Please chose an icon from the list below.",
+                    "colour": "ff0000"
+            }, extra_message=f"> ```asciidoc\n> {icons_text}```")
+
+        if not text:
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": "Please specify what text you want in the achievement",
+                    "colour": "ff0000"
+            })
+
+        achievement_resp = session.get(f"{base_url}?text={text.replace(' ', '+')}&icon={given_icon}", stream=True)
+        if achievement_resp.status_code == 200:
+            with open("data/cache/challenge.png", "wb") as photo_file:
+                shutil.copyfileobj(achievement_resp.raw, photo_file)
+
+            await ctx.send(file=discord.File(r"data/cache/challenge.png"))
+            os.remove("data/cache/challenge.png")
+        else:
+            return await cmdhelper.send_message(ctx, {
+                    "title": "Error",
+                    "description": "Failed to generate challenge. API must be down...",
+                    "colour": "ff0000"
+            })
+
     @commands.command(name="searchimage", description="Search for an image on google", usage="[query]", aliases=["searchimg", "imgsearch", "imagesearch"])
     async def searchimage(self, ctx, *, query):
         cfg = config.Config()
@@ -115,14 +208,14 @@ class Img(commands.Cog):
                             "footer": cfg.theme.footer
                         })
 
-                    
+
                     image_to_send = random.randint(0, amount_to_send - 1)
 
                     image = images_results[image_to_send]["original"]
                     res = requests.get(image)
                     if "content-type" in res.headers:
                         extension = str(mimetypes.guess_extension(res.headers["content-type"])).replace(".", "")
-                        
+
                         if extension in ["jpeg", "png", "jpg"]:
                             new_name = str(random.randint(1000,9999)) + f".{extension}"
 
@@ -142,7 +235,7 @@ class Img(commands.Cog):
                 "description": "The search failed, try another query.",
                 "colour": "#ff0000",
                 "footer": cfg.theme.footer,
-            }) 
+            })
 
 def setup(bot):
     bot.add_cog(Img(bot))
