@@ -136,6 +136,7 @@ async def on_command(ctx):
 
     command = ctx.message.content[len(ghost.command_prefix):]
     console.print_cmd(command)
+    cfg.add_command_history(command)
 
 @ghost.event
 async def on_command_error(ctx, error):

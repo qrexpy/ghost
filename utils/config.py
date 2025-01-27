@@ -107,6 +107,7 @@ class RichPresence:
         rpc_dict["start"] = time.time()
         
         return rpc_dict
+
 class Theme:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name")
@@ -202,7 +203,7 @@ class Sniper:
 
 class Config:
     def __init__(self) -> None:
-        self.check()
+        # self.check()
         self.config = json.load(open("config.json"))
         self.theme = self.get_theme(self.config["theme"])
 
@@ -229,6 +230,9 @@ class Config:
             json.dump(DEFAULT_THEME, open("themes/ghost.json", "w"), indent=4)
             console.print_info("Created theme file")
 
+        if os.path.exists("data/cache/command_history.txt"):
+            os.remove("data/cache/command_history.txt")
+
         if os.path.exists("config.json"):
             self.config = json.load(open("config.json"))
 
@@ -254,6 +258,7 @@ class Config:
                         self.config[key] = DEFAULT_CONFIG[key]
                     else:
                         self.config[key] = {**DEFAULT_CONFIG[key], **self.config[key]}
+
                 if key not in self.config:
                     self.config[key] = DEFAULT_CONFIG[key]
 
@@ -368,6 +373,7 @@ class Config:
         self.config["session_spoofing"]["enabled"] = enabled
         self.config["session_spoofing"]["device"] = device
         self.save()
+        
     def get_rich_presence(self):
         return RichPresence(config=self, **self.config["rich_presence"])
 
@@ -380,6 +386,28 @@ class Config:
         json.dump(DEFAULT_THEME, open(f"themes/{theme_name}.json", "w"), indent=4)
         theme = Theme(name=theme_name, **DEFAULT_THEME)
         return theme
+
+    def add_command_history(self, command_string):
+        if not os.path.exists("data/cache/command_history.txt"):
+            open("data/cache/command_history.txt", "w")
+
+        with open("data/cache/command_history.txt", "a") as f:
+            f.write(f"{console.get_formatted_time()}|{command_string}\n")
+
+    def get_command_history(self):
+        if not os.path.exists("data/cache/command_history.txt"):
+            open("data/cache/command_history.txt", "w")
+
+        with open("data/cache/command_history.txt", "r") as f:
+            lines = f.readlines()
+            commands = []
+
+            for line in lines:
+                formatted = line.strip()
+                time, command_string = (formatted.split("|")[0], formatted.split("|")[1])
+                commands.append((time, command_string))
+
+            return commands
 
     @staticmethod
     def get_python_path():
