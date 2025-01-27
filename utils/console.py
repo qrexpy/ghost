@@ -24,7 +24,7 @@ def get_formatted_time():
 
 def print_banner():
     copyright_ = f"( Ghost v{config.VERSION} )"
-    total_width = 90
+    total_width = os.get_terminal_size()[0]
     copyright_length = len(copyright_)
     dashes_length = (total_width - copyright_length) // 2
     dashes = "—" * dashes_length
