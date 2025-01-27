@@ -64,17 +64,27 @@ class Info(commands.Cog):
             "System": user.system,
             "Created at": user.created_at
         }
+        
+        rich_presences = None
 
         if ctx.guild is not None:
-            user = ctx.guild.get_member(user.id)
-            info["Nickname"] = user.nick
+            user: discord.User = ctx.guild.get_member(user.id)
+            if user.nick: info["Nickname"] = user.nick
             info["Joined at"] = user.joined_at
             # info["Desktop status"] = user.desktop_status
             # info["Mobile status"] = user.mobile_status
             # info["Web status"] = user.web_status
             info["Status"] = user.status
-            info["In VC"] = user.voice
+            if user.voice: info["In VC"] = user.voice
             # info["Premium"] = user.premium
+            if user.activities: rich_presences = [activity.to_dict() for activity in user.activities]
+            if user.activity:
+                # find the activity that is named custom status in rich_presences and remove it then set info[activities] to the activity
+                for activity in rich_presences:
+                    if activity["name"].lower() == "custom status":
+                        info["Activity"] = activity["state"]
+                        rich_presences.remove(activity)
+                        break
 
         longest_key = max([len(key) for key in info.keys()])
 
@@ -84,6 +94,16 @@ class Info(commands.Cog):
             "codeblock_desc": "\n".join([f"{key}{' ' * (longest_key - len(key))} :: {value}" for key, value in info.items()]),
             "thumbnail": user.avatar.url
         })
+        
+        if rich_presences:
+            await ctx.send(
+                str(codeblock.Codeblock(
+                    title="activities", 
+                    extra_title="user", 
+                    description=json.dumps(rich_presences, indent=4, sort_keys=True, default=str), 
+                    style="json")),
+                delete_after=self.cfg.get("message_settings")["auto_delete_delay"]
+            )
 
     @commands.command(name="serverinfo", description="Get information about the server.", aliases=["si"], usage="")
     async def serverinfo(self, ctx):
@@ -164,7 +184,7 @@ class Info(commands.Cog):
                         if not member.bot: members.append({"id": member.id, "username": member.name})
 
                     console.print_success(f"Fetched {len(members)} members from {guild.name}!")
-                except discord.InvalidData:
+                except Exception as e:
                     console.print_error(f"Failed to fetch members from {guild.name}.")
 
                 guilds_data.append({

@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 from . import console
 from . import webhook as webhook_client
@@ -8,10 +9,21 @@ MOTD = "A cockroach can live for weeks without its head".lower()
 PRODUCTION = False
 VERSION = "3.5.1"
 VERSION += "-dev" if not PRODUCTION else ""
+DEFAULT_RPC = {
+        "enabled": False,
+        "client_id": "1018195507560063039",
+        "state": "ghost aint dead",
+        "details": "",
+        "large_image": "ghost",
+        "large_text": "",
+        "small_image": "",
+        "small_text": "",
+        "name": "Ghost"
+    }
 DEFAULT_CONFIG = {
     "token": "",
     "prefix": "",
-    "rich_presence": True,
+    "rich_presence": DEFAULT_RPC,
     "theme": "ghost",
     "gui": True,
     "rich_embed_webhook": "",
@@ -47,6 +59,54 @@ DEFAULT_THEME = {
     "footer": "ghost aint dead"
 }
 
+class RichPresence:
+    def __init__(self, config, **kwargs):
+        self.enabled = kwargs.get("enabled", False)
+        self.client_id = kwargs.get("client_id", None)
+        self.state = kwargs.get("state", None)
+        self.details = kwargs.get("details", None)
+        self.large_image = kwargs.get("large_image", None)
+        self.large_text = kwargs.get("large_text", None)
+        self.small_image = kwargs.get("small_image", None)
+        self.small_text = kwargs.get("small_text", None)
+        self.name = kwargs.get("name", None)
+        self.config = config
+        
+    def set(self, key, value):
+        setattr(self, key, value)
+        
+    def save(self):
+        self.config.config["rich_presence"] = {
+            "enabled": self.enabled,
+            "client_id": self.client_id,
+            "state": self.state,
+            "details": self.details,
+            "large_image": self.large_image,
+            "large_text": self.large_text,
+            "small_image": self.small_image,
+            "small_text": self.small_text,
+            "name": self.name
+        }
+        self.config.save()
+
+    def reset_defaults(self):
+        self.config.config["rich_presence"] = DEFAULT_RPC
+        self.config.config["rich_presence"]["enabled"] = self.enabled
+        self.config.save()
+            
+    def to_dict(self):
+        rpc_dict = {}
+        
+        if self.state: rpc_dict["state"] = self.state
+        if self.details: rpc_dict["details"] = self.details
+        if self.large_image: rpc_dict["large_image"] = self.large_image
+        if self.large_text: rpc_dict["large_text"] = self.large_text
+        if self.small_image: rpc_dict["small_image"] = self.small_image
+        if self.small_text: rpc_dict["small_text"] = self.small_text
+        if self.name: rpc_dict["name"] = self.name
+        rpc_dict["start"] = time.time()
+        
+        return rpc_dict
 class Theme:
     def __init__(self, **kwargs):
         self.name = kwargs.get("name")
@@ -189,6 +249,11 @@ class Config:
 
                         self.config[key][sniper] = {**DEFAULT_CONFIG[key][sniper], **self.config[key][sniper]}
 
+                if key == "rich_presence":
+                    if isinstance(self.config[key], bool):
+                        self.config[key] = DEFAULT_CONFIG[key]
+                    else:
+                        self.config[key] = {**DEFAULT_CONFIG[key], **self.config[key]}
                 if key not in self.config:
                     self.config[key] = DEFAULT_CONFIG[key]
 
@@ -303,6 +368,8 @@ class Config:
         self.config["session_spoofing"]["enabled"] = enabled
         self.config["session_spoofing"]["device"] = device
         self.save()
+    def get_rich_presence(self):
+        return RichPresence(config=self, **self.config["rich_presence"])
 
     def create_theme(self, theme_name):
         if os.path.exists(f"themes/{theme_name}.json"):

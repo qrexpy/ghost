@@ -69,16 +69,14 @@ ghost = commands.Bot(
 if not headless: gui = ghost_gui.GhostGUI(ghost)
 user = requests.get("https://discord.com/api/users/@me", headers={"Authorization": cfg.get("token")}).json()
 rpc_log = ""
+presence = cfg.get_rich_presence()
 
-if cfg.get("rich_presence"):
+if presence.enabled:
     try:
-        rpc = Presence(1018195507560063039)
+        rpc = Presence(int(presence.client_id))
         rpc.connect()
-        rpc.update(
-            large_image="ghost",
-            start=time.time(),
-            state="ghost aint dead",
-        )
+        rpc.update(**presence.to_dict())
+    
         rpc_log = "Rich Presence connected succesfully!"
     except Exception as e:
         rpc_log = e
@@ -118,7 +116,7 @@ async def on_connect():
     console.print_info(f"You can now use commands with {cfg.get('prefix')}")
     print()
 
-    if cfg.get("rich_presence"):
+    if cfg.get_rich_presence().enabled:
         console.print_rpc(rpc_log)
 
     if session_spoofing:
