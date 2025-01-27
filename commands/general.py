@@ -94,9 +94,16 @@ class General(commands.Cog):
         commands_2 = []
         spacing = 0
         pages = []
+        
+        def search_aliases(command, query):
+            for alias in command.aliases:
+                if query in alias:
+                    return True
+
+            return False
 
         for cmd in commands:
-            if query in cmd.name or query in cmd.description:
+            if query in cmd.name or query in cmd.description or search_aliases(cmd, query):
                 prefix = cmdhelper.get_command_full_name(cmd)
 
                 if len(prefix) > spacing:
