@@ -330,5 +330,16 @@ class Util(commands.Cog):
             "description": "Console cleared",
         })
 
+    @commands.command(name="commandhistory", description="Get the history of commands used.", aliases=["cmdhistory"])
+    async def commandhistory(self, ctx):
+        cfg = config.Config()
+        history = cfg.get_command_history()
+        description = "\n".join([f"[{t}] {c}" for t, c in history])
+
+        await ctx.send(codeblock.Codeblock(
+            title="Command History",
+            description=description
+            ), delete_after=cfg.get("message_settings")["auto_delete_delay"])
+
 def setup(bot):
     bot.add_cog(Util(bot))
