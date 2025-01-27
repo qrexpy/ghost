@@ -205,6 +205,18 @@ class Util(commands.Cog):
         })
 
         await self.restart(ctx)
+    @commands.command(name="resetrichpresence", description="Reset rich presences to defaults.", usage="", aliases=["resetrpc", "rpcreset"])
+    async def resetrichpresence(self, ctx):
+        cfg = config.Config()
+        rpc = cfg.get_rich_presence()
+        rpc.reset_defaults()
+
+        await cmdhelper.send_message(ctx, {
+            "title": "Rich Presence",
+            "description": "Rich presence has now been reset to defaults.\nRestarting to apply changes..."
+            })
+
+        await self.restart(ctx, no_response=True)
 
     @commands.command(name="specs", description="View your computer's specs", usage="")
     async def specs(self, ctx):
