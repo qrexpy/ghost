@@ -142,12 +142,12 @@ class Theme:
         }
 
 class Sniper:
-    def __init__(self, **kwargs):
+    def __init__(self, config, **kwargs):
         self.name = kwargs.get("name")
         self.enabled = kwargs.get("enabled")
         self.ignore_invalid = kwargs.get("ignore_invalid")
         self.webhook = kwargs.get("webhook")
-        self.config = Config()
+        self.config = config
 
     def save(self):
         self.config.config["snipers"][self.name] = {
@@ -350,14 +350,14 @@ class Config:
 
         obj = self.config["snipers"].get(sniper)
         obj["name"] = sniper
-        return Sniper(**obj)
+        return Sniper(config=self, **obj)
 
     def get_snipers(self):
         snipers = []
         for sniper in self.config["snipers"]:
             obj = self.config["snipers"][sniper]
             obj["name"] = sniper
-            snipers.append(Sniper(**obj))
+            snipers.append(Sniper(config=self, **obj))
 
         return snipers
 
