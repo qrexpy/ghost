@@ -102,13 +102,14 @@ class Util(commands.Cog):
         await ctx.send(str(codeblock.Codeblock(title="config", extra_title="key updated", description=f"{key} :: {value}")), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
 
     @commands.command(name="restart", description="Restart the bot.", usage="", aliases=["reboot", "reload"])
-    async def restart(self, ctx):
+    async def restart(self, ctx, no_response=False):
         cfg = config.Config()
 
-        await cmdhelper.send_message(ctx, {
-            "title": cfg.theme.title,
-            "description": "restarting ghost..." if cfg.get("message_settings")["style"] == "image" else ""
-        }, extra_title="restarting ghost...")
+        if not no_response:
+            await cmdhelper.send_message(ctx, {
+                "title": cfg.theme.title,
+                "description": "restarting ghost..." if cfg.get("message_settings")["style"] == "image" else ""
+            }, extra_title="restarting ghost...")
 
         os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -188,23 +189,35 @@ class Util(commands.Cog):
             "colour": "#00ff00"
         })
 
-        await self.restart(ctx)
+        await self.restart(ctx, no_response=True)
 
     @commands.command(name="richpresence", description="Toggle rich presence", usage="", aliases=["rpc"])
     async def richpresence(self, ctx):
         cfg = config.Config()
-        rpc = cfg.get("rich_presence")
-
-        cfg.set("rich_presence", not rpc)
-        cfg.save()
+        rpc = cfg.get_rich_presence()
+        rpc.enabled = not rpc.enabled
+        rpc.save()
 
         await cmdhelper.send_message(ctx, {
             "title": "Rich Presence",
-            "description": f"Rich Presence is now {'enabled' if not rpc else 'disabled'}\nRestarting to apply changes...",
-            "colour": "#00ff00" if not rpc else "#ff0000"
+            "description": f"Rich Presence is now {'enabled' if rpc.enabled else 'disabled'}\nRestarting to apply changes...",
+            "colour": "#00ff00" if rpc.enabled else "#ff0000"
         })
 
-        await self.restart(ctx)
+        await self.restart(ctx, no_response=True)
+
+    @commands.command(name="resetrichpresence", description="Reset rich presences to defaults.", usage="", aliases=["resetrpc", "rpcreset"])
+    async def resetrichpresence(self, ctx):
+        cfg = config.Config()
+        rpc = cfg.get_rich_presence()
+        rpc.reset_defaults()
+
+        await cmdhelper.send_message(ctx, {
+            "title": "Rich Presence",
+            "description": "Rich presence has now been reset to defaults.\nRestarting to apply changes..."
+            })
+
+        await self.restart(ctx, no_response=True)
 
     @commands.command(name="specs", description="View your computer's specs", usage="")
     async def specs(self, ctx):
@@ -285,7 +298,7 @@ class Util(commands.Cog):
             })
 
         cfg.save()
-        await self.restart(ctx)
+        await self.restart(ctx, no_response=True)
 
     @commands.command(name="uptime", description="View the bot's uptime", usage="")
     async def uptime(self, ctx):
@@ -316,6 +329,17 @@ class Util(commands.Cog):
             "title": "Console",
             "description": "Console cleared",
         })
+
+    @commands.command(name="commandhistory", description="Get the history of commands used.", aliases=["cmdhistory"])
+    async def commandhistory(self, ctx):
+        cfg = config.Config()
+        history = cfg.get_command_history()
+        description = "\n".join([f"[{t}] {c}" for t, c in history])
+
+        await ctx.send(codeblock.Codeblock(
+            title="Command History",
+            description=description
+            ), delete_after=cfg.get("message_settings")["auto_delete_delay"])
 
 def setup(bot):
     bot.add_cog(Util(bot))
