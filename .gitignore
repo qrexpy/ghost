@@ -38,3 +38,5 @@ config.json
 data/cache/*
 utils/memberfetch.py
 compile.bat
+/.idea
+games.json
