@@ -59,6 +59,8 @@ DEFAULT_THEME = {
     "footer": "ghost aint dead"
 }
 
+MAKE_CONFIG = lambda: json.dump(DEFAULT_CONFIG, open("config.json", "w"), indent=4)
+
 class RichPresence:
     def __init__(self, config, **kwargs):
         self.enabled = kwargs.get("enabled", False)

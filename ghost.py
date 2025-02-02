@@ -46,6 +46,7 @@ if discord.__version__ < "2.0.0":
 
     sys.exit()
 
+config.MAKE_CONFIG()
 cfg = config.Config()
 cfg.check()
 token = cfg.get("token")
