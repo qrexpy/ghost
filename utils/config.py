@@ -212,28 +212,36 @@ class Config:
     def check(self):
         if not os.path.exists("backups/"):
             os.mkdir("backups/")
+            console.print_info("Created backups folder")
         if not os.path.exists("scripts/"):
             os.mkdir("scripts/")
+            console.print_info("Created scripts folder")
         if not os.path.exists("data/"):
             os.mkdir("data/")
+            console.print_info("Created data folder")
         if not os.path.exists("data/cache/"):
             os.mkdir("data/cache/")
+            console.print_info("Created cache folder")
         if not os.path.exists("data/sniped_codes.txt"):
             open("data/sniped_codes.txt", "w").close()
+            console.print_info("Created sniped codes file")
         if not os.path.exists("data/privnote_saves.json"):
             json.dump({}, open("data/privnote_saves.json", "w"), indent=4)
+            console.print_info("Created privnote saves file")
         if not os.path.exists("config.json"):
             with open("config.json", "w") as f:
                 json.dump(DEFAULT_CONFIG, f, indent=4)
             console.print_info("Created config file")
         if not os.path.exists("themes/"):
             os.makedirs("themes/")
+            console.print_info("Created themes folder")
         if not os.path.exists("themes/ghost.json"):
             json.dump(DEFAULT_THEME, open("themes/ghost.json", "w"), indent=4)
-            console.print_info("Created theme file")
+            console.print_info("Created default theme file")
 
         if os.path.exists("data/cache/command_history.txt"):
             os.remove("data/cache/command_history.txt")
+            console.print_info("Removed old command history file")
 
         if os.path.exists("config.json"):
             self.config = json.load(open("config.json"))
