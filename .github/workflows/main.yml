@@ -1,2 +1,94 @@
-- name: PyInstaller Action
-  uses: Martin005/pyinstaller-action@v1.2.0
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: PyInstaller Action
+      uses: Martin005/pyinstaller-action@v1.2.0
+      with:
+        args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-executable
+        path: dist/
+
+  build-mac:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: PyInstaller Action
+      uses: Martin005/pyinstaller-action@v1.2.0
+      with:
+        args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: mac-binary
+        path: dist/
+
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: PyInstaller Action
+      uses: Martin005/pyinstaller-action@v1.2.0
+      with:
+        args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-binary
+        path: dist/
