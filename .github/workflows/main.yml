@@ -30,7 +30,7 @@ jobs:
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
         spec: Ghost.spec
-        args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
+        args: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -59,7 +59,7 @@ jobs:
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
         spec: Ghost.spec
-        args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
+        args: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -88,7 +88,7 @@ jobs:
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
         spec: Ghost.spec
-        args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
+        args: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
