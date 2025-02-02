@@ -32,7 +32,7 @@ jobs:
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: windows-executable
         path: dist/
@@ -60,7 +60,7 @@ jobs:
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: mac-binary
         path: dist/
@@ -88,7 +88,7 @@ jobs:
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: linux-binary
         path: dist/
