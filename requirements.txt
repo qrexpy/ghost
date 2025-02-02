@@ -2,7 +2,7 @@ art
 colorama
 git+https://github.com/dolfies/discord.py-self.git
 Faker
-pypresence
+git+https://github.com/ghostselfbot/pypresence.git
 requests
 pillow
 pystyle
