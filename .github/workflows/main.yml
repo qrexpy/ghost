@@ -29,6 +29,7 @@ jobs:
     - name: PyInstaller Action
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
+        spec: Ghost.spec
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
@@ -57,6 +58,7 @@ jobs:
     - name: PyInstaller Action
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
+        spec: Ghost.spec
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
@@ -85,6 +87,7 @@ jobs:
     - name: PyInstaller Action
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
+        spec: Ghost.spec
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
     - name: Upload artifact
