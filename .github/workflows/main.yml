@@ -24,6 +24,7 @@ jobs:
     - name: PyInstaller Action
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
+        python_ver: '3.11'
         spec: Ghost.spec
         requirements: requirements.txt
         options: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
@@ -41,11 +42,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Fix brew packages
-      run: |
-        brew install gettext
-        brew link --force gettext
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -54,6 +50,7 @@ jobs:
     - name: PyInstaller Action
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
+        python_ver: '3.11'
         spec: Ghost.spec
         requirements: requirements.txt
         options: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
@@ -79,6 +76,7 @@ jobs:
     - name: PyInstaller Action
       uses: CodeByAidan/pyinstaller-action@v1.3
       with:
+        python_ver: '3.11'
         spec: Ghost.spec
         requirements: requirements.txt
         options: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
