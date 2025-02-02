@@ -27,7 +27,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: PyInstaller Action
-      uses: Martin005/pyinstaller-action@v1.2.0
+      uses: CodeByAidan/pyinstaller-action@v1.3
       with:
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
@@ -55,7 +55,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: PyInstaller Action
-      uses: Martin005/pyinstaller-action@v1.2.0
+      uses: CodeByAidan/pyinstaller-action@v1.3
       with:
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
@@ -83,7 +83,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: PyInstaller Action
-      uses: Martin005/pyinstaller-action@v1.2.0
+      uses: CodeByAidan/pyinstaller-action@v1.3
       with:
         args: --onefile --hidden-import=faker --hidden-import=pypresence --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ main.py
 
