@@ -190,6 +190,7 @@ class GhostGUI:
         main = self.draw_main()
         cfg = config.Config()
 
+        placeholder = "Paste your webhook here..."
         snipers = cfg.get_snipers()
         snipers_tk_entries = {}
 
@@ -198,7 +199,8 @@ class GhostGUI:
 
             for key, entry in snipers_tk_entries[sniper_name].items():
                 if key == "webhook":
-                    sniper.set_webhook(entry.get())
+                    if entry.get() != placeholder:
+                        sniper.set_webhook(entry.get())
                 elif key == "enabled":
                     if entry.instate(["selected"]):
                         sniper.enable()
@@ -261,7 +263,7 @@ class GhostGUI:
                     if value != "":
                         entry.insert(0, value)
                     else:
-                        entry.insert(0, "Paste your webhook here...")
+                        entry.insert(0, placeholder)
 
                     label.grid(row=index + 1, column=0, sticky=ttk.W, pady=(8, 0), padx=5)
                     entry.grid(row=index + 2, column=0, sticky=ttk.EW, padx=5, columnspan=2)
