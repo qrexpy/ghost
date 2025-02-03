@@ -121,6 +121,7 @@ async def on_connect():
 
     if session_spoofing:
         console.print_info(f"Spoofing session as {session_spoofing_device}")
+        console.print_warning(f"Your account is at higher risk of termination by using session spoofer.")
 
     if cfg.get("message_settings")["style"] == "embed" and cfg.get("rich_embed_webhook") == "":
         console.print_error("Rich embed webhook not set! Using codeblock mode instead.")
