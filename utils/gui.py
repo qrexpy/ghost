@@ -122,21 +122,24 @@ class GhostGUI:
         settings_button = ttk.Button(self.sidebar, text="Settings", command=self.draw_settings)
         theming_button = ttk.Button(self.sidebar, text="Theming", command=self.draw_theming)
         snipers_button = ttk.Button(self.sidebar, text="Snipers", command=self.draw_snipers)
+        rich_presence_button = ttk.Button(self.sidebar, text="RPC", command=self.draw_rich_presence)
         logout_button = ttk.Button(self.sidebar, text="Quit", command=self.quit)
 
         home_button.configure(style="primary.TButton")
         settings_button.configure(style="primary.TButton")
         theming_button.configure(style="primary.TButton")
         snipers_button.configure(style="primary.TButton")
+        rich_presence_button.configure(style="primary.TButton")
         logout_button.configure(style="danger.TButton")
 
         home_button.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 2), padx=10, ipady=5)
         settings_button.grid(row=1, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
         theming_button.grid(row=2, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
         snipers_button.grid(row=3, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
-        logout_button.grid(row=5, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=10)
+        rich_presence_button.grid(row=4, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
+        logout_button.grid(row=6, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=10)
 
-        self.sidebar.grid_rowconfigure(4, weight=1)
+        self.sidebar.grid_rowconfigure(5, weight=1)
         self.sidebar.grid_columnconfigure(0, weight=1)
 
     def draw_main(self, scrollable=False):
@@ -414,7 +417,7 @@ class GhostGUI:
 
     def draw_settings(self):
         self.clear_main()
-        main = self.draw_main(scrollable=False)
+        main = self.draw_main()
         cfg = config.Config()
 
         config_tk_entries = {}
@@ -447,7 +450,7 @@ class GhostGUI:
 
                 cfg.set(key, tkinter_entry.get())
 
-            cfg.set("rich_presence", config_tk_entries["rich_presence"].instate(["selected"]), save=False)
+            cfg.set("rich_presence.enabled", config_tk_entries["rich_presence"].instate(["selected"]), save=False)
             cfg.set("gui", config_tk_entries["gui"].instate(["selected"]), save=False)
 
             cfg.save()
@@ -492,7 +495,7 @@ class GhostGUI:
 
         rpc_checkbox = ttk.Checkbutton(config_frame, text="Enable rich presence", style="success.TCheckbutton")
         rpc_checkbox.grid(row=len(config_entries) + 1, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
-        if cfg.get("rich_presence"):
+        if cfg.get("rich_presence")["enabled"]:
             rpc_checkbox.invoke()
         else:
             for _ in range(2):
@@ -603,6 +606,75 @@ class GhostGUI:
         restart_required_label.grid(row=2, column=0, sticky=ttk.W, padx=(10, 0), pady=10)
 
         session_spoofing_frame.grid_columnconfigure(1, weight=1)
+
+    def draw_rich_presence(self):
+        cfg = config.Config()
+        rpc = cfg.get_rich_presence()
+        
+        self.clear_main()
+        
+        main = self.draw_main()
+        width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
+        
+        title = ttk.Label(main, text="Rich Presence", font=("Arial", 20, "bold"))
+        title.grid(row=0, column=0, sticky=ttk.W)
+        
+        rpc_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        rpc_frame.grid(row=1, column=0, sticky=ttk.EW, pady=15)
+        
+        main.grid_columnconfigure(0, weight=1)
+                
+        rpc_entries = {
+            "details": "Details",
+            "state": "State",
+            "large_image": "Large Image Key",
+            "large_text": "Large Text",
+            "small_image": "Small Image Key",
+            "small_text": "Small Text",
+        }
+        
+        rpc_tk_entries = {}
+        
+        def save_rpc():
+            for index, (key, value) in enumerate(rpc_entries.items()):
+                tkinter_entry = rpc_tk_entries[key]
+                rpc.set(key, tkinter_entry.get())
+                
+            rpc.save()
+            
+        for index, (key, value) in enumerate(rpc_entries.items()):
+            padding = (10, 0)
+            rpc_value = rpc.get(key)
+            entry = ttk.Entry(rpc_frame, bootstyle="secondary")
+            entry.insert(0, rpc_value)
+            
+            if index == 0:
+                padding = (padding[0], (10, 0))
+            elif index == len(rpc_entries) - 1:
+                padding = (padding[0], (0, 5))
+                
+            label = ttk.Label(rpc_frame, text=value)
+            label.configure(background=self.root.style.colors.get("secondary"))
+            
+            label.grid(row=index + 1, column=0, sticky=ttk.W, padx=padding[0], pady=padding[1])
+            entry.grid(row=index + 1, column=1, sticky="we", padx=padding[0], pady=padding[1], columnspan=3)
+            
+            rpc_frame.grid_columnconfigure(1, weight=1)
+            rpc_tk_entries[key] = entry
+            
+        def reset_rpc():
+            rpc.reset_defaults()
+            self.draw_rich_presence()
+        
+        save_label = ttk.Label(rpc_frame, text="A restart is required to apply changes!", font=("Arial Italic", 14))
+        save_label.configure(background=self.root.style.colors.get("secondary"))
+        save_label.grid(row=len(rpc_entries) + 1, column=0, columnspan=2, sticky=ttk.W, padx=(10, 0), pady=10)
+        
+        save_rpc_button = ttk.Button(rpc_frame, text="Save", style="success.TButton", command=save_rpc)
+        save_rpc_button.grid(row=len(rpc_entries) + 1, column=2, sticky=ttk.E, pady=10)
+        
+        reset_rpc_button = ttk.Button(rpc_frame, text="Reset", style="danger.TButton", command=reset_rpc)
+        reset_rpc_button.grid(row=len(rpc_entries) + 1, column=3, sticky=ttk.E, padx=(5, 11), pady=10)
 
     def run(self):
         cfg = config.Config()
