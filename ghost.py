@@ -60,14 +60,10 @@ session_spoofing, session_spoofing_device = cfg.get_session_spoofing()
 if session_spoofing:
     sessionspoof.patch_identify(session_spoofing_device)
 
-status_resp = requests.get("https://discord.com/api/users/@me/settings", headers={"Authorization": cfg.get("token")})
-status = "online" if status_resp.status_code != 200 else status_resp.json()["status"]
-
 ghost = commands.Bot(
     command_prefix=cfg.get("prefix"),
     self_bot=True,
-    help_command=None,
-    status=discord.Status.try_value(status)
+    help_command=None
 )
 
 if not headless: gui = ghost_gui.GhostGUI(ghost)
