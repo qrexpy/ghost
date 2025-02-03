@@ -4,7 +4,7 @@ from .general import General
 from .img import Img
 from .info import Info
 from .mod import Mod
-from .nsfw import NSFW
+from .nsfw import Nsfw
 from .text import Text
 from .theming import Theming
 from .util import Util

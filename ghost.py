@@ -100,7 +100,7 @@ async def on_connect():
     await ghost.add_cog(ghost_commands.Img(ghost))
     await ghost.add_cog(ghost_commands.Info(ghost))
     await ghost.add_cog(ghost_commands.Mod(ghost))
-    await ghost.add_cog(ghost_commands.NSFW(ghost))
+    await ghost.add_cog(ghost_commands.Nsfw(ghost))
     await ghost.add_cog(ghost_commands.Text(ghost))
     await ghost.add_cog(ghost_commands.Theming(ghost))
     await ghost.add_cog(ghost_commands.Util(ghost))
