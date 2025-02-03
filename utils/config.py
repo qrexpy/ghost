@@ -59,7 +59,7 @@ DEFAULT_THEME = {
     "footer": "ghost aint dead"
 }
 
-MAKE_CONFIG = lambda: json.dump(DEFAULT_CONFIG, open("config.json", "w"), indent=4)
+MAKE_CONFIG = lambda: json.dump(DEFAULT_CONFIG, open("config.json", "w"), indent=4) if not os.path.exists("config.json") else None
 
 class RichPresence:
     def __init__(self, config, **kwargs):
@@ -76,6 +76,9 @@ class RichPresence:
         
     def set(self, key, value):
         setattr(self, key, value)
+        
+    def get(self, key):
+        return getattr(self, key)
         
     def save(self):
         self.config.config["rich_presence"] = {
