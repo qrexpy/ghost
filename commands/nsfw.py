@@ -74,7 +74,7 @@ class RedditNSFW:
 
         return url
 
-class NSFW(commands.Cog):
+class Nsfw(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.description = cmdhelper.cog_desc("nsfw", "NSFW commands")
@@ -146,4 +146,4 @@ class NSFW(commands.Cog):
         await ctx.send(data["message"])
 
 def setup(bot):
-    bot.add_cog(NSFW(bot))
+    bot.add_cog(Nsfw(bot))
