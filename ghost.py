@@ -53,7 +53,6 @@ config.MAKE_CONFIG()
 cfg = config.Config()
 cfg.check()
 token = cfg.get("token")
-files.create_defaults()
 
 session_spoofing, session_spoofing_device = cfg.get_session_spoofing()
 
