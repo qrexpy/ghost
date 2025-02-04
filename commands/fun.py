@@ -482,9 +482,12 @@ class Fun(commands.Cog):
         await ctx.send(gif)
 
     @commands.command(name="playsound", description="Play a 5 second sound.", usage="[mp3_url]")
-    async def playsound(self, ctx, mp3_url):
+    async def playsound(self, ctx, mp3_url = None):
         cfg = config.Config()
         voice_state = ctx.author.voice
+        
+        if len(ctx.message.attachments) > 0 and mp3_url is None:
+            mp3_url = ctx.message.attachments[0].url
 
         if not ctx.author.guild_permissions.administrator:
             await cmdhelper.send_message(ctx, {
@@ -502,13 +505,13 @@ class Fun(commands.Cog):
             })
             return
 
-        if not str(mp3_url).endswith("mp3"):
-            await cmdhelper.send_message(ctx, {
-                "title": "Play Sound",
-                "description": f"That file is not an MP3",
-                "colour": "#ff0000"
-            })
-            return
+        # if not str(mp3_url).endswith("mp3"):
+        #     await cmdhelper.send_message(ctx, {
+        #         "title": "Play Sound",
+        #         "description": f"That file is not an MP3",
+        #         "colour": "#ff0000"
+        #     })
+        #     return
 
         sound_res = requests.get(mp3_url)
         if sound_res.status_code != 200:
