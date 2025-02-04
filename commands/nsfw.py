@@ -84,7 +84,7 @@ class Nsfw(commands.Cog):
     @commands.command(name="nsfw", description="NSFW commands.", aliases=["notsafeforwork"], usage="")
     async def nsfw(self, ctx, selected_page: int = 1):
         cfg = config.Config()
-        pages = cmdhelper.generate_help_pages(self.bot, "NSFW")
+        pages = cmdhelper.generate_help_pages(self.bot, "Nsfw")
 
         await cmdhelper.send_message(ctx, {
             "title": f"🔞 nsfw commands",
