@@ -114,32 +114,48 @@ class GhostGUI:
             os._exit(0)
 
     def draw_sidebar(self):
-        width = self.width // (self.width // 100)
+        width = self.width // (self.width // 75)
         self.sidebar = ttk.Frame(self.root, width=width, height=self.height)
         self.sidebar.pack(fill=ttk.BOTH, side=ttk.LEFT)
         self.sidebar.configure(style="dark.TFrame")
         self.sidebar.grid_propagate(False)
+        size = 20
 
-        home_button = ttk.Button(self.sidebar, text="Home", command=self.draw_home)
-        settings_button = ttk.Button(self.sidebar, text="Settings", command=self.draw_settings)
-        theming_button = ttk.Button(self.sidebar, text="Theming", command=self.draw_theming)
-        snipers_button = ttk.Button(self.sidebar, text="Snipers", command=self.draw_snipers)
-        rich_presence_button = ttk.Button(self.sidebar, text="RPC", command=self.draw_rich_presence)
-        logout_button = ttk.Button(self.sidebar, text="Quit", command=self.quit)
+        home_icon = "data/icons/house-solid.png"
+        settings_icon = "data/icons/gear-solid.png"
+        theming_icon = "data/icons/paint-roller-solid.png"
+        snipers_icon = "data/icons/crosshairs-solid.png"
+        rich_presence_icon = "data/icons/discord-brands-solid.png"
+        logout_icon = "data/icons/power-off-solid.png"
 
-        home_button.configure(style="primary.TButton")
+        # add the icons to the buttons
+        self.home_icon = ImageTk.PhotoImage(Image.open(home_icon).resize((size, size)))
+        self.settings_icon = ImageTk.PhotoImage(Image.open(settings_icon).resize((size, size)))
+        self.theming_icon = ImageTk.PhotoImage(Image.open(theming_icon).resize((size, size)))
+        self.snipers_icon = ImageTk.PhotoImage(Image.open(snipers_icon).resize((size, size)))
+        self.rich_presence_icon = ImageTk.PhotoImage(Image.open(rich_presence_icon).resize((size, size)))
+        self.logout_icon = ImageTk.PhotoImage(Image.open(logout_icon).resize((size, size)))
+
+        home_button = ttk.Button(self.sidebar, command=self.draw_home, image=self.home_icon)
+        settings_button = ttk.Button(self.sidebar, command=self.draw_settings, image=self.settings_icon)
+        theming_button = ttk.Button(self.sidebar, command=self.draw_theming, image=self.theming_icon)
+        snipers_button = ttk.Button(self.sidebar, command=self.draw_snipers, image=self.snipers_icon)
+        rich_presence_button = ttk.Button(self.sidebar, command=self.draw_rich_presence, image=self.rich_presence_icon)
+        logout_button = ttk.Button(self.sidebar, command=self.quit, image=self.logout_icon)
+
+        # home_button.configure(style="primary.TButton")
         settings_button.configure(style="primary.TButton")
         theming_button.configure(style="primary.TButton")
         snipers_button.configure(style="primary.TButton")
         rich_presence_button.configure(style="primary.TButton")
         logout_button.configure(style="danger.TButton")
 
-        home_button.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 2), padx=10, ipady=5)
-        settings_button.grid(row=1, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
-        theming_button.grid(row=2, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
-        snipers_button.grid(row=3, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
-        rich_presence_button.grid(row=4, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=5)
-        logout_button.grid(row=6, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=10)
+        home_button.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 2), padx=10, ipady=8)
+        settings_button.grid(row=1, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
+        theming_button.grid(row=2, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
+        snipers_button.grid(row=3, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
+        rich_presence_button.grid(row=4, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
+        logout_button.grid(row=6, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=8)
 
         self.sidebar.grid_rowconfigure(5, weight=1)
         self.sidebar.grid_columnconfigure(0, weight=1)
