@@ -27,7 +27,7 @@ jobs:
         python_ver: '3.11'
         spec: Ghost.spec
         requirements: requirements.txt
-        options: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ --add-data=data/icons/*:data/icons/ main.py
+        options: --onefile --windowed --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ --add-data=data/icons/*:data/icons/ main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -53,7 +53,7 @@ jobs:
         python_ver: '3.11'
         spec: Ghost.spec
         requirements: requirements.txt
-        options: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ --add-data=data/icons/*:data/icons/ main.py
+        options: --onefile --windowed --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ --add-data=data/icons/*:data/icons/ main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -79,7 +79,7 @@ jobs:
         python_ver: '3.11'
         spec: Ghost.spec
         requirements: requirements.txt
-        options: --onefile --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ --add-data=data/icons/*:data/icons/ main.py
+        options: --onefile --windowed --hidden-import=faker --hidden-import=pypresence --hidden-import=requests --add-data=data/*:data/ --add-data=data/fonts/*:data/fonts/ --add-data=data/icons/*:data/icons/ main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
