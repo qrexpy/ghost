@@ -253,7 +253,6 @@ class GhostGUI:
 
             snipers_tk_entries[sniper.name] = {}
 
-            # if the sniper is on the first column then remove the left padding and vice versa
             if column == 0:
                 padding = (0, 2)
             elif column == 1:
@@ -444,7 +443,7 @@ class GhostGUI:
 
     def draw_settings(self):
         self.clear_main()
-        main = self.draw_main()
+        main = self.draw_main(scrollable=True)
         cfg = config.Config()
 
         config_tk_entries = {}
@@ -483,12 +482,12 @@ class GhostGUI:
             cfg.save()
             cfg.check()
 
-        width = self.width - self.sidebar.winfo_reqwidth() - 35
+        # width = self.width - self.sidebar.winfo_reqwidth() + 50
 
         title = ttk.Label(main, text="Settings", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.W)
 
-        config_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        config_frame = ttk.Frame(main, style="secondary.TFrame")
         config_frame.grid(row=1, column=0, sticky=ttk.EW, pady=15)
 
         main.grid_columnconfigure(0, weight=1)
@@ -551,7 +550,7 @@ class GhostGUI:
         apis_subtitle = ttk.Label(main, text="API Keys", font=("Arial", 16, "bold"))
         apis_subtitle.grid(row=2, column=0, sticky=ttk.W, pady=(15, 5))
 
-        apis_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        apis_frame = ttk.Frame(main, style="secondary.TFrame")
         apis_frame.grid(row=3, column=0, sticky=ttk.EW, pady=5)
 
         api_keys_tk_entries = {}
@@ -594,7 +593,7 @@ class GhostGUI:
         session_spoofing_subtitle = ttk.Label(main, text="Session Spoofing", font=("Arial", 16, "bold"))
         session_spoofing_subtitle.grid(row=4, column=0, sticky=ttk.W, pady=(15, 5))
 
-        session_spoofing_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        session_spoofing_frame = ttk.Frame(main, style="secondary.TFrame")
         session_spoofing_frame.grid(row=5, column=0, sticky=ttk.EW, pady=5)
 
         session_spoofing_checkbox = ttk.Checkbutton(session_spoofing_frame, text="Enable session spoofing", style="success.TCheckbutton")
