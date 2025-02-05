@@ -213,7 +213,10 @@ class GhostGUI:
 
     def draw_main(self, scrollable=False):
         width = self.width - (self.width // 100)
-        main = ScrolledFrame(self.root, width=width, height=self.height, autohide=True) if scrollable else ttk.Frame(self.root, width=width, height=self.height)
+        main = ScrolledFrame(self.root, width=width, height=self.height) if scrollable else ttk.Frame(self.root, width=width, height=self.height)
+        if isinstance(main, ScrolledFrame):
+            main.hide_scrollbars()
+            main.enable_scrolling()
         main.pack(fill=ttk.BOTH, expand=True, padx=23 if scrollable else 25, pady=23 if scrollable else 25)
 
         return main
@@ -625,7 +628,7 @@ class GhostGUI:
             background=self.root.style.colors.get("secondary")
             )
         # header_frame.grid(row=0, column=0, sticky=ttk.NSEW)
-        header_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15))
+        header_frame.pack(fill=ttk.BOTH, expand=True)
         title = ttk.Label(header_frame, text=f"Settings", font="-weight bold -size 20")
         title.configure(background=self.root.style.colors.get("secondary"))
         icon = ttk.Label(header_frame, image=self.settings_icon)
@@ -644,7 +647,7 @@ class GhostGUI:
             background=self.root.style.colors.get("dark")
             )
         # config_frame.grid(row=1, column=0, sticky=ttk.EW, pady=(0, 15))
-        config_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15), pady=(0, 15))
+        config_frame.pack(fill=ttk.BOTH, expand=True, pady=(0, 15))
         main.grid_columnconfigure(0, weight=1)
 
         for index, (key, value) in enumerate(config_entries.items()):
@@ -710,7 +713,7 @@ class GhostGUI:
             background=self.root.style.colors.get("secondary")
             )
         # apis_header_frame.grid(row=2, column=0, sticky=ttk.NSEW)
-        apis_header_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15))
+        apis_header_frame.pack(fill=ttk.BOTH, expand=True)
 
         apis_title = ttk.Label(apis_header_frame, text=f"APIs", font="-weight bold -size 20")
         apis_title.configure(background=self.root.style.colors.get("secondary"))
@@ -730,7 +733,7 @@ class GhostGUI:
             background=self.root.style.colors.get("dark")
             )
         # apis_frame.grid(row=3, column=0, sticky=ttk.EW, pady=(0, 15))
-        apis_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15), pady=(0, 15))
+        apis_frame.pack(fill=ttk.BOTH, expand=True, pady=(0, 15))
         api_keys_tk_entries = {}
         api_keys_entries = {
             "serpapi": "SerpAPI",
@@ -775,7 +778,7 @@ class GhostGUI:
             background=self.root.style.colors.get("secondary")
             )
         # session_spoofing_header_frame.grid(row=4, column=0, sticky=ttk.NSEW)
-        session_spoofing_header_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15))
+        session_spoofing_header_frame.pack(fill=ttk.BOTH, expand=True)
 
         session_spoofing_title = ttk.Label(session_spoofing_header_frame, text=f"Session Spoofing", font="-weight bold -size 20")
         session_spoofing_title.configure(background=self.root.style.colors.get("secondary"))
@@ -795,7 +798,7 @@ class GhostGUI:
             background=self.root.style.colors.get("dark")
             )
         # session_spoofing_frame.grid(row=5, column=0, sticky=ttk.EW)
-        session_spoofing_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15), pady=(0, 15))
+        session_spoofing_frame.pack(fill=ttk.BOTH, expand=True, pady=(0, 15))
 
         session_spoofing_checkbox = ttk.Checkbutton(session_spoofing_frame, text="Enable session spoofing", style="success.TCheckbutton")
         session_spoofing_checkbox.grid(row=0, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
