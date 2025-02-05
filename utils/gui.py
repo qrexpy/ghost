@@ -65,7 +65,7 @@ class GhostGUI:
     def __init__(self, bot=None):
         self.bot = bot
         self.width = 600
-        self.height = 450
+        self.height = 500
         self.bot_started = False
         self.console = []
         self.visible_console_lines = []
@@ -73,11 +73,32 @@ class GhostGUI:
         self.root = ttk.tk.Tk()
         self.root.title("Ghost")
         self.root.geometry(f"{self.width}x{self.height}")
-        self.root.resizable(False, False)
+        self.root.minsize(self.width, self.height)
+        # self.root.resizable(False, False)
+        # self.root.overrideredirect(True)
         self.root.style = ttk.Style()
         self.root.style.theme_use("darkly")
-        self.root.style.configure("TEntry", background=self.root.style.colors.get("secondary"))
-        self.root.style.configure("TCheckbutton", background=self.root.style.colors.get("secondary"))
+        self.root.style.configure("TEntry", background=self.root.style.colors.get("dark"), fieldbackground=self.root.style.colors.get("secondary"))
+        self.root.style.configure("TCheckbutton", background=self.root.style.colors.get("dark"))
+
+        icon_size = (20, 20)
+        home_icon = "data/icons/house-solid.png"
+        settings_icon = "data/icons/gear-solid.png"
+        theming_icon = "data/icons/paint-roller-solid.png"
+        snipers_icon = "data/icons/crosshairs-solid.png"
+        rich_presence_icon = "data/icons/discord-brands-solid.png"
+        logout_icon = "data/icons/power-off-solid.png"
+        apis_icon = "data/icons/cloud-solid.png"
+        session_spoofing_icon = "data/icons/shuffle-solid.png"
+
+        self.home_icon = ImageTk.PhotoImage(Image.open(home_icon).resize(icon_size))
+        self.settings_icon = ImageTk.PhotoImage(Image.open(settings_icon).resize(icon_size))
+        self.theming_icon = ImageTk.PhotoImage(Image.open(theming_icon).resize(icon_size))
+        self.snipers_icon = ImageTk.PhotoImage(Image.open(snipers_icon).resize(icon_size))
+        self.rich_presence_icon = ImageTk.PhotoImage(Image.open(rich_presence_icon).resize(icon_size))
+        self.logout_icon = ImageTk.PhotoImage(Image.open(logout_icon).resize(icon_size))
+        self.apis_icon = ImageTk.PhotoImage(Image.open(apis_icon).resize(icon_size))
+        self.session_spoofing_icon = ImageTk.PhotoImage(Image.open(session_spoofing_icon).resize(icon_size))
 
         # self.root.style.configure("primary.TButton", background="#254bff")
         # self.root.style.configure("secondary.TButton", background="#383838")
@@ -93,49 +114,81 @@ class GhostGUI:
         else:
             os._exit(0)
 
+    def draw_titlebar(self):
+        def start_move(event):
+            """ Store the mouse position when the drag starts. """
+            self._offset_x = event.x
+            self._offset_y = event.y
+
+        def move_window(event):
+            """ Move the window based on the initial offset. """
+            x = event.x_root - self._offset_x
+            y = event.y_root - self._offset_y
+            self.root.geometry(f"+{x}+{y}")
+
+        titlebar = ttk.Frame(self.root)
+        titlebar.configure(style="dark.TFrame")
+
+        # Bind events
+        titlebar.bind("<Button-1>", start_move)  # Capture the starting position
+        titlebar.bind("<B1-Motion>", move_window)  # Move the window
+
+        titlebar.pack(fill=ttk.BOTH, side=ttk.TOP)
+
+        title = ttk.Label(titlebar, text="Ghost", font="-size 12")
+        title.configure(background=self.root.style.colors.get("dark"))
+
+        minimise_button = ttk.Label(titlebar, text="—")
+        minimise_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        minimise_button.bind("<Button-1>", lambda e: self.root.iconify())
+
+        close_button = ttk.Label(titlebar, text="x")
+        close_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        close_button.bind("<Button-1>", lambda e: self.quit())
+
+        title.pack(side=ttk.LEFT, padx=10)
+        minimise_button.pack(side=ttk.RIGHT, padx=10)
+        close_button.pack(side=ttk.RIGHT, padx=10)
+
     def draw_sidebar(self):
-        width = self.width // (self.width // 75)
+        # self.draw_titlebar()
+
+        width = self.width // (self.width // 65)
         self.sidebar = ttk.Frame(self.root, width=width, height=self.height)
         self.sidebar.pack(fill=ttk.BOTH, side=ttk.LEFT)
         self.sidebar.configure(style="dark.TFrame")
         self.sidebar.grid_propagate(False)
-        size = 20
 
-        home_icon = "data/icons/house-solid.png"
-        settings_icon = "data/icons/gear-solid.png"
-        theming_icon = "data/icons/paint-roller-solid.png"
-        snipers_icon = "data/icons/crosshairs-solid.png"
-        rich_presence_icon = "data/icons/discord-brands-solid.png"
-        logout_icon = "data/icons/power-off-solid.png"
+        home_button = ttk.Label(self.sidebar, image=self.home_icon)
+        home_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        home_button.bind("<Button-1>", lambda e: self.draw_home())
 
-        # add the icons to the buttons
-        self.home_icon = ImageTk.PhotoImage(Image.open(home_icon).resize((size, size)))
-        self.settings_icon = ImageTk.PhotoImage(Image.open(settings_icon).resize((size, size)))
-        self.theming_icon = ImageTk.PhotoImage(Image.open(theming_icon).resize((size, size)))
-        self.snipers_icon = ImageTk.PhotoImage(Image.open(snipers_icon).resize((size, size)))
-        self.rich_presence_icon = ImageTk.PhotoImage(Image.open(rich_presence_icon).resize((size, size)))
-        self.logout_icon = ImageTk.PhotoImage(Image.open(logout_icon).resize((size, size)))
+        settings_button = ttk.Label(self.sidebar, image=self.settings_icon)
+        settings_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        settings_button.bind("<Button-1>", lambda e: self.draw_settings())
 
-        home_button = ttk.Button(self.sidebar, command=self.draw_home, image=self.home_icon)
-        settings_button = ttk.Button(self.sidebar, command=self.draw_settings, image=self.settings_icon)
-        theming_button = ttk.Button(self.sidebar, command=self.draw_theming, image=self.theming_icon)
-        snipers_button = ttk.Button(self.sidebar, command=self.draw_snipers, image=self.snipers_icon)
-        rich_presence_button = ttk.Button(self.sidebar, command=self.draw_rich_presence, image=self.rich_presence_icon)
-        logout_button = ttk.Button(self.sidebar, command=self.quit, image=self.logout_icon)
+        theming_button = ttk.Label(self.sidebar, image=self.theming_icon)
+        theming_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        theming_button.bind("<Button-1>", lambda e: self.draw_theming())
 
-        # home_button.configure(style="primary.TButton")
-        settings_button.configure(style="primary.TButton")
-        theming_button.configure(style="primary.TButton")
-        snipers_button.configure(style="primary.TButton")
-        rich_presence_button.configure(style="primary.TButton")
-        logout_button.configure(style="danger.TButton")
+        snipers_button = ttk.Label(self.sidebar, image=self.snipers_icon)
+        snipers_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        snipers_button.bind("<Button-1>", lambda e: self.draw_snipers())
 
-        home_button.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 2), padx=10, ipady=8)
-        settings_button.grid(row=1, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
-        theming_button.grid(row=2, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
-        snipers_button.grid(row=3, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
-        rich_presence_button.grid(row=4, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=8)
-        logout_button.grid(row=6, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=8)
+        rich_presence_button = ttk.Label(self.sidebar, image=self.rich_presence_icon)
+        rich_presence_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        rich_presence_button.bind("<Button-1>", lambda e: self.draw_rich_presence())
+
+        logout_button = ttk.Label(self.sidebar, image=self.logout_icon)
+        logout_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        logout_button.bind("<Button-1>", lambda e: self.quit())
+
+        home_button.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 2), padx=10, ipady=12)
+        settings_button.grid(row=1, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
+        theming_button.grid(row=2, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
+        snipers_button.grid(row=3, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
+        rich_presence_button.grid(row=4, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
+        logout_button.grid(row=6, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=12)
 
         self.sidebar.grid_rowconfigure(5, weight=1)
         self.sidebar.grid_columnconfigure(0, weight=1)
@@ -143,7 +196,7 @@ class GhostGUI:
     def draw_main(self, scrollable=False):
         width = self.width - (self.width // 100)
         main = ScrolledFrame(self.root, width=width, height=self.height) if scrollable else ttk.Frame(self.root, width=width, height=self.height)
-        main.pack(fill=ttk.BOTH, expand=True, padx=10, pady=10)
+        main.pack(fill=ttk.BOTH, expand=True, padx=23 if scrollable else 25, pady=23 if scrollable else 25)
 
         return main
 
@@ -252,8 +305,26 @@ class GhostGUI:
 
             sniper.save()
 
-        title = ttk.Label(main, text="Snipers", font="-weight bold -size 20")
-        title.grid(row=0, column=0, sticky=ttk.NSEW)
+        # title = ttk.Label(main, text="Snipers", font="-weight bold -size 20")
+        # title.grid(row=0, column=0, sticky=ttk.NSEW)
+
+        header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 15, 15), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
+        header_frame.grid(row=0, column=0, sticky=ttk.NSEW, pady=(0, 2))
+
+        title = ttk.Label(header_frame, text=f"Snipers", font="-weight bold -size 20")
+        title.configure(background=self.root.style.colors.get("secondary"))
+        icon = ttk.Label(header_frame, image=self.snipers_icon)
+        icon.configure(background=self.root.style.colors.get("secondary"))
+
+        title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
+        icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)
+
+        header_frame.grid_columnconfigure(1, weight=1)
 
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35 // 2
 
@@ -278,21 +349,21 @@ class GhostGUI:
             sniper_frame = RoundedFrame(
                 snipers_wrapper_frame,
                 radius=(15, 15, 15, 15),
-                bootstyle="secondary.TFrame",
-                background=self.root.style.colors.get("secondary")
+                bootstyle="dark.TFrame",
+                background=self.root.style.colors.get("dark")
                 )
             sniper_frame.grid(row=row, column=column, sticky=ttk.NSEW, padx=padding[0], pady=padding[1])
 
             snipers_wrapper_frame.grid_columnconfigure(column, weight=1)
 
             sniper_title = ttk.Label(sniper_frame, text=f"{sniper.name.capitalize()} Sniper", font=("Arial", 16, "bold"))
-            sniper_title.configure(background=self.root.style.colors.get("secondary"))
-            sniper_title.grid(row=0, column=0, sticky=ttk.NSEW, pady=(5, 0), padx=5)
+            sniper_title.configure(background=self.root.style.colors.get("dark"))
+            sniper_title.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 0), padx=10)
 
             for index, (key, value) in enumerate(sniper.to_dict().items()):
                 if isinstance(value, bool):
                     checkbox = ttk.Checkbutton(sniper_frame, text=" ".join(word.capitalize() for word in str(key).split("_")), style="success.TCheckbutton")
-                    checkbox.grid(row=index + 1, column=0, sticky=ttk.W, pady=(5, 0), padx=7)
+                    checkbox.grid(row=index + 1, column=0, sticky=ttk.W, pady=(5, 0), padx=13)
 
                     if value:
                         checkbox.invoke()
@@ -303,7 +374,7 @@ class GhostGUI:
                     snipers_tk_entries[sniper.name][key] = checkbox
                 else:
                     label = ttk.Label(sniper_frame, text=f"{key.capitalize()}")
-                    label.configure(background=self.root.style.colors.get("secondary"))
+                    label.configure(background=self.root.style.colors.get("dark"))
 
                     entry = ttk.Entry(sniper_frame, bootstyle="secondary")
                     if value != "":
@@ -311,8 +382,8 @@ class GhostGUI:
                     else:
                         entry.insert(0, placeholder)
 
-                    label.grid(row=index + 1, column=0, sticky=ttk.W, pady=(8, 0), padx=5)
-                    entry.grid(row=index + 2, column=0, sticky=ttk.EW, padx=5, columnspan=2)
+                    label.grid(row=index + 1, column=0, sticky=ttk.W, pady=(8, 0), padx=10)
+                    entry.grid(row=index + 2, column=0, sticky=ttk.EW, padx=10, columnspan=2)
 
                     sniper_frame.grid_columnconfigure(1, weight=1)
 
@@ -321,7 +392,7 @@ class GhostGUI:
             row = len(sniper.to_dict()) + 2
 
             save_button = ttk.Button(sniper_frame, text="Save", style="success.TButton", command=lambda sniper_name=sniper.name: save_sniper(sniper_name))
-            save_button.grid(row=row, column=0, sticky=ttk.EW, pady=(5, 0), columnspan=2, ipady=5)
+            save_button.grid(row=row, column=0, sticky=ttk.EW, pady=(5, 10), padx=10, columnspan=2, ipady=5)
 
     def draw_theming(self):
         self.clear_main()
@@ -384,26 +455,43 @@ class GhostGUI:
             cfg.save()
             self.draw_theming()
 
-        title = ttk.Label(main, text="Theming", font="-weight bold -size 20")
-        title.grid(row=0, column=0, sticky=ttk.NSEW)
+
+        header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 0, 0), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
+        header_frame.grid(row=0, column=0, sticky=ttk.NSEW)
+
+        title = ttk.Label(header_frame, text=f"Theming", font="-weight bold -size 20")
+        title.configure(background=self.root.style.colors.get("secondary"))
+        icon = ttk.Label(header_frame, image=self.theming_icon)
+        icon.configure(background=self.root.style.colors.get("secondary"))
+
+        title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
+        icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)
+
+        header_frame.grid_columnconfigure(1, weight=1)
 
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
 
         # theme_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
         theme_frame = RoundedFrame(
             main,
-            radius=(15, 15, 15, 15),
-            bootstyle="secondary.TFrame",
-            background=self.root.style.colors.get("secondary")
+            radius=(0, 0, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
             )
-        theme_frame.grid(row=1, column=0, sticky=ttk.NSEW, pady=15)
+        theme_frame.grid(row=1, column=0, sticky=ttk.NSEW)
 
         main.grid_columnconfigure(0, weight=1)
 
         create_theme_label = ttk.Label(theme_frame, text="Create a new theme")
-        create_theme_label.configure(background=self.root.style.colors.get("secondary"))
+        create_theme_label.configure(background=self.root.style.colors.get("dark"))
 
-        create_theme_entry = ttk.Entry(theme_frame, bootstyle="secondary")
+        create_theme_entry = ttk.Entry(theme_frame)
+        create_theme_entry.config(style="secondary.TEntry")
         create_theme_button = ttk.Button(theme_frame, text="Create", style="success.TButton", command=lambda: create_theme(create_theme_entry.get()))
 
         create_theme_label.grid(row=0, column=0, sticky=ttk.W, padx=(10, 0), pady=(10, 0))
@@ -411,9 +499,9 @@ class GhostGUI:
         create_theme_button.grid(row=0, column=2, sticky=ttk.E, padx=(0, 11), pady=(10, 0))
 
         select_theme_label = ttk.Label(theme_frame, text="Select a theme")
-        select_theme_label.configure(background=self.root.style.colors.get("secondary"))
+        select_theme_label.configure(background=self.root.style.colors.get("dark"))
 
-        select_theme_menu = ttk.Menubutton(theme_frame, text=cfg.theme.name, bootstyle="dark")
+        select_theme_menu = ttk.Menubutton(theme_frame, text=cfg.theme.name, bootstyle="secondary")
         select_theme_menu.menu = ttk.Menu(select_theme_menu, tearoff=0)
         select_theme_menu["menu"] = select_theme_menu.menu
 
@@ -421,9 +509,9 @@ class GhostGUI:
             select_theme_menu.menu.add_command(label=str(theme), command=lambda theme=theme.name: set_theme(theme))
 
         message_style_label = ttk.Label(theme_frame, text="Global message style")
-        message_style_label.configure(background=self.root.style.colors.get("secondary"))
+        message_style_label.configure(background=self.root.style.colors.get("dark"))
 
-        message_style_entry = ttk.Menubutton(theme_frame, text=cfg.config["message_settings"]["style"], bootstyle="dark")
+        message_style_entry = ttk.Menubutton(theme_frame, text=cfg.config["message_settings"]["style"], bootstyle="secondary")
         message_style_entry.menu = ttk.Menu(message_style_entry, tearoff=0)
         message_style_entry["menu"] = message_style_entry.menu
 
@@ -440,17 +528,17 @@ class GhostGUI:
         ttk.Separator(theme_frame, orient="horizontal").grid(row=3, column=0, columnspan=3, sticky="we", padx=(10, 10), pady=(15, 5))
 
         for index, (key, value) in enumerate(theme_dict.items()):
-            padding = (10, 0)
+            padding = (10, 2)
             entry = ttk.Entry(theme_frame, bootstyle="secondary")
             entry.insert(0, value)
 
             if index == 0:
-                padding = (padding[0], (10, 0))
+                padding = (padding[0], (10, 2))
             elif index == len(theme_dict) - 1:
-                padding = (padding[0], (0, 10))
+                padding = (padding[0], (2, 10))
 
             label = ttk.Label(theme_frame, text=key.capitalize())
-            label.configure(background=self.root.style.colors.get("secondary"))
+            label.configure(background=self.root.style.colors.get("dark"))
 
             label.grid(row=index + 4, column=0, sticky=ttk.W, padx=padding[0], pady=padding[1])
             entry.grid(row=index + 4, column=1, columnspan=2, sticky="we", padx=padding[0], pady=padding[1])
@@ -461,7 +549,7 @@ class GhostGUI:
         ttk.Separator(theme_frame, orient="horizontal").grid(row=len(theme_dict) + 5, column=0, columnspan=3, sticky="we", padx=(10, 10), pady=(5, 15))
 
         save_theme_label = ttk.Label(theme_frame, text="Remember to save your changes!", font="-slant italic -size 14")
-        save_theme_label.configure(background=self.root.style.colors.get("secondary"))
+        save_theme_label.configure(background=self.root.style.colors.get("dark"))
         save_theme_button = ttk.Button(theme_frame, text="Save", style="success.TButton", command=save_theme)
         delete_theme_button = ttk.Button(theme_frame, text="Delete", style="danger.TButton", command=delete_theme)
 
@@ -512,18 +600,33 @@ class GhostGUI:
 
         # width = self.width - self.sidebar.winfo_reqwidth() + 50
 
-        title = ttk.Label(main, text="Settings", font="-weight bold -size 20")
-        title.grid(row=0, column=0, sticky=ttk.W)
+        header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 0, 0), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
+        # header_frame.grid(row=0, column=0, sticky=ttk.NSEW)
+        header_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15))
+        title = ttk.Label(header_frame, text=f"Settings", font="-weight bold -size 20")
+        title.configure(background=self.root.style.colors.get("secondary"))
+        icon = ttk.Label(header_frame, image=self.settings_icon)
+        icon.configure(background=self.root.style.colors.get("secondary"))
+
+        title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
+        icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)
+
+        header_frame.grid_columnconfigure(1, weight=1)
 
         # config_frame = ttk.Frame(main, style="secondary.TFrame")
         config_frame = RoundedFrame(
             main,
-            radius=(15, 15, 15, 15),
-            bootstyle="secondary.TFrame",
-            background=self.root.style.colors.get("secondary")
+            radius=(0, 0, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
             )
-        config_frame.grid(row=1, column=0, sticky=ttk.EW, pady=15)
-
+        # config_frame.grid(row=1, column=0, sticky=ttk.EW, pady=(0, 15))
+        config_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15), pady=(0, 15))
         main.grid_columnconfigure(0, weight=1)
 
         for index, (key, value) in enumerate(config_entries.items()):
@@ -545,7 +648,7 @@ class GhostGUI:
                 padding = (padding[0], (0, 5))
 
             label = ttk.Label(config_frame, text=value)
-            label.configure(background=self.root.style.colors.get("secondary"))
+            label.configure(background=self.root.style.colors.get("dark"))
 
             label.grid(row=index + 1, column=0, sticky=ttk.W, padx=padding[0], pady=padding[1])
             entry.grid(row=index + 1, column=1, sticky="we", padx=padding[0], pady=padding[1], columnspan=3)
@@ -573,26 +676,42 @@ class GhostGUI:
         config_tk_entries["gui"] = gui_checkbox
 
         restart_required_label = ttk.Label(config_frame, text="A restart is required to apply changes!", font="-slant italic -size 14")
-        restart_required_label.configure(background=self.root.style.colors.get("secondary"))
+        restart_required_label.configure(background=self.root.style.colors.get("dark"))
 
         restart_required_label.grid(row=len(config_entries) + 3, column=0, columnspan=2, sticky=ttk.W, padx=(10, 0), pady=10)
         save_cfg_button = ttk.Button(config_frame, text="Save", style="success.TButton", command=save_cfg)
         save_cfg_button.grid(row=len(config_entries) + 3, column=3, sticky=ttk.E, padx=(0, 11), pady=10)
 
-        # -----------------
+        # ------------------------------------------------------------------------------------------------------
 
-        apis_subtitle = ttk.Label(main, text="API Keys", font=("Arial", 16, "bold"))
-        apis_subtitle.grid(row=2, column=0, sticky=ttk.W, pady=(15, 5))
+        apis_header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 0, 0), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
+        # apis_header_frame.grid(row=2, column=0, sticky=ttk.NSEW)
+        apis_header_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15))
+
+        apis_title = ttk.Label(apis_header_frame, text=f"APIs", font="-weight bold -size 20")
+        apis_title.configure(background=self.root.style.colors.get("secondary"))
+        apis_icon = ttk.Label(apis_header_frame, image=self.apis_icon)
+        apis_icon.configure(background=self.root.style.colors.get("secondary"))
+
+        apis_title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
+        apis_icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)
+
+        apis_header_frame.grid_columnconfigure(1, weight=1)
 
         # apis_frame = ttk.Frame(main, style="secondary.TFrame")
         apis_frame = RoundedFrame(
             main,
-            radius=(15, 15, 15, 15),
-            bootstyle="secondary.TFrame",
-            background=self.root.style.colors.get("secondary")
+            radius=(0, 0, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
             )
-        apis_frame.grid(row=3, column=0, sticky=ttk.EW, pady=5)
-
+        # apis_frame.grid(row=3, column=0, sticky=ttk.EW, pady=(0, 15))
+        apis_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15), pady=(0, 15))
         api_keys_tk_entries = {}
         api_keys_entries = {
             "serpapi": "SerpAPI",
@@ -617,7 +736,7 @@ class GhostGUI:
                 padding = (padding[0], (0, 5))
 
             label = ttk.Label(apis_frame, text=value)
-            label.configure(background=self.root.style.colors.get("secondary"))
+            label.configure(background=self.root.style.colors.get("dark"))
 
             label.grid(row=index + 1, column=0, sticky=ttk.W, padx=(10, 5), pady=padding[1])
             entry.grid(row=index + 1, column=1, sticky="we", padx=(0, 10), pady=padding[1], columnspan=2)
@@ -628,19 +747,36 @@ class GhostGUI:
         save_api_keys_button = ttk.Button(apis_frame, text="Save", style="success.TButton", command=save_api_keys)
         save_api_keys_button.grid(row=len(api_keys_entries) + 1, column=2, sticky=ttk.E, padx=(0, 11), pady=10)
 
-        # -----------------
+        # ------------------------------------------------------------------------------------------------------
 
-        session_spoofing_subtitle = ttk.Label(main, text="Session Spoofing", font=("Arial", 16, "bold"))
-        session_spoofing_subtitle.grid(row=4, column=0, sticky=ttk.W, pady=(15, 5))
+        session_spoofing_header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 0, 0), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
+        # session_spoofing_header_frame.grid(row=4, column=0, sticky=ttk.NSEW)
+        session_spoofing_header_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15))
+
+        session_spoofing_title = ttk.Label(session_spoofing_header_frame, text=f"Session Spoofing", font="-weight bold -size 20")
+        session_spoofing_title.configure(background=self.root.style.colors.get("secondary"))
+        session_spoofing_icon = ttk.Label(session_spoofing_header_frame, image=self.session_spoofing_icon)
+        session_spoofing_icon.configure(background=self.root.style.colors.get("secondary"))
+
+        session_spoofing_title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
+        session_spoofing_icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)
+
+        session_spoofing_header_frame.grid_columnconfigure(1, weight=1)
 
         # session_spoofing_frame = ttk.Frame(main, style="secondary.TFrame")
         session_spoofing_frame = RoundedFrame(
             main,
-            radius=(15, 15, 15, 15),
-            bootstyle="secondary.TFrame",
-            background=self.root.style.colors.get("secondary")
+            radius=(0, 0, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
             )
-        session_spoofing_frame.grid(row=5, column=0, sticky=ttk.EW, pady=5)
+        # session_spoofing_frame.grid(row=5, column=0, sticky=ttk.EW)
+        session_spoofing_frame.pack(fill=ttk.BOTH, expand=True, padx=(0, 15), pady=(0, 15))
 
         session_spoofing_checkbox = ttk.Checkbutton(session_spoofing_frame, text="Enable session spoofing", style="success.TCheckbutton")
         session_spoofing_checkbox.grid(row=0, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
@@ -652,9 +788,9 @@ class GhostGUI:
                 session_spoofing_checkbox.invoke()
 
         session_spoofing_device_label = ttk.Label(session_spoofing_frame, text="Session spoofing device")
-        session_spoofing_device_label.configure(background=self.root.style.colors.get("secondary"))
+        session_spoofing_device_label.configure(background=self.root.style.colors.get("dark"))
 
-        session_spoofing_device_entry = ttk.Menubutton(session_spoofing_frame, text=cfg.get("session_spoofing.device"), bootstyle="dark")
+        session_spoofing_device_entry = ttk.Menubutton(session_spoofing_frame, text=cfg.get("session_spoofing.device"), bootstyle="secondary")
         session_spoofing_device_entry.menu = ttk.Menu(session_spoofing_device_entry, tearoff=0)
         session_spoofing_device_entry["menu"] = session_spoofing_device_entry.menu
 
@@ -673,7 +809,7 @@ class GhostGUI:
         save_session_spoofing_button.grid(row=2, column=1, sticky=ttk.E, padx=(0, 11), pady=10)
 
         restart_required_label = ttk.Label(session_spoofing_frame, text="A restart is required to apply changes!", font="-slant italic -size 14")
-        restart_required_label.configure(background=self.root.style.colors.get("secondary"))
+        restart_required_label.configure(background=self.root.style.colors.get("dark"))
 
         restart_required_label.grid(row=2, column=0, sticky=ttk.W, padx=(10, 0), pady=10)
 
@@ -688,17 +824,32 @@ class GhostGUI:
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
         
-        title = ttk.Label(main, text="Rich Presence", font="-weight bold -size 20")
-        title.grid(row=0, column=0, sticky=ttk.W)
+        header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 0, 0), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
+        header_frame.grid(row=0, column=0, sticky=ttk.NSEW)
+
+        title = ttk.Label(header_frame, text=f"Rich Presence", font="-weight bold -size 20")
+        title.configure(background=self.root.style.colors.get("secondary"))
+        icon = ttk.Label(header_frame, image=self.rich_presence_icon)
+        icon.configure(background=self.root.style.colors.get("secondary"))
+
+        title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
+        icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)
+
+        header_frame.grid_columnconfigure(1, weight=1)
         
         # rpc_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
         rpc_frame = RoundedFrame(
             main,
-            radius=(15, 15, 15, 15),
-            bootstyle="secondary.TFrame",
-            background=self.root.style.colors.get("secondary")
+            radius=(0, 0, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
             )
-        rpc_frame.grid(row=1, column=0, sticky=ttk.EW, pady=15)
+        rpc_frame.grid(row=1, column=0, sticky=ttk.EW)
         
         main.grid_columnconfigure(0, weight=1)
                 
@@ -721,18 +872,18 @@ class GhostGUI:
             rpc.save()
             
         for index, (key, value) in enumerate(rpc_entries.items()):
-            padding = (10, 0)
+            padding = (10, 2)
             rpc_value = rpc.get(key)
             entry = ttk.Entry(rpc_frame, bootstyle="secondary")
             entry.insert(0, rpc_value)
             
             if index == 0:
-                padding = (padding[0], (10, 0))
+                padding = (padding[0], (10, 2))
             elif index == len(rpc_entries) - 1:
-                padding = (padding[0], (0, 5))
+                padding = (padding[0], (5, 2))
                 
             label = ttk.Label(rpc_frame, text=value)
-            label.configure(background=self.root.style.colors.get("secondary"))
+            label.configure(background=self.root.style.colors.get("dark"))
             
             label.grid(row=index + 1, column=0, sticky=ttk.W, padx=padding[0], pady=padding[1])
             entry.grid(row=index + 1, column=1, sticky="we", padx=padding[0], pady=padding[1], columnspan=3)
@@ -745,7 +896,7 @@ class GhostGUI:
             self.draw_rich_presence()
         
         save_label = ttk.Label(rpc_frame, text="A restart is required to apply changes!", font="-slant italic -size 14")
-        save_label.configure(background=self.root.style.colors.get("secondary"))
+        save_label.configure(background=self.root.style.colors.get("dark"))
         save_label.grid(row=len(rpc_entries) + 1, column=0, columnspan=2, sticky=ttk.W, padx=(10, 0), pady=10)
         
         save_rpc_button = ttk.Button(rpc_frame, text="Save", style="success.TButton", command=save_rpc)
