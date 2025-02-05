@@ -5,7 +5,24 @@ import os, sys, pystyle
 
 from . import config
 
+headless = False
+try:
+    import ttkbootstrap
+except ModuleNotFoundError:
+    headless = True
+
+if not headless: from utils import gui as ghost_gui
+
 handler = logging.FileHandler(filename='ghost.log', encoding='utf-8', mode='w')
+gui = None
+
+def init_gui(bot):
+    global gui
+    gui = ghost_gui.GhostGUI(bot)
+    return get_gui()
+
+def get_gui():
+    return gui if not headless else None
 
 def clear():
     if sys.platform == "win32":
@@ -58,24 +75,52 @@ def print_color(color, text):
 
 def print_cmd(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTBLUE_EX}{colorama.Style.BRIGHT}[COMMAND]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("COMMAND", text)
+    except:
+        pass
 
 def print_info(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTGREEN_EX}{colorama.Style.BRIGHT}[INFO]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("INFO", text)
+    except:
+        pass
 
 def print_success(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTGREEN_EX}{colorama.Style.BRIGHT}[SUCCESS]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("SUCCESS", text)
+    except:
+        pass
 
 def print_error(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTRED_EX}{colorama.Style.BRIGHT}[ERROR]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("ERROR", text)
+    except:
+        pass
 
 def print_warning(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTYELLOW_EX}{colorama.Style.BRIGHT}[WARNING]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("WARNING", text)
+    except:
+        pass
 
 def print_cli(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTMAGENTA_EX}{colorama.Style.BRIGHT}[CLI]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("CLI", text)
+    except:
+        pass
 
 def print_rpc(text):
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTMAGENTA_EX}{colorama.Style.BRIGHT}[RPC]{colorama.Style.RESET_ALL} {text}")
+    try: 
+        gui.add_console("RPC", text)
+    except:
+        pass
 
 def print_sniper(sniper, title, description: dict, success=True):
     colour = colorama.Fore.LIGHTGREEN_EX if success else colorama.Fore.LIGHTRED_EX
