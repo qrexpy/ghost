@@ -9,6 +9,7 @@ import ttkbootstrap as ttk
 
 from utils import console
 from utils import config
+from utils import files
 
 from pathlib import Path
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -82,14 +83,14 @@ class GhostGUI:
         self.root.style.configure("TCheckbutton", background=self.root.style.colors.get("dark"))
 
         icon_size = (20, 20)
-        home_icon = "data/icons/house-solid.png"
-        settings_icon = "data/icons/gear-solid.png"
-        theming_icon = "data/icons/paint-roller-solid.png"
-        snipers_icon = "data/icons/crosshairs-solid.png"
-        rich_presence_icon = "data/icons/discord-brands-solid.png"
-        logout_icon = "data/icons/power-off-solid.png"
-        apis_icon = "data/icons/cloud-solid.png"
-        session_spoofing_icon = "data/icons/shuffle-solid.png"
+        home_icon = files.resource_path("data/icons/house-solid.png")
+        settings_icon = files.resource_path("data/icons/gear-solid.png")
+        theming_icon = files.resource_path("data/icons/paint-roller-solid.png")
+        snipers_icon = files.resource_path("data/icons/crosshairs-solid.png")
+        rich_presence_icon = files.resource_path("data/icons/discord-brands-solid.png")
+        logout_icon = files.resource_path("data/icons/power-off-solid.png")
+        apis_icon = files.resource_path("data/icons/cloud-solid.png")
+        session_spoofing_icon = files.resource_path("data/icons/shuffle-solid.png")
 
         self.home_icon = ImageTk.PhotoImage(Image.open(home_icon).resize(icon_size))
         self.settings_icon = ImageTk.PhotoImage(Image.open(settings_icon).resize(icon_size))
