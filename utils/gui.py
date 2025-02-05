@@ -961,13 +961,13 @@ class GhostGUI:
 
         def focus_in(event):
             entry.delete(0, "end")
-            entry.configure(foreground="white")
+            entry.configure(foreground="white", show="*")
 
         def focus_out(event):
             entry.insert(0, "Paste your token here...")
-            entry.configure(foreground="grey")
+            entry.configure(foreground="grey", show="")
 
-        entry = ttk.Entry(entry_frame, bootstyle="dark", show="*")
+        entry = ttk.Entry(entry_frame, bootstyle="dark")
         entry.insert(0, "Paste your token here...")
         entry.configure(foreground="grey")
         entry.bind("<FocusIn>", focus_in)
