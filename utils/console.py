@@ -30,6 +30,8 @@ def clear():
     else:
         os.system("clear")
 
+    gui.clear_console()
+
 def resize(columns, rows):
     if sys.platform == "win32":
         os.system(f"mode con cols={columns} lines={rows}")
