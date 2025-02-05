@@ -12,8 +12,54 @@ from utils import config
 
 from pathlib import Path
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
+from PIL import Image, ImageTk, ImageOps
 
 PATH = Path(__file__).parent
+
+class RoundedFrame(ttk.Canvas):
+    def __init__(self, parent, radius=(25, 25, 25, 25), bootstyle="dark.TFrame", background="black", **kwargs):
+        super().__init__(parent, background=background, highlightthickness=0, bd=0, **kwargs)
+        self.radius = radius
+        self.background = background
+
+        # Create an inner frame for child widgets
+        self.inner_frame = ttk.Frame(self, style=bootstyle)
+        self.create_window(0, 0, window=self.inner_frame, anchor="nw")
+
+        # Bind resizing to redraw rounded corners
+        self.bind("<Configure>", self.on_resize)
+
+    def on_resize(self, event=None):
+        """ Redraw the rounded rectangle and adjust inner frame """
+        self.delete("all")  # Clear previous drawings
+
+        width, height = self.winfo_width(), self.winfo_height()
+        if width < 2 or height < 2:
+            return  # Avoid drawing when the frame is too small
+
+        radius_tl, radius_tr, radius_br, radius_bl = self.radius
+
+        # Define rounded rectangle path
+        points = [
+            radius_tl, 0,
+            width - radius_tr, 0,
+            width, 0,
+            width, radius_tr,
+            width, height - radius_br,
+            width, height,
+            width - radius_br, height,
+            radius_bl, height,
+            0, height,
+            0, height - radius_bl,
+            0, radius_tl,
+            0, 0
+        ]
+        self.create_polygon(points, smooth=True, fill=self.background, outline=self.background)
+
+        try:
+            self.itemconfig(self.inner_frame, width=width, height=height)
+        except Exception as e:
+            pass
 
 class GhostGUI:
     def __init__(self, bot=None):
@@ -38,72 +84,6 @@ class GhostGUI:
         # self.root.style.configure("success.TButton", background="#00db7c")
         # self.root.style.configure("danger.TButton", background="#e7230f")
         # self.root.style.configure("warning.TButton", background="#f39500")
-
-    def format_changelog(self, changelog):
-        info = {
-            "New": [],
-            "Fixed": [],
-            "Changed": [],
-            "Removed": []
-        }
-
-        for line in changelog:
-            if line == "":
-                continue
-
-            line = line[8:]
-
-            for char in line.split(" "):
-                if char.lower() in ["added", "add", "new"]:
-                    info["New"].append(line)
-                    break
-                elif char.lower() in ["fixed", "fix"]:
-                    info["Fixed"].append(line)
-                    break
-                elif char.lower() in ["changed", "change"]:
-                    info["Changed"].append(line)
-                    break
-                elif char.lower() in ["removed", "remove"]:
-                    info["Removed"].append(line)
-                    break
-                else:
-                    info["Changed"].append(line)
-                    break
-
-        text = ""
-
-        for key in info:
-            text += f"{key}:\n"
-            for item in info[key]:
-                text += f"  - {item}\n"
-            text += "\n"
-
-        return text
-
-    def get_changelog(self):
-        resp = requests.get("https://api.github.com/repos/bennyscripts/ghost/releases")
-        if resp.status_code != 200:
-            return "0", "Failed to get changelog."
-
-        data = resp.json()
-
-        if len(data) == 0:
-            return "0", "No changelog available."
-
-        version = data[0]["tag_name"]
-        changelog = data[0]["body"]
-
-        changelog = changelog.split("## ")[2]
-
-        changelog = changelog.replace("##", "").replace("###", "").replace("####", "").replace("#####", "").replace("######", "")
-        changelog = changelog.replace("**", "").replace("*", "").replace("`", "")
-        changelog = changelog.replace("> ", "")
-        changelog = changelog.replace("\r", "").replace("\n\n", "\n")
-
-        changelog = "\n".join([line for line in changelog.split("\n") if line.strip() != ""])
-        changelog = "\n".join(changelog.split("\n")[1:])
-
-        return version, self.format_changelog(changelog.split("\n"))
 
     def quit(self):
         console.print_info("Quitting Ghost...")
@@ -200,7 +180,15 @@ class GhostGUI:
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
 
-        header_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        # header_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        # header_frame.pack(fill=ttk.BOTH)
+
+        header_frame = RoundedFrame(
+            main, 
+            radius=(15, 15, 0, 0), 
+            bootstyle="secondary.TFrame", 
+            background=self.root.style.colors.get("secondary")
+            )
         header_frame.pack(fill=ttk.BOTH)
 
         title = ttk.Label(header_frame, text=f"Ghost v{config.VERSION}", font="-weight bold -size 20")
@@ -211,8 +199,17 @@ class GhostGUI:
         title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=(15, 0))
         subtitle.grid(row=1, column=0, columnspan=2, sticky=ttk.NSEW, padx=15, pady=(0, 15))
 
-        console_textarea = ttk.Frame(main, width=width)
-        console_textarea.configure(style="dark.TFrame")
+        # title.pack(fill=ttk.BOTH, padx=15, pady=(15, 0))
+        # subtitle.pack(fill=ttk.BOTH, padx=15, pady=(0, 15))
+
+        # console_textarea = ttk.Frame(main, width=width)
+        # console_textarea.configure(style="dark.TFrame")
+        console_textarea = RoundedFrame(
+            main,
+            radius=(0, 0, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
+            )
         console_textarea.pack(fill="both", expand=True)
 
         self.console_inner_wrapper = ttk.Text(console_textarea, wrap="word", height=20, font=("Menlo", 12))
@@ -277,7 +274,13 @@ class GhostGUI:
             elif column == 1:
                 padding = ((5, 0), 2)
 
-            sniper_frame = ttk.Frame(snipers_wrapper_frame, width=width, style="secondary.TFrame")
+            # sniper_frame = ttk.Frame(snipers_wrapper_frame, width=width, style="secondary.TFrame")
+            sniper_frame = RoundedFrame(
+                snipers_wrapper_frame,
+                radius=(15, 15, 15, 15),
+                bootstyle="secondary.TFrame",
+                background=self.root.style.colors.get("secondary")
+                )
             sniper_frame.grid(row=row, column=column, sticky=ttk.NSEW, padx=padding[0], pady=padding[1])
 
             snipers_wrapper_frame.grid_columnconfigure(column, weight=1)
@@ -386,7 +389,13 @@ class GhostGUI:
 
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
 
-        theme_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        # theme_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        theme_frame = RoundedFrame(
+            main,
+            radius=(15, 15, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
         theme_frame.grid(row=1, column=0, sticky=ttk.NSEW, pady=15)
 
         main.grid_columnconfigure(0, weight=1)
@@ -506,7 +515,13 @@ class GhostGUI:
         title = ttk.Label(main, text="Settings", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.W)
 
-        config_frame = ttk.Frame(main, style="secondary.TFrame")
+        # config_frame = ttk.Frame(main, style="secondary.TFrame")
+        config_frame = RoundedFrame(
+            main,
+            radius=(15, 15, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
         config_frame.grid(row=1, column=0, sticky=ttk.EW, pady=15)
 
         main.grid_columnconfigure(0, weight=1)
@@ -569,7 +584,13 @@ class GhostGUI:
         apis_subtitle = ttk.Label(main, text="API Keys", font=("Arial", 16, "bold"))
         apis_subtitle.grid(row=2, column=0, sticky=ttk.W, pady=(15, 5))
 
-        apis_frame = ttk.Frame(main, style="secondary.TFrame")
+        # apis_frame = ttk.Frame(main, style="secondary.TFrame")
+        apis_frame = RoundedFrame(
+            main,
+            radius=(15, 15, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
         apis_frame.grid(row=3, column=0, sticky=ttk.EW, pady=5)
 
         api_keys_tk_entries = {}
@@ -612,7 +633,13 @@ class GhostGUI:
         session_spoofing_subtitle = ttk.Label(main, text="Session Spoofing", font=("Arial", 16, "bold"))
         session_spoofing_subtitle.grid(row=4, column=0, sticky=ttk.W, pady=(15, 5))
 
-        session_spoofing_frame = ttk.Frame(main, style="secondary.TFrame")
+        # session_spoofing_frame = ttk.Frame(main, style="secondary.TFrame")
+        session_spoofing_frame = RoundedFrame(
+            main,
+            radius=(15, 15, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
         session_spoofing_frame.grid(row=5, column=0, sticky=ttk.EW, pady=5)
 
         session_spoofing_checkbox = ttk.Checkbutton(session_spoofing_frame, text="Enable session spoofing", style="success.TCheckbutton")
@@ -664,7 +691,13 @@ class GhostGUI:
         title = ttk.Label(main, text="Rich Presence", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.W)
         
-        rpc_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        # rpc_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        rpc_frame = RoundedFrame(
+            main,
+            radius=(15, 15, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
         rpc_frame.grid(row=1, column=0, sticky=ttk.EW, pady=15)
         
         main.grid_columnconfigure(0, weight=1)
@@ -721,6 +754,11 @@ class GhostGUI:
         reset_rpc_button = ttk.Button(rpc_frame, text="Reset", style="danger.TButton", command=reset_rpc)
         reset_rpc_button.grid(row=len(rpc_entries) + 1, column=3, sticky=ttk.E, padx=(5, 11), pady=10)
 
+    def run_without_bot(self):
+        self.draw_sidebar()
+        self.draw_home()
+        self.root.mainloop()
+
     def run(self):
         cfg = config.Config()
         if cfg.get("gui"):
@@ -758,4 +796,4 @@ class GhostGUI:
 
 if __name__ == "__main__":
     gui = GhostGUI()
-    gui.run()
+    gui.run_without_bot()
