@@ -53,8 +53,8 @@ DEFAULT_CONFIG = {
 }
 DEFAULT_THEME = {
     "title": "ghost selfbot",
-    "emoji": "👻",
-    "image": "https://cdn.discordapp.com/icons/1302632843176050738/e7f5c4fa0080423094fd8025f3f8d5a1.png?size=1024",
+    "emoji": "\ud83d\udc7b",
+    "image": "https://ghost.benny.fun/assets/ghost.png",
     "colour": "#575757",
     "footer": "ghost aint dead"
 }
