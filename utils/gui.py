@@ -21,7 +21,6 @@ class GhostGUI:
         self.width = 600
         self.height = 450
         self.bot_started = False
-        self.console_line_index = 0
         self.console = []
         self.visible_console_lines = []
 
@@ -160,28 +159,19 @@ class GhostGUI:
         self.draw_sidebar()
 
     def add_console(self, prefix, text):
-        self.console.append((self.console_line_index, prefix, text))
-        self.console_line_index += 1
+        time = console.get_formatted_time()
+        self.console.append((time, prefix, text))
 
     def update_console(self):
-        if len(self.console) > 0:
-            self.visible_console_lines = self.console[-10:]
+        self.visible_console_lines = self.console[-20:]
 
         try:
-            for index, (line_index, prefix, text) in enumerate(self.visible_console_lines):
-                label_wrapper = ttk.Frame(self.console_inner_wrapper, style="dark.TFrame")
-                label_wrapper.grid(row=index, column=0, sticky=ttk.NSEW)
+            self.console_inner_wrapper.delete(1.0, "end")
+            for index, (time, prefix, text) in enumerate(self.console):
+                self.console_inner_wrapper.insert("end", f"[{time}] [{prefix}] {text}\n")
+                self.console_inner_wrapper.see("end")
 
-                prefix_label = ttk.Label(label_wrapper, text=f"[{prefix}]", font=("Menlo", 12, "bold"))
-                prefix_label.configure(background=self.root.style.colors.get("dark"), foreground="green")
-                prefix_label.grid(row=0, column=0, sticky=ttk.W)
-
-                text_label = ttk.Label(label_wrapper, text=text, font=("Menlo", 12))
-                text_label.configure(background=self.root.style.colors.get("dark"), foreground="white")
-                text_label.grid(row=0, column=1, sticky=ttk.W)
-
-                self.console_inner_wrapper.grid_columnconfigure(0, weight=1)
-        except:
+        except Exception as e:
             pass
 
         self.root.after(500, self.update_console)
@@ -190,7 +180,6 @@ class GhostGUI:
         self.clear_main()
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
-        # latest_version, latest_changelog = self.get_changelog()
 
         header_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
         header_frame.pack(fill=ttk.BOTH)
@@ -203,14 +192,21 @@ class GhostGUI:
         title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=(15, 0))
         subtitle.grid(row=1, column=0, columnspan=2, sticky=ttk.NSEW, padx=15, pady=(0, 15))
 
-        console_textarea = ScrolledFrame(main, width=width, height=1000)
+        console_textarea = ttk.Frame(main, width=width)
         console_textarea.configure(style="dark.TFrame")
         console_textarea.pack(fill="both", expand=True)
 
-        self.console_inner_wrapper = ttk.Frame(console_textarea, style="dark.TFrame")
-        self.console_inner_wrapper.grid(row=0, column=0, sticky=ttk.NSEW, padx=10, pady=15)
+        self.console_inner_wrapper = ttk.Text(console_textarea, wrap="word", height=20, font=("Menlo", 12))
+        self.console_inner_wrapper.config(
+            border=0, 
+            background=self.root.style.colors.get("dark"), 
+            foreground="lightgrey", 
+            highlightcolor=self.root.style.colors.get("dark"), 
+            highlightbackground=self.root.style.colors.get("dark")
+            )
+        self.console_inner_wrapper.pack(fill="both", expand=True, padx=5, pady=10)
 
-        self.update_console()
+        self.root.after(500, self.update_console)
 
         main.grid_columnconfigure(0, weight=1)
 

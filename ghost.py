@@ -16,12 +16,6 @@ import json
 import string
 import logging
 
-headless = False
-try:
-    import ttkbootstrap
-except ModuleNotFoundError:
-    headless = True
-
 from discord.errors import LoginFailure
 from discord.ext import commands
 
@@ -37,7 +31,6 @@ from utils import codeblock
 from utils import cmdhelper
 from utils import imgembed
 from utils import sessionspoof
-if not headless: from utils import gui as ghost_gui
 
 # import utils as ghost_utils
 import commands as ghost_commands
@@ -65,7 +58,7 @@ ghost = commands.Bot(
     help_command=None
 )
 
-if not headless: gui = ghost_gui.GhostGUI(ghost)
+gui = console.init_gui(ghost)
 user = requests.get("https://discord.com/api/users/@me", headers={"Authorization": cfg.get("token")}).json()
 rpc_log = ""
 presence = cfg.get_rich_presence()
@@ -86,7 +79,7 @@ for script_file in os.listdir("scripts"):
 
 @ghost.event
 async def on_connect():
-    if not headless: gui.bot_started = True
+    if gui: gui.bot_started = True
     ghost.start_time = time.time()
 
     await ghost.add_cog(ghost_commands.Account(ghost))
@@ -115,25 +108,25 @@ async def on_connect():
     console.print_info(f"You can now use commands with {cfg.get('prefix')}")
     print()
 
-    if not headless:
-        gui.add_console("INFO", text)
-        gui.add_console("INFO", f"You can now use commands with {cfg.get('prefix')}")
+    # if not headless:
+    #     gui.add_console("INFO", text)
+    #     gui.add_console("INFO", f"You can now use commands with {cfg.get('prefix')}")
 
-    if cfg.get_rich_presence().enabled:
-        console.print_rpc(rpc_log)
-        if not headless: gui.add_console("RPC", rpc_log)
+    # if cfg.get_rich_presence().enabled:
+    #     console.print_rpc(rpc_log)
+    #     if not headless: gui.add_console("RPC", rpc_log)
 
     if session_spoofing:
         console.print_info(f"Spoofing session as {session_spoofing_device}")
         console.print_warning(f"Your account is at higher risk of termination by using session spoofer.")
 
-        if not headless:
-            gui.add_console("INFO", f"Spoofing session as {session_spoofing_device}")
-            gui.add_console("WARNING", "Your account is at higher risk of termination by using session spoofer.")
+        # if not headless:
+        #     gui.add_console("INFO", f"Spoofing session as {session_spoofing_device}")
+        #     gui.add_console("WARNING", "Your account is at higher risk of termination by using session spoofer.")
 
-    if cfg.get("message_settings")["style"] == "embed" and cfg.get("rich_embed_webhook") == "":
-        console.print_error("Rich embed webhook not set! Using codeblock mode instead.")
-        if not headless: gui.add_console("ERROR", "Rich embed webhook not set! Using codeblock mode instead.")
+    # if cfg.get("message_settings")["style"] == "embed" and cfg.get("rich_embed_webhook") == "":
+    #     console.print_error("Rich embed webhook not set! Using codeblock mode instead.")
+    #     if not headless: gui.add_console("ERROR", "Rich embed webhook not set! Using codeblock mode instead.")
 
     notifier.Notifier.send("Ghost", text)
 
@@ -146,13 +139,13 @@ async def on_command(ctx):
 
     command = ctx.message.content[len(ghost.command_prefix):]
     console.print_cmd(command)
-    if not headless: gui.add_console("COMMAND", command)
+    # if not headless: gui.add_console("COMMAND", command)
     cfg.add_command_history(command)
 
 @ghost.event
 async def on_command_error(ctx, error):
     console.print_error(str(error))
-    if not headless: gui.add_console("ERROR", str(error))
+    # if not headless: gui.add_console("ERROR", str(error))
 
     try:
         await ctx.message.delete()
@@ -176,7 +169,7 @@ while token == "":
     cfg.save()
 
 try:
-    if not headless:
+    if gui:
         gui.run()
     else:
         ghost.run(token, log_handler=console.handler)
