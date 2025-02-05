@@ -21,11 +21,14 @@ class GhostGUI:
         self.width = 600
         self.height = 450
         self.bot_started = False
+        self.console_line_index = 0
+        self.console = []
+        self.visible_console_lines = []
 
         self.root = ttk.tk.Tk()
         self.root.title("Ghost")
         self.root.geometry(f"{self.width}x{self.height}")
-        # self.root.resizable(False, False)
+        self.root.resizable(False, False)
         self.root.style = ttk.Style()
         self.root.style.theme_use("darkly")
         self.root.style.configure("TEntry", background=self.root.style.colors.get("secondary"))
@@ -156,32 +159,58 @@ class GhostGUI:
 
         self.draw_sidebar()
 
+    def add_console(self, prefix, text):
+        self.console.append((self.console_line_index, prefix, text))
+        self.console_line_index += 1
+
+    def update_console(self):
+        if len(self.console) > 0:
+            self.visible_console_lines = self.console[-10:]
+
+        try:
+            for index, (line_index, prefix, text) in enumerate(self.visible_console_lines):
+                label_wrapper = ttk.Frame(self.console_inner_wrapper, style="dark.TFrame")
+                label_wrapper.grid(row=index, column=0, sticky=ttk.NSEW)
+
+                prefix_label = ttk.Label(label_wrapper, text=f"[{prefix}]", font=("Menlo", 12, "bold"))
+                prefix_label.configure(background=self.root.style.colors.get("dark"), foreground="green")
+                prefix_label.grid(row=0, column=0, sticky=ttk.W)
+
+                text_label = ttk.Label(label_wrapper, text=text, font=("Menlo", 12))
+                text_label.configure(background=self.root.style.colors.get("dark"), foreground="white")
+                text_label.grid(row=0, column=1, sticky=ttk.W)
+
+                self.console_inner_wrapper.grid_columnconfigure(0, weight=1)
+        except:
+            pass
+
+        self.root.after(500, self.update_console)
+
     def draw_home(self):
         self.clear_main()
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
-        latest_version, latest_changelog = self.get_changelog()
+        # latest_version, latest_changelog = self.get_changelog()
 
-        title = ttk.Label(main, text=f"Ghost v{config.VERSION}", font=("Arial", 20, "bold"))
-        subtitle = ttk.Label(main, text=config.MOTD, font=("Arial Italic", 14))
+        header_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
+        header_frame.pack(fill=ttk.BOTH)
 
-        title.grid(row=0, column=0, sticky=ttk.NSEW)
-        subtitle.grid(row=1, column=0, columnspan=2, sticky=ttk.NSEW)
+        title = ttk.Label(header_frame, text=f"Ghost v{config.VERSION}", font="-weight bold -size 20")
+        title.configure(background=self.root.style.colors.get("secondary"))
+        subtitle = ttk.Label(header_frame, text=config.MOTD, font="-slant italic -size 14")
+        subtitle.configure(background=self.root.style.colors.get("secondary"))
 
-        changelog_frame = ttk.Frame(main, bootstyle="secondary")
-        changelog_frame.grid(row=2, column=0, sticky=ttk.NSEW, pady=15)
+        title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=(15, 0))
+        subtitle.grid(row=1, column=0, columnspan=2, sticky=ttk.NSEW, padx=15, pady=(0, 15))
 
-        changelog_title = ttk.Label(changelog_frame, text=f"Latest Changelog")
-        changelog_title.configure(background=self.root.style.colors.get("secondary"))
-        # place the title along the top edge of the frame
-        changelog_title.pack(fill=ttk.X, padx=10, pady=5)
+        console_textarea = ScrolledFrame(main, width=width, height=1000)
+        console_textarea.configure(style="dark.TFrame")
+        console_textarea.pack(fill="both", expand=True)
 
-        changelog_text_frame = ScrolledFrame(changelog_frame, width=width, height=350, bootstyle="secondary")
-        changelog_text = ttk.Label(changelog_text_frame, text=latest_changelog, wraplength=width, justify=ttk.LEFT)
-        changelog_text.configure(foreground=self.root.style.colors.get("light"), background=self.root.style.colors.get("secondary"))
-        changelog_text.pack(fill=ttk.BOTH, expand=True, padx=10, pady=2)
+        self.console_inner_wrapper = ttk.Frame(console_textarea, style="dark.TFrame")
+        self.console_inner_wrapper.grid(row=0, column=0, sticky=ttk.NSEW, padx=10, pady=15)
 
-        changelog_text_frame.pack(fill=ttk.BOTH, expand=True)
+        self.update_console()
 
         main.grid_columnconfigure(0, weight=1)
 
@@ -211,7 +240,7 @@ class GhostGUI:
 
             sniper.save()
 
-        title = ttk.Label(main, text="Snipers", font=("Arial", 20, "bold"))
+        title = ttk.Label(main, text="Snipers", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.NSEW)
 
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35 // 2
@@ -338,7 +367,7 @@ class GhostGUI:
             cfg.save()
             self.draw_theming()
 
-        title = ttk.Label(main, text="Theming", font=("Arial", 20, "bold"))
+        title = ttk.Label(main, text="Theming", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.NSEW)
 
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
@@ -408,7 +437,7 @@ class GhostGUI:
 
         ttk.Separator(theme_frame, orient="horizontal").grid(row=len(theme_dict) + 5, column=0, columnspan=3, sticky="we", padx=(10, 10), pady=(5, 15))
 
-        save_theme_label = ttk.Label(theme_frame, text="Remember to save your changes!", font=("Arial Italic", 14))
+        save_theme_label = ttk.Label(theme_frame, text="Remember to save your changes!", font="-slant italic -size 14")
         save_theme_label.configure(background=self.root.style.colors.get("secondary"))
         save_theme_button = ttk.Button(theme_frame, text="Save", style="success.TButton", command=save_theme)
         delete_theme_button = ttk.Button(theme_frame, text="Delete", style="danger.TButton", command=delete_theme)
@@ -460,7 +489,7 @@ class GhostGUI:
 
         width = self.width - self.sidebar.winfo_reqwidth() - 35
 
-        title = ttk.Label(main, text="Settings", font=("Arial", 20, "bold"))
+        title = ttk.Label(main, text="Settings", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.W)
 
         config_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
@@ -514,7 +543,7 @@ class GhostGUI:
         config_tk_entries["rich_presence"] = rpc_checkbox
         config_tk_entries["gui"] = gui_checkbox
 
-        restart_required_label = ttk.Label(config_frame, text="A restart is required to apply changes!", font=("Arial Italic", 14))
+        restart_required_label = ttk.Label(config_frame, text="A restart is required to apply changes!", font="-slant italic -size 14")
         restart_required_label.configure(background=self.root.style.colors.get("secondary"))
 
         restart_required_label.grid(row=len(config_entries) + 3, column=0, columnspan=2, sticky=ttk.W, padx=(10, 0), pady=10)
@@ -602,7 +631,7 @@ class GhostGUI:
         save_session_spoofing_button = ttk.Button(session_spoofing_frame, text="Save", style="success.TButton", command=save_session_spoofing)
         save_session_spoofing_button.grid(row=2, column=1, sticky=ttk.E, padx=(0, 11), pady=10)
 
-        restart_required_label = ttk.Label(session_spoofing_frame, text="A restart is required to apply changes!", font=("Arial Italic", 14))
+        restart_required_label = ttk.Label(session_spoofing_frame, text="A restart is required to apply changes!", font="-slant italic -size 14")
         restart_required_label.configure(background=self.root.style.colors.get("secondary"))
 
         restart_required_label.grid(row=2, column=0, sticky=ttk.W, padx=(10, 0), pady=10)
@@ -618,7 +647,7 @@ class GhostGUI:
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
         
-        title = ttk.Label(main, text="Rich Presence", font=("Arial", 20, "bold"))
+        title = ttk.Label(main, text="Rich Presence", font="-weight bold -size 20")
         title.grid(row=0, column=0, sticky=ttk.W)
         
         rpc_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
@@ -668,7 +697,7 @@ class GhostGUI:
             rpc.reset_defaults()
             self.draw_rich_presence()
         
-        save_label = ttk.Label(rpc_frame, text="A restart is required to apply changes!", font=("Arial Italic", 14))
+        save_label = ttk.Label(rpc_frame, text="A restart is required to apply changes!", font="-slant italic -size 14")
         save_label.configure(background=self.root.style.colors.get("secondary"))
         save_label.grid(row=len(rpc_entries) + 1, column=0, columnspan=2, sticky=ttk.W, padx=(10, 0), pady=10)
         
@@ -693,6 +722,7 @@ class GhostGUI:
             self.draw_sidebar()
             self.draw_home()
 
+            self.root.after(500, self.update_console)
             self.root.mainloop()
 
         else:

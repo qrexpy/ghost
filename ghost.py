@@ -115,15 +115,25 @@ async def on_connect():
     console.print_info(f"You can now use commands with {cfg.get('prefix')}")
     print()
 
+    if not headless:
+        gui.add_console("INFO", text)
+        gui.add_console("INFO", f"You can now use commands with {cfg.get('prefix')}")
+
     if cfg.get_rich_presence().enabled:
         console.print_rpc(rpc_log)
+        if not headless: gui.add_console("RPC", rpc_log)
 
     if session_spoofing:
         console.print_info(f"Spoofing session as {session_spoofing_device}")
         console.print_warning(f"Your account is at higher risk of termination by using session spoofer.")
 
+        if not headless:
+            gui.add_console("INFO", f"Spoofing session as {session_spoofing_device}")
+            gui.add_console("WARNING", "Your account is at higher risk of termination by using session spoofer.")
+
     if cfg.get("message_settings")["style"] == "embed" and cfg.get("rich_embed_webhook") == "":
         console.print_error("Rich embed webhook not set! Using codeblock mode instead.")
+        if not headless: gui.add_console("ERROR", "Rich embed webhook not set! Using codeblock mode instead.")
 
     notifier.Notifier.send("Ghost", text)
 
@@ -136,10 +146,14 @@ async def on_command(ctx):
 
     command = ctx.message.content[len(ghost.command_prefix):]
     console.print_cmd(command)
+    if not headless: gui.add_console("COMMAND", command)
     cfg.add_command_history(command)
 
 @ghost.event
 async def on_command_error(ctx, error):
+    console.print_error(str(error))
+    if not headless: gui.add_console("ERROR", str(error))
+
     try:
         await ctx.message.delete()
     except Exception as e:
@@ -154,8 +168,6 @@ async def on_command_error(ctx, error):
 
     except Exception as e:
         console.print_error(f"{e}")
-
-    console.print_error(str(error))
 
 while token == "":
     console.print_error("Invalid token, please set a new one below.")
