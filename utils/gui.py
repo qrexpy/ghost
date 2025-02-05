@@ -2,6 +2,7 @@
 # tkinter sucks and i hate it
 
 import os
+import sys
 import discord
 import requests
 import threading
@@ -23,24 +24,21 @@ class RoundedFrame(ttk.Canvas):
         self.radius = radius
         self.background = background
 
-        # Create an inner frame for child widgets
         self.inner_frame = ttk.Frame(self, style=bootstyle)
         self.create_window(0, 0, window=self.inner_frame, anchor="nw")
 
-        # Bind resizing to redraw rounded corners
         self.bind("<Configure>", self.on_resize)
 
     def on_resize(self, event=None):
         """ Redraw the rounded rectangle and adjust inner frame """
-        self.delete("all")  # Clear previous drawings
+        self.delete("all")
 
         width, height = self.winfo_width(), self.winfo_height()
         if width < 2 or height < 2:
-            return  # Avoid drawing when the frame is too small
+            return
 
         radius_tl, radius_tr, radius_br, radius_bl = self.radius
 
-        # Define rounded rectangle path
         points = [
             radius_tl, 0,
             width - radius_tr, 0,
@@ -82,6 +80,8 @@ class GhostGUI:
         self.root.style.configure("TEntry", background=self.root.style.colors.get("dark"), fieldbackground=self.root.style.colors.get("secondary"))
         self.root.style.configure("TCheckbutton", background=self.root.style.colors.get("dark"))
 
+        self.root.protocol("WM_DELETE_WINDOW", self.quit)
+
         icon_size = (20, 20)
         home_icon = files.resource_path("data/icons/house-solid.png")
         settings_icon = files.resource_path("data/icons/gear-solid.png")
@@ -91,6 +91,7 @@ class GhostGUI:
         logout_icon = files.resource_path("data/icons/power-off-solid.png")
         apis_icon = files.resource_path("data/icons/cloud-solid.png")
         session_spoofing_icon = files.resource_path("data/icons/shuffle-solid.png")
+        submit_icon = files.resource_path("data/icons/arrow-right-solid.png")
 
         self.home_icon = ImageTk.PhotoImage(Image.open(home_icon).resize(icon_size))
         self.settings_icon = ImageTk.PhotoImage(Image.open(settings_icon).resize(icon_size))
@@ -100,12 +101,28 @@ class GhostGUI:
         self.logout_icon = ImageTk.PhotoImage(Image.open(logout_icon).resize(icon_size))
         self.apis_icon = ImageTk.PhotoImage(Image.open(apis_icon).resize(icon_size))
         self.session_spoofing_icon = ImageTk.PhotoImage(Image.open(session_spoofing_icon).resize(icon_size))
+        self.submit_icon = ImageTk.PhotoImage(Image.open(submit_icon).resize((10, 10)))
 
         # self.root.style.configure("primary.TButton", background="#254bff")
         # self.root.style.configure("secondary.TButton", background="#383838")
         # self.root.style.configure("success.TButton", background="#00db7c")
         # self.root.style.configure("danger.TButton", background="#e7230f")
         # self.root.style.configure("warning.TButton", background="#f39500")
+
+    def center_window(self, width=None, height=None):
+        if height is not None:
+            self.height = height
+        if width is not None:
+            self.width = width
+
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        x = (screen_width // 2) - (self.width // 2)
+        y = (screen_height // 2) - (self.height // 2)
+
+        self.root.geometry(f"{self.width}x{self.height}+{x}+{y}")
+        self.root.focus_force()
 
     def quit(self):
         console.print_info("Quitting Ghost...")
@@ -196,7 +213,7 @@ class GhostGUI:
 
     def draw_main(self, scrollable=False):
         width = self.width - (self.width // 100)
-        main = ScrolledFrame(self.root, width=width, height=self.height) if scrollable else ttk.Frame(self.root, width=width, height=self.height)
+        main = ScrolledFrame(self.root, width=width, height=self.height, autohide=True) if scrollable else ttk.Frame(self.root, width=width, height=self.height)
         main.pack(fill=ttk.BOTH, expand=True, padx=23 if scrollable else 25, pady=23 if scrollable else 25)
 
         return main
@@ -634,7 +651,7 @@ class GhostGUI:
             if key == "rich_presence" or key == "gui":
                 continue
 
-            padding = (10, 0)
+            padding = (10, 2)
             cfg_value = cfg.get(key)
             entry = ttk.Entry(config_frame, bootstyle="secondary") if key != "token" else ttk.Entry(config_frame, bootstyle="secondary", show="*")
             if key == "theme":
@@ -644,9 +661,9 @@ class GhostGUI:
                 entry.insert(0, cfg_value)
 
             if index == 0:
-                padding = (padding[0], (10, 0))
+                padding = (padding[0], (10, 2))
             elif index == len(config_entries) - 1:
-                padding = (padding[0], (0, 5))
+                padding = (padding[0], (2, 5))
 
             label = ttk.Label(config_frame, text=value)
             label.configure(background=self.root.style.colors.get("dark"))
@@ -666,6 +683,7 @@ class GhostGUI:
                 rpc_checkbox.invoke()
 
         gui_checkbox = ttk.Checkbutton(config_frame, text="Enable GUI", style="success.TCheckbutton")
+        gui_checkbox.configure(state="disabled")
         gui_checkbox.grid(row=len(config_entries) + 2, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
         if cfg.get("gui"):
             gui_checkbox.invoke()
@@ -906,6 +924,59 @@ class GhostGUI:
         reset_rpc_button = ttk.Button(rpc_frame, text="Reset", style="danger.TButton", command=reset_rpc)
         reset_rpc_button.grid(row=len(rpc_entries) + 1, column=3, sticky=ttk.E, padx=(5, 11), pady=10)
 
+    def draw_onboarding(self):
+        # resize the window
+        self.root.minsize(450, 115)
+        self.root.geometry("450x115")
+        self.root.overrideredirect(False)
+
+        self.center_window(450, 115)
+
+        entry_frame = RoundedFrame(
+            self.root, 
+            radius=(15, 15, 15, 15), 
+            bootstyle="dark.TFrame", 
+            background=self.root.style.colors.get("dark")
+            )
+        
+        entry_frame.pack(fill=ttk.BOTH, padx=30, pady=30)
+
+        submit_button = ttk.Label(entry_frame, image=self.submit_icon)
+        submit_button.configure(background=self.root.style.colors.get("dark"))
+        submit_button.bind("<Button-1>", lambda event: submit_token())
+        submit_button.bind("<Enter>", lambda event: submit_button.configure(cursor="hand2"))
+        submit_button.bind("<Leave>", lambda event: submit_button.configure(cursor="arrow"))
+
+        def submit_token():
+            entry_text = entry.get()
+            if entry_text == "Paste your token here...":
+                console.print_error("Please paste your token.")
+                return
+
+            cfg = config.Config()
+            cfg.set("token", entry_text)
+            cfg.save()
+
+            os.execl(sys.executable, sys.executable, *sys.argv)
+
+        def focus_in(event):
+            entry.delete(0, "end")
+            entry.configure(foreground="white")
+
+        def focus_out(event):
+            entry.insert(0, "Paste your token here...")
+            entry.configure(foreground="grey")
+
+        entry = ttk.Entry(entry_frame, bootstyle="dark", show="*")
+        entry.insert(0, "Paste your token here...")
+        entry.configure(foreground="grey")
+        entry.bind("<FocusIn>", focus_in)
+        entry.bind("<FocusOut>", focus_out)
+        
+        entry.grid(row=0, column=0, sticky=ttk.EW, padx=(10, 0), pady=10, columnspan=2)
+        submit_button.grid(row=0, column=2, sticky=ttk.E, padx=(0, 20), pady=10)
+        entry_frame.grid_columnconfigure(1, weight=1)
+
     def run_without_bot(self):
         self.draw_sidebar()
         self.draw_home()
@@ -913,22 +984,26 @@ class GhostGUI:
 
     def run(self):
         cfg = config.Config()
+
         if cfg.get("gui"):
-            bot_start_btn = ttk.Button(self.root, text="Start Ghost", command=self.start_bot_thread)
-            bot_start_btn.pack(fill=ttk.BOTH, side=ttk.BOTTOM, pady=10)
+            if cfg.get("token") == "":
+                self.draw_onboarding()
+            else:
+                bot_start_btn = ttk.Button(self.root, text="Start Ghost", command=self.start_bot_thread)
+                bot_start_btn.pack(fill=ttk.BOTH, side=ttk.BOTTOM, pady=10)
 
-            bot_start_btn.invoke()
-            bot_start_btn.destroy()
+                bot_start_btn.invoke()
+                bot_start_btn.destroy()
 
-            while not self.bot_started:
-                pass
+                while not self.bot_started:
+                    pass
+                
+                self.center_window()
+                self.draw_sidebar()
+                self.draw_home()
 
-            self.draw_sidebar()
-            self.draw_home()
-
-            self.root.after(500, self.update_console)
+                self.root.after(500, self.update_console)
             self.root.mainloop()
-
         else:
             self.start_bot()
 
@@ -939,8 +1014,10 @@ class GhostGUI:
             console.print_info("Starting Ghost...")
             self.bot.run(cfg.get("token"), log_handler=console.handler)
         except discord.errors.LoginFailure:
-            console.print_error("Failed to login, please check your token.")
-            self.quit()
+            console.print_error("Failed to login, reset token and showing onboarding again...")
+            cfg.set("token", "")
+            cfg.save()
+            os.execl(sys.executable, sys.executable, *sys.argv)
 
     def start_bot_thread(self):
         self.thread = threading.Thread(target=self.start_bot)

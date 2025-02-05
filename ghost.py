@@ -144,11 +144,11 @@ async def on_command_error(ctx, error):
     except Exception as e:
         console.print_error(f"{e}")
 
-while token == "":
-    console.print_error("Invalid token, please set a new one below.")
-    new_token = input("> ")
-    cfg.set("token", new_token)
-    cfg.save()
+# while token == "":
+#     console.print_error("Invalid token, please set a new one below.")
+#     new_token = input("> ")
+#     cfg.set("token", new_token)
+#     cfg.save()
 
 try:
     if gui:

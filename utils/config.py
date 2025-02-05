@@ -284,17 +284,17 @@ class Config:
 
             json.dump(self.config, open("config.json", "w"), indent=4)
 
-        if self.get("token") == "":
-            console.print_error("No token found, please set it below.")
-            new_token = input("> ")
+        # if self.get("token") == "":
+        #     console.print_error("No token found, please set it below.")
+        #     new_token = input("> ")
 
-            self.set("token", new_token)
+        #     self.set("token", new_token)
 
-        if self.get("prefix") == "":
-            console.print_error("No prefix found, please set it below.")
-            new_prefix = input("> ")
+        # if self.get("prefix") == "":
+        #     console.print_error("No prefix found, please set it below.")
+        #     new_prefix = input("> ")
 
-            self.set("prefix", new_prefix)
+        #     self.set("prefix", new_prefix)
 
     def save(self) -> None:
         if isinstance(self.config["theme"], dict):
