@@ -127,8 +127,10 @@ def print_rpc(text):
 def print_sniper(sniper, title, description: dict, success=True):
     colour = colorama.Fore.LIGHTGREEN_EX if success else colorama.Fore.LIGHTRED_EX
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colour}{colorama.Style.BRIGHT}[{sniper.upper()}]{colorama.Style.RESET_ALL} {title}")
+    gui.add_console(sniper.upper(), title)
 
     for key, value in description.items():
         print(f"{' '*10} {colorama.Fore.LIGHTYELLOW_EX}{colorama.Style.NORMAL}{key}: {colorama.Style.RESET_ALL}{value}")
+        gui.add_console("SNIPER_ARG|{sniper.upper()}", f"{key}: {value}")
 
     print()

@@ -241,7 +241,10 @@ class GhostGUI:
         try:
             self.console_inner_wrapper.delete(1.0, "end")
             for index, (time, prefix, text) in enumerate(self.console):
-                self.console_inner_wrapper.insert("end", f"[{time}] [{prefix}] {text}\n")
+                if "sniper_arg" in prefix.lower():
+                    self.console_inner_wrapper.insert("end", f"{' '*10} {text}\n")
+                else:
+                    self.console_inner_wrapper.insert("end", f"[{time}] [{prefix}] {text}\n")
                 self.console_inner_wrapper.see("end")
 
         except Exception as e:
