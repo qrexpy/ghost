@@ -158,6 +158,9 @@ class GhostGUI:
 
         self.draw_sidebar()
 
+    def clear_console(self):
+        self.console = []
+
     def add_console(self, prefix, text):
         time = console.get_formatted_time()
         self.console.append((time, prefix, text))
