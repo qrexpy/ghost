@@ -22,7 +22,7 @@ DEFAULT_RPC = {
     }
 DEFAULT_CONFIG = {
     "token": "",
-    "prefix": "",
+    "prefix": ".",
     "rich_presence": DEFAULT_RPC,
     "theme": "ghost",
     "gui": True,

@@ -1,6 +1,6 @@
 {
     "token": "",
-    "prefix": "",
+    "prefix": ".",
     "rich_presence": true,
     "theme": "ghost",
     "gui": true,
