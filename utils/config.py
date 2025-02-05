@@ -6,8 +6,8 @@ from . import console
 from . import webhook as webhook_client
 
 MOTD = "A cockroach can live for weeks without its head".lower()
-PRODUCTION = True
-VERSION = "3.5.1"
+PRODUCTION = False
+VERSION = "3.5.2"
 VERSION += "-dev" if not PRODUCTION else ""
 DEFAULT_RPC = {
         "enabled": False,
