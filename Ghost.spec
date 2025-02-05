@@ -5,7 +5,7 @@ a = Analysis(
     ['ghost.py'],
     pathex=[],
     binaries=[],
-    datas=[('data/*', 'data/'), ('data/fonts/*', 'data/fonts/')],
+    datas=[('data/*', 'data/'), ('data/fonts/*', 'data/fonts/'), ('data/icons/*', 'data/icons/')],
     hiddenimports=['faker', 'pypresence', 'requests'],
     hookspath=[],
     hooksconfig={},
