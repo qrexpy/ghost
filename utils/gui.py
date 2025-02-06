@@ -14,7 +14,7 @@ from utils import files
 
 from pathlib import Path
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
-from PIL import Image, ImageTk, ImageOps
+from PIL import Image, ImageTk
 
 PATH = Path(__file__).parent
 
@@ -289,7 +289,7 @@ class GhostGUI:
             )
         console_textarea.pack(fill="both", expand=True)
 
-        self.console_inner_wrapper = ttk.Text(console_textarea, wrap="word", height=20, font=("Menlo", 12))
+        self.console_inner_wrapper = ttk.Text(console_textarea, wrap="word", height=20, font=("JetBrainsMono NF Regular", 12))
         self.console_inner_wrapper.config(
             border=0, 
             background=self.root.style.colors.get("dark"), 
@@ -617,7 +617,7 @@ class GhostGUI:
                 cfg.set(key, tkinter_entry.get())
 
             cfg.set("rich_presence.enabled", config_tk_entries["rich_presence"].instate(["selected"]), save=False)
-            cfg.set("gui", config_tk_entries["gui"].instate(["selected"]), save=False)
+            # cfg.set("gui", config_tk_entries["gui"].instate(["selected"]), save=False)
 
             cfg.save()
             cfg.check()
@@ -691,11 +691,7 @@ class GhostGUI:
         gui_checkbox = ttk.Checkbutton(config_frame, text="Enable GUI", style="success.TCheckbutton")
         gui_checkbox.configure(state="disabled")
         gui_checkbox.grid(row=len(config_entries) + 2, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
-        if cfg.get("gui"):
-            gui_checkbox.invoke()
-        else:
-            for _ in range(2):
-                gui_checkbox.invoke()
+        gui_checkbox.invoke()
 
         config_tk_entries["rich_presence"] = rpc_checkbox
         config_tk_entries["gui"] = gui_checkbox
@@ -879,6 +875,7 @@ class GhostGUI:
         main.grid_columnconfigure(0, weight=1)
                 
         rpc_entries = {
+            "client_id": "Client ID",
             "details": "Details",
             "state": "State",
             "large_image": "Large Image Key",
