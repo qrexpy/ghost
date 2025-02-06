@@ -172,15 +172,7 @@ class Img(commands.Cog):
                 "colour": "#ff0000"
             })
 
-        args = {
-            "avatar_url": user.avatar.url,
-            "username": user.name,
-            "text": message
-        }
-
-        api = "https://benny.fun/api/discordmessage"
-
-        response = requests.get(f"https://benny.fun/api/discordmessage?avatar_url={args['avatar_url']}&username={args['username']}&text={args['text']}")
+        response = requests.get(f"https://benny.fun/api/discordmessage?avatar_url={user.avatar.url}&username={user.name}&text={message}")
 
         if response.status_code == 200:
             with open("data/cache/discordmessage.png", "wb") as file:
