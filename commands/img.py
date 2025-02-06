@@ -155,6 +155,45 @@ class Img(commands.Cog):
                     "description": "Failed to generate challenge. API must be down...",
                     "colour": "ff0000"
             })
+        
+    @commands.command(name="discordmessage", description="Create a fake Discord message.", aliases=["fakediscordmessage", "fakediscordmsg", "fakediscord"], usage="[user] [message]")
+    async def discordmessage(self, ctx, user: discord.Member = None, *, message: str = None):
+        if not user:
+            return await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": "Please specify a user to make the message from.",
+                "colour": "#ff0000"
+            })
+
+        if not message:
+            return await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": "Please specify a message to send.",
+                "colour": "#ff0000"
+            })
+
+        args = {
+            "avatar_url": user.avatar.url,
+            "username": user.name,
+            "text": message
+        }
+
+        api = "https://benny.fun/api/discordmessage"
+
+        response = requests.get(f"https://benny.fun/api/discordmessage?avatar_url={args['avatar_url']}&username={args['username']}&text={args['text']}")
+
+        if response.status_code == 200:
+            with open("data/cache/discordmessage.png", "wb") as file:
+                file.write(response.content)
+
+            await ctx.send(file=discord.File("data/cache/discordmessage.png"))
+            os.remove("data/cache/discordmessage.png")
+        else:
+            await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": "Failed to generate discord message.",
+                "colour": "#ff0000"
+            })
 
     @commands.command(name="searchimage", description="Search for an image on google", usage="[query]", aliases=["searchimg", "imgsearch", "imagesearch"])
     async def searchimage(self, ctx, *, query):
