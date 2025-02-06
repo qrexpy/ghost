@@ -157,7 +157,7 @@ class Img(commands.Cog):
             })
         
     @commands.command(name="discordmessage", description="Create a fake Discord message.", aliases=["fakediscordmessage", "fakediscordmsg", "fakediscord"], usage="[user] [message]")
-    async def discordmessage(self, ctx, user: discord.Member = None, *, message: str = None):
+    async def discordmessage(self, ctx, user: discord.User = None, *, message: str = None):
         if not user:
             return await cmdhelper.send_message(ctx, {
                 "title": "Error",
