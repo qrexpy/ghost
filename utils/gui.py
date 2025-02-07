@@ -3,14 +3,20 @@
 
 import os
 import sys
+import time
+import psutil
 import discord
+import asyncio
 import requests
 import threading
+import webbrowser
+import concurrent
 import ttkbootstrap as ttk
 
 from utils import console
 from utils import config
 from utils import files
+from utils import cmdhelper
 
 from pathlib import Path
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -64,8 +70,9 @@ class GhostGUI:
     def __init__(self, bot=None):
         self.bot = bot
         self.width = 600
-        self.height = 500
+        self.height = 520
         self.bot_started = False
+        self.bot_thread = None
         self.console = []
         self.visible_console_lines = []
 
@@ -81,33 +88,80 @@ class GhostGUI:
         self.root.style.configure("TCheckbutton", background=self.root.style.colors.get("dark"))
 
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
-
-        icon_size = (20, 20)
-        home_icon = files.resource_path("data/icons/house-solid.png")
-        settings_icon = files.resource_path("data/icons/gear-solid.png")
-        theming_icon = files.resource_path("data/icons/paint-roller-solid.png")
-        snipers_icon = files.resource_path("data/icons/crosshairs-solid.png")
-        rich_presence_icon = files.resource_path("data/icons/discord-brands-solid.png")
-        logout_icon = files.resource_path("data/icons/power-off-solid.png")
-        apis_icon = files.resource_path("data/icons/cloud-solid.png")
-        session_spoofing_icon = files.resource_path("data/icons/shuffle-solid.png")
-        submit_icon = files.resource_path("data/icons/arrow-right-solid.png")
-
-        self.home_icon = ImageTk.PhotoImage(Image.open(home_icon).resize(icon_size))
-        self.settings_icon = ImageTk.PhotoImage(Image.open(settings_icon).resize(icon_size))
-        self.theming_icon = ImageTk.PhotoImage(Image.open(theming_icon).resize(icon_size))
-        self.snipers_icon = ImageTk.PhotoImage(Image.open(snipers_icon).resize(icon_size))
-        self.rich_presence_icon = ImageTk.PhotoImage(Image.open(rich_presence_icon).resize(icon_size))
-        self.logout_icon = ImageTk.PhotoImage(Image.open(logout_icon).resize(icon_size))
-        self.apis_icon = ImageTk.PhotoImage(Image.open(apis_icon).resize(icon_size))
-        self.session_spoofing_icon = ImageTk.PhotoImage(Image.open(session_spoofing_icon).resize(icon_size))
-        self.submit_icon = ImageTk.PhotoImage(Image.open(submit_icon).resize((10, 10)))
+        self.user_avatar_path = files.resource_path("data/cache/avatar.png")
+        self.current_page = "home"
 
         # self.root.style.configure("primary.TButton", background="#254bff")
         # self.root.style.configure("secondary.TButton", background="#383838")
         # self.root.style.configure("success.TButton", background="#00db7c")
         # self.root.style.configure("danger.TButton", background="#e7230f")
         # self.root.style.configure("warning.TButton", background="#f39500")
+
+        self.start_button = ttk.Button(self.root, text="Start Ghost", command=self.start_bot_thread)
+        self.start_button.pack(fill=ttk.BOTH, side=ttk.BOTTOM, pady=10)
+
+    def load_images(self):
+        icon_size = (20, 20)
+        small_size = (15, 15)
+        tiny_size = (10, 10)
+
+        icons = {
+            "home": "data/icons/house-solid.png",
+            "home_hover": "data/icons/hover/house-solid.png",
+            "settings": "data/icons/gear-solid.png",
+            "settings_hover": "data/icons/hover/gear-solid.png",
+            "theming": "data/icons/paint-roller-solid.png",
+            "theming_hover": "data/icons/hover/paint-roller-solid.png",
+            "snipers": "data/icons/crosshairs-solid.png",
+            "snipers_hover": "data/icons/hover/crosshairs-solid.png",
+            "rich_presence": "data/icons/discord-brands-solid.png",
+            "rich_presence_hover": "data/icons/hover/discord-brands-solid.png",
+            "console": "data/icons/terminal-solid.png",
+            "console_hover": "data/icons/hover/terminal-solid.png",
+            "logout": "data/icons/power-off-solid.png",
+            "logout_hover": "data/icons/hover/power-off-solid.png",
+            "apis": "data/icons/cloud-solid.png",
+            "session_spoofing": "data/icons/shuffle-solid.png",
+            "submit": "data/icons/arrow-right-solid.png",
+            "trash": "data/icons/trash-solid.png",
+            "github": "data/icons/github-brands-solid.png",
+            "restart": "data/icons/rotate-right-solid.png",
+        }
+
+        self.images = {}  # Dictionary to hold images
+
+        for key, path in icons.items():
+            size = small_size if key in ["trash", "github"] else tiny_size if key == "submit" else icon_size
+            image_path = files.resource_path(path)
+            self.images[key] = ImageTk.PhotoImage(Image.open(image_path).resize(size))
+
+        # Optional: Assign commonly used images as attributes
+        self.home_icon = self.images["home"]
+        self.home_icon_hover = self.images["home_hover"]
+        self.settings_icon = self.images["settings"]
+        self.settings_icon_hover = self.images["settings_hover"]
+        self.theming_icon = self.images["theming"]
+        self.theming_icon_hover = self.images["theming_hover"]
+        self.snipers_icon = self.images["snipers"]
+        self.snipers_icon_hover = self.images["snipers_hover"]
+        self.rich_presence_icon = self.images["rich_presence"]
+        self.rich_presence_icon_hover = self.images["rich_presence_hover"]
+        self.console_icon = self.images["console"]
+        self.console_icon_hover = self.images["console_hover"]
+        self.logout_icon = self.images["logout"]
+        self.logout_icon_hover = self.images["logout_hover"]
+
+        self.apis_icon = self.images["apis"]
+        self.session_spoofing_icon = self.images["session_spoofing"]
+        self.submit_icon = self.images["submit"]
+        self.github_icon = self.images["github"]
+        self.trash_icon_small = self.images["trash"]
+        self.restart_icon = self.images["restart"]
+
+    def save_avatar(self):
+        response = requests.get(self.bot.user.avatar.url)
+        with open(files.resource_path("data/cache/avatar.png"), "wb") as file:
+            file.write(response.content)
 
     def center_window(self, width=None, height=None):
         if height is not None:
@@ -160,56 +214,64 @@ class GhostGUI:
         minimise_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
         minimise_button.bind("<Button-1>", lambda e: self.root.iconify())
 
-        close_button = ttk.Label(titlebar, text="x")
-        close_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        close_button = ttk.Label(titlebar, text="×", font="-size 14")
+        close_button.configure(background=self.root.style.colors.get("dark"), anchor="n")
         close_button.bind("<Button-1>", lambda e: self.quit())
 
-        title.pack(side=ttk.LEFT, padx=10)
-        minimise_button.pack(side=ttk.RIGHT, padx=10)
-        close_button.pack(side=ttk.RIGHT, padx=10)
+        title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=10)
+        minimise_button.grid(row=0, column=2, sticky=ttk.E, padx=5, pady=10)
+        close_button.grid(row=0, column=3, sticky=ttk.E, padx=(0, 10), pady=10)
+
+        titlebar.grid_columnconfigure(1, weight=1)
 
     def draw_sidebar(self):
         # self.draw_titlebar()
 
+        def _create_sidebar_button(image, hover_image, page_name, command, row, special_bg=False):
+            """Helper function to create sidebar buttons with hover and selection effects."""
+            is_selected = self.current_page == page_name
+            bg_color = self.root.style.colors.get("secondary") if is_selected else self.root.style.colors.get("dark")
+
+            button = ttk.Label(self.sidebar, image=image, background=bg_color, anchor="center")
+            button.bind("<Button-1>", lambda e: self._update_page(command, page_name))
+            button.bind("<Enter>", lambda e: button.configure(image=hover_image))
+            button.bind("<Leave>", lambda e: button.configure(image=image))
+            button.grid(row=row, column=0, sticky=ttk.NSEW, pady=(10, 2) if row == 0 else 2, ipady=12)
+            
+            return button
+
+        # Create sidebar
         width = self.width // (self.width // 65)
-        self.sidebar = ttk.Frame(self.root, width=width, height=self.height)
+        self.sidebar = ttk.Frame(self.root, width=width, height=self.height, style="dark.TFrame")
         self.sidebar.pack(fill=ttk.BOTH, side=ttk.LEFT)
-        self.sidebar.configure(style="dark.TFrame")
         self.sidebar.grid_propagate(False)
 
-        home_button = ttk.Label(self.sidebar, image=self.home_icon)
-        home_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
-        home_button.bind("<Button-1>", lambda e: self.draw_home())
+        # Sidebar buttons
+        self.buttons = {
+            "home": _create_sidebar_button(self.home_icon, self.home_icon_hover, "home", self.draw_home, 0),
+            "console": _create_sidebar_button(self.console_icon, self.console_icon_hover, "console", self.draw_console, 1),
+            "settings": _create_sidebar_button(self.settings_icon, self.settings_icon_hover, "settings", self.draw_settings, 2),
+            "theming": _create_sidebar_button(self.theming_icon, self.theming_icon_hover, "theming", self.draw_theming, 3),
+            "snipers": _create_sidebar_button(self.snipers_icon, self.snipers_icon_hover, "snipers", self.draw_snipers, 4),
+            "rpc": _create_sidebar_button(self.rich_presence_icon, self.rich_presence_icon_hover, "rpc", self.draw_rich_presence, 5),
+        }
 
-        settings_button = ttk.Label(self.sidebar, image=self.settings_icon)
-        settings_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
-        settings_button.bind("<Button-1>", lambda e: self.draw_settings())
-
-        theming_button = ttk.Label(self.sidebar, image=self.theming_icon)
-        theming_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
-        theming_button.bind("<Button-1>", lambda e: self.draw_theming())
-
-        snipers_button = ttk.Label(self.sidebar, image=self.snipers_icon)
-        snipers_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
-        snipers_button.bind("<Button-1>", lambda e: self.draw_snipers())
-
-        rich_presence_button = ttk.Label(self.sidebar, image=self.rich_presence_icon)
-        rich_presence_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
-        rich_presence_button.bind("<Button-1>", lambda e: self.draw_rich_presence())
-
-        logout_button = ttk.Label(self.sidebar, image=self.logout_icon)
-        logout_button.configure(background=self.root.style.colors.get("dark"), anchor="center")
+        # Logout button (doesn't need page tracking)
+        logout_button = ttk.Label(self.sidebar, image=self.logout_icon, background=self.root.style.colors.get("dark"), anchor="center")
         logout_button.bind("<Button-1>", lambda e: self.quit())
+        logout_button.bind("<Enter>", lambda e: logout_button.configure(image=self.logout_icon_hover))
+        logout_button.bind("<Leave>", lambda e: logout_button.configure(image=self.logout_icon))
+        logout_button.grid(row=7, column=0, sticky=ttk.NSEW, pady=(2, 10), ipady=12)
 
-        home_button.grid(row=0, column=0, sticky=ttk.NSEW, pady=(10, 2), padx=10, ipady=12)
-        settings_button.grid(row=1, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
-        theming_button.grid(row=2, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
-        snipers_button.grid(row=3, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
-        rich_presence_button.grid(row=4, column=0, sticky=ttk.NSEW, pady=2, padx=10, ipady=12)
-        logout_button.grid(row=6, column=0, sticky=ttk.NSEW, pady=(2, 10), padx=10, ipady=12)
-
-        self.sidebar.grid_rowconfigure(5, weight=1)
+        # Configure grid
+        self.sidebar.grid_rowconfigure(6, weight=1)
         self.sidebar.grid_columnconfigure(0, weight=1)
+
+    def _update_page(self, command, page_name):
+        """Updates the current page and refreshes the sidebar to highlight the selected page."""
+        self.current_page = page_name
+        self.draw_sidebar()  # Redraw sidebar to update button backgrounds
+        command()
 
     def draw_main(self, scrollable=False):
         width = self.width - (self.width // 100)
@@ -230,15 +292,18 @@ class GhostGUI:
 
     def clear_console(self):
         self.console = []
+        self.update_console()
 
     def add_console(self, prefix, text):
         time = console.get_formatted_time()
         self.console.append((time, prefix, text))
+        self.update_console()
 
     def update_console(self):
         self.visible_console_lines = self.console[-20:]
 
         try:
+            self.console_inner_wrapper.config(state="normal")
             self.console_inner_wrapper.delete(1.0, "end")
             for index, (time, prefix, text) in enumerate(self.console):
                 if "sniper_arg" in prefix.lower():
@@ -247,43 +312,200 @@ class GhostGUI:
                     self.console_inner_wrapper.insert("end", f"[{time}] [{prefix}] {text}\n")
                 self.console_inner_wrapper.see("end")
 
+            self.console_inner_wrapper.config(state="disabled")
+
         except Exception as e:
             pass
 
-        self.root.after(500, self.update_console)
+        # self.root.after(500, self.update_console)
+
+    def update_bot_details(self):
+        try:
+            latency = self.bot.latency
+            latency_ms = round(latency * 1000) if latency != float("inf") else 0  # Fallback to 0ms
+
+            self.uptime_label.config(text=f"Uptime: {cmdhelper.format_time(time.time() - self.bot.start_time, short_form=True)}")
+            self.latency_label.config(text=f"Latency: {latency_ms}ms")
+        except Exception as e:
+            pass
+
+        self.root.after(1000, self.update_bot_details)
+
+    def update_discord_details(self):
+        try:
+            self.friends_label.config(text=f"Friends: {len(self.bot.friends)}")
+            self.guilds_label.config(text=f"Guilds: {len(self.bot.guilds)}")
+        except Exception as e:
+            pass
+
+        self.root.after(5000, self.update_discord_details)
 
     def draw_home(self):
         self.clear_main()
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
 
-        # header_frame = ttk.Frame(main, width=width, style="secondary.TFrame")
-        # header_frame.pack(fill=ttk.BOTH)
+        self.current_page = "home"
 
         header_frame = RoundedFrame(
             main, 
-            radius=(15, 15, 0, 0), 
+            radius=(15, 15, 15, 15), 
             bootstyle="secondary.TFrame", 
             background=self.root.style.colors.get("secondary")
             )
         header_frame.pack(fill=ttk.BOTH)
 
-        title = ttk.Label(header_frame, text=f"Ghost v{config.VERSION}", font="-weight bold -size 20")
-        title.configure(background=self.root.style.colors.get("secondary"))
-        subtitle = ttk.Label(header_frame, text=config.MOTD, font="-slant italic -size 14")
-        subtitle.configure(background=self.root.style.colors.get("secondary"))
+        self.avatar_image_large = ImageTk.PhotoImage(Image.open(self.user_avatar_path).resize((50, 50)))
+        avatar_label = ttk.Label(header_frame, image=self.avatar_image_large)
+        avatar_label.configure(background=self.root.style.colors.get("secondary"))
 
-        title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=(15, 0))
-        subtitle.grid(row=1, column=0, columnspan=2, sticky=ttk.NSEW, padx=15, pady=(0, 15))
+        username_label = ttk.Label(header_frame, text=f"{self.bot.user.display_name}", font="-weight bold -size 20")
+        username_label.configure(background=self.root.style.colors.get("secondary"))
 
-        # title.pack(fill=ttk.BOTH, padx=15, pady=(15, 0))
-        # subtitle.pack(fill=ttk.BOTH, padx=15, pady=(0, 15))
+        subtitle = ttk.Label(header_frame, text=f"{self.bot.user.name}", font="-slant italic -size 14")
+        subtitle.configure(background=self.root.style.colors.get("secondary"), foreground="lightgrey")
 
-        # console_textarea = ttk.Frame(main, width=width)
-        # console_textarea.configure(style="dark.TFrame")
-        console_textarea = RoundedFrame(
+        restart_label = ttk.Label(header_frame, image=self.restart_icon)
+        restart_label.configure(background=self.root.style.colors.get("secondary"))
+        restart_label.bind("<Button-1>", lambda e: self.restart_bot())
+
+        avatar_label.grid(row=0, column=0, sticky=ttk.W, padx=(15, 10), pady=15, rowspan=2)
+        restart_label.grid(row=0, column=3, sticky=ttk.E, padx=(0, 30), pady=15, rowspan=2)
+        username_label.grid(row=0, column=1, sticky=ttk.W, pady=(15, 0))
+        subtitle.grid(row=1, column=1, sticky=ttk.W, pady=(0, 15))
+
+        header_frame.grid_columnconfigure(2, weight=1)
+
+        details_wrapper_frame = ttk.Frame(main, width=width)
+        details_wrapper_frame.configure(style="default.TLabel")
+        details_wrapper_frame.pack(fill=ttk.BOTH, expand=False, pady=(10, 0))
+
+        # --------------------------------------------
+
+        account_details_frame = RoundedFrame(
+            details_wrapper_frame,
+            radius=(15, 15, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
+            )
+        
+        account_details_frame.grid(row=0, column=0, sticky=ttk.NSEW, padx=(0, 5), pady=(0, 5))
+        details_wrapper_frame.grid_columnconfigure(0, weight=1)
+        details_wrapper_frame.grid_rowconfigure(0, weight=1)
+
+        account_details_title = ttk.Label(account_details_frame, text="Discord", font="-weight bold -size 16")
+        account_details_title.configure(background=self.root.style.colors.get("dark"))
+        account_details_title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=(10, 0))
+
+        ttk.Separator(account_details_frame, orient="horizontal").grid(row=1, column=0, columnspan=2, sticky="we", padx=(10, 10), pady=5)
+        account_details_frame.grid_columnconfigure(1, weight=1)
+
+        self.friends_label = ttk.Label(account_details_frame, text=f"Friends: {len(self.bot.friends)}", font="-size 14")
+        self.friends_label.configure(background=self.root.style.colors.get("dark"))
+
+        self.guilds_label = ttk.Label(account_details_frame, text=f"Guilds: {len(self.bot.guilds)}", font="-size 14")
+        self.guilds_label.configure(background=self.root.style.colors.get("dark"))
+
+        self.friends_label.grid(row=2, column=0, sticky=ttk.W, padx=10, pady=(5, 0))
+        self.guilds_label.grid(row=3, column=0, sticky=ttk.W, padx=(10, 40), pady=(0, 10))
+
+        # --------------------------------------------
+
+        bot_details_frame = RoundedFrame(
+            details_wrapper_frame,
+            radius=(15, 15, 15, 15),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
+            )
+        
+        bot_details_frame.grid(row=0, column=1, sticky=ttk.NSEW, padx=(5, 0), pady=(0, 5))
+        details_wrapper_frame.grid_columnconfigure(1, weight=1)
+
+        bot_details_title = ttk.Label(bot_details_frame, text="Ghost", font="-weight bold -size 16")
+        bot_details_title.configure(background=self.root.style.colors.get("dark"))
+        bot_details_title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=(10, 0))
+
+        ttk.Separator(bot_details_frame, orient="horizontal").grid(row=1, column=0, columnspan=2, sticky="we", padx=(10, 10), pady=5)
+        bot_details_frame.grid_columnconfigure(1, weight=1)
+
+        self.uptime_label = ttk.Label(bot_details_frame, text=f"Uptime: {cmdhelper.format_time(time.time() - self.bot.start_time, short_form=True)}", font="-size 14")
+        self.uptime_label.configure(background=self.root.style.colors.get("dark"))
+
+        latency = self.bot.latency
+        latency_ms = round(latency * 1000) if latency != float("inf") else 0  # Fallback to 0ms
+
+        self.latency_label = ttk.Label(bot_details_frame, text=f"Latency: {latency_ms}ms", font="-size 14")
+        self.latency_label.configure(background=self.root.style.colors.get("dark"))
+
+        version_label = ttk.Label(bot_details_frame, text=f"Version: {config.VERSION}", font="-size 14")
+        version_label.configure(background=self.root.style.colors.get("dark"))
+
+        self.uptime_label.grid(row=2, column=0, sticky=ttk.W, padx=(10, 0), pady=(5, 0))
+        self.latency_label.grid(row=3, column=0, sticky=ttk.W, padx=(10, 0))
+        version_label.grid(row=4, column=0, sticky=ttk.W, padx=(10, 0), pady=(0, 10))
+
+        # --------------------------------------------
+
+        changelog_frame = RoundedFrame(
+            main,
+            radius=(15, 15, 0, 0),
+            bootstyle="dark.TFrame",
+            background=self.root.style.colors.get("dark")
+            )
+        
+        changelog_frame.pack(fill=ttk.BOTH, expand=True, pady=(5, 0))
+
+        changelog_title = ttk.Label(changelog_frame, text="Latest Changelog", font="-weight bold -size 16")
+        changelog_title.configure(background=self.root.style.colors.get("dark"))
+        changelog_title.pack(fill=ttk.BOTH, padx=10, pady=(10, 0))
+
+        changelog_textbox = ttk.Text(changelog_frame, wrap="word", height=10, font=("JetBrainsMono NF Regular", 12))
+        changelog_textbox.config(
+            border=0,
+            background=self.root.style.colors.get("dark"),
+            foreground="lightgrey",
+            highlightcolor=self.root.style.colors.get("dark"),
+            highlightbackground=self.root.style.colors.get("dark"),
+            )
+        
+        changelog_textbox.pack(fill=ttk.BOTH, expand=True, padx=10, pady=5)
+        changelog_textbox.insert("end", config.CHANGELOG)
+        changelog_textbox.config(state="disabled")
+
+        changelog_footer_frame = RoundedFrame(
             main,
             radius=(0, 0, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
+        
+        changelog_footer_frame.pack(fill=ttk.BOTH, expand=False)
+
+        changelog_footer_label = ttk.Label(changelog_footer_frame, text="Star Ghost on GitHub! (please 🙏)", font="-slant italic -size 12")
+        changelog_footer_label.configure(background=self.root.style.colors.get("secondary"))
+
+        github_label = ttk.Label(changelog_footer_frame, image=self.github_icon)
+        github_label.configure(background=self.root.style.colors.get("secondary"))
+        github_label.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/ghostselfbot/ghost"))
+
+        changelog_footer_label.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=5)
+        github_label.grid(row=0, column=2, sticky=ttk.E, padx=10, pady=5)
+        changelog_footer_frame.grid_columnconfigure(1, weight=1)
+
+        # --------------------------------------------
+
+        self.root.after(1000, self.update_bot_details)
+        self.root.after(5000, self.update_discord_details)
+
+    def draw_console(self):
+        self.clear_main()
+        main = self.draw_main()
+
+        self.current_page = "console"
+
+        console_textarea = RoundedFrame(
+            main,
+            radius=(15, 15, 0, 0),
             bootstyle="dark.TFrame",
             background=self.root.style.colors.get("dark")
             )
@@ -295,11 +517,38 @@ class GhostGUI:
             background=self.root.style.colors.get("dark"), 
             foreground="lightgrey", 
             highlightcolor=self.root.style.colors.get("dark"), 
-            highlightbackground=self.root.style.colors.get("dark")
+            highlightbackground=self.root.style.colors.get("dark"),
+            state="disabled"
             )
-        self.console_inner_wrapper.pack(fill="both", expand=True, padx=5, pady=10)
+        self.console_inner_wrapper.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.root.after(500, self.update_console)
+        self.update_console()
+
+        footer_frame = RoundedFrame(
+            main,
+            radius=(0, 0, 15, 15),
+            bootstyle="secondary.TFrame",
+            background=self.root.style.colors.get("secondary")
+            )
+
+        footer_frame.pack(fill="both", expand=False)
+
+        self.avatar_image_small = ImageTk.PhotoImage(Image.open(self.user_avatar_path).resize((15, 15)))
+        avatar_label = ttk.Label(footer_frame, image=self.avatar_image_small)
+        avatar_label.configure(background=self.root.style.colors.get("secondary"))
+
+        username_label = ttk.Label(footer_frame, text=f"Logged in as {self.bot.user.name}", font="-slant italic -size 12")
+        username_label.configure(background=self.root.style.colors.get("secondary"))
+
+        clear_console_label = ttk.Label(footer_frame, image=self.trash_icon_small)
+        clear_console_label.configure(background=self.root.style.colors.get("secondary"))
+        clear_console_label.bind("<Button-1>", lambda e: self.clear_console())
+
+        avatar_label.grid(row=0, column=0, sticky=ttk.W, padx=(10, 5), pady=5)
+        username_label.grid(row=0, column=1, sticky=ttk.W, pady=5)
+        clear_console_label.grid(row=0, column=3, sticky=ttk.E, padx=(5, 10), pady=5)
+
+        footer_frame.grid_columnconfigure(2, weight=1)
 
         main.grid_columnconfigure(0, weight=1)
 
@@ -307,6 +556,8 @@ class GhostGUI:
         self.clear_main()
         main = self.draw_main()
         cfg = config.Config()
+
+        self.current_page = "snipers"
 
         placeholder = "Paste your webhook here..."
         snipers = cfg.get_snipers()
@@ -328,9 +579,6 @@ class GhostGUI:
                     sniper.set(key, entry.instate(["selected"]))
 
             sniper.save()
-
-        # title = ttk.Label(main, text="Snipers", font="-weight bold -size 20")
-        # title.grid(row=0, column=0, sticky=ttk.NSEW)
 
         header_frame = RoundedFrame(
             main, 
@@ -422,6 +670,8 @@ class GhostGUI:
         self.clear_main()
         main = self.draw_main()
         cfg = config.Config()
+
+        self.current_page = "theming"
 
         themes = cfg.get_themes()
         theme_dict = cfg.theme.to_dict()
@@ -585,6 +835,8 @@ class GhostGUI:
         self.clear_main()
         main = self.draw_main(scrollable=True)
         cfg = config.Config()
+        
+        self.current_page = "settings"
 
         config_tk_entries = {}
         config_entries = {
@@ -802,7 +1054,7 @@ class GhostGUI:
         session_spoofing_checkbox = ttk.Checkbutton(session_spoofing_frame, text="Enable session spoofing", style="success.TCheckbutton")
         session_spoofing_checkbox.grid(row=0, column=0, columnspan=2, sticky=ttk.W, padx=(13, 0), pady=(10, 0))
 
-        if cfg.get("session_spoofing"):
+        if cfg.get("session_spoofing")["enabled"]:
             session_spoofing_checkbox.invoke()
         else:
             for _ in range(2):
@@ -841,10 +1093,11 @@ class GhostGUI:
         rpc = cfg.get_rich_presence()
         
         self.clear_main()
-        
         main = self.draw_main()
         width = main.winfo_reqwidth() - self.sidebar.winfo_reqwidth() - 35
         
+        self.current_page = "rpc"
+
         header_frame = RoundedFrame(
             main, 
             radius=(15, 15, 0, 0), 
@@ -980,6 +1233,17 @@ class GhostGUI:
         submit_button.grid(row=0, column=2, sticky=ttk.E, padx=(0, 20), pady=10)
         entry_frame.grid_columnconfigure(1, weight=1)
 
+    def draw_loading(self, type="start"):
+        self.root.minsize(400, 90)
+        self.root.geometry("400x90")
+        self.root.overrideredirect(False)
+
+        self.center_window(400, 90)
+
+        loading_label = ttk.Label(self.root, text="Ghost is starting..." if type == "start" else "Ghost is restarting...", font="-weight bold -size 20", anchor="center")
+        loading_label.pack(fill=ttk.BOTH, padx=30, pady=30, anchor="center")
+        self.root.pack_propagate(False)
+
     def run_without_bot(self):
         self.draw_sidebar()
         self.draw_home()
@@ -992,39 +1256,120 @@ class GhostGUI:
             if cfg.get("token") == "":
                 self.draw_onboarding()
             else:
-                bot_start_btn = ttk.Button(self.root, text="Start Ghost", command=self.start_bot_thread)
-                bot_start_btn.pack(fill=ttk.BOTH, side=ttk.BOTTOM, pady=10)
+                self.start_button.invoke()
+                self.start_button.destroy()
 
-                bot_start_btn.invoke()
-                bot_start_btn.destroy()
-
-                while not self.bot_started:
-                    pass
-                
                 self.center_window()
-                self.draw_sidebar()
-                self.draw_home()
+                self.draw_loading()
 
-                self.root.after(500, self.update_console)
             self.root.mainloop()
         else:
-            self.start_bot()
+            self.start_bot_thread()
 
-    def start_bot(self):
+    def check_bot_started(self):
+        if self.bot.is_ready():
+            self.bot_started = True
+            self.root.after(0, self.on_bot_ready)
+        else:
+            self.root.after(500, self.check_bot_started)
+
+    def on_bot_ready(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        self.root.minsize(600, 520)
+        self.root.geometry(f"{600}x{520}")
+        self.center_window(600, 520)
+        self.load_images()
+
+        self.root.after(0, self.save_avatar)
+        self.root.after(0, self.draw_sidebar)
+        self.root.after(0, self.draw_home)
+
+        self.root.after(500, self.update_console)
+
+    def start_bot_thread(self):
+        if not self.bot_started:
+            self.bot_thread = threading.Thread(target=self.run_bot, daemon=True)
+            self.bot_thread.start()
+            self.root.after(0, self.check_bot_started)
+
+    def run_bot(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.bot_start())
+
+    async def bot_start(self):
         cfg = config.Config()
-
+        self.bot_started = True
         try:
             console.print_info("Starting Ghost...")
-            self.bot.run(cfg.get("token"), log_handler=console.handler)
+            await self.bot.start(cfg.get("token"), reconnect=True)
         except discord.errors.LoginFailure:
             console.print_error("Failed to login, reset token and showing onboarding again...")
             cfg.set("token", "")
             cfg.save()
             os.execl(sys.executable, sys.executable, *sys.argv)
 
-    def start_bot_thread(self):
-        self.thread = threading.Thread(target=self.start_bot)
-        self.thread.start()
+    def hide_all_ui(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+    async def stop_bot(self):
+        self.bot_started = False
+        console.print_info("Stopping Ghost...")
+        await self.bot.close()
+        console.print_success("Ghost stopped!")
+
+        # Cancel all remaining tasks in the event loop
+        console.print_info("Cancelling all remaining tasks...")
+        loop = self.bot.loop
+        tasks = [task for task in asyncio.all_tasks(loop) if task is not asyncio.current_task()]
+        for task in tasks:
+            task.cancel()
+            console.print_success(f"Cancelled task: {task}")
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+        
+        # Properly stop the event loop
+        console.print_info("Stopping the event loop...")
+        loop.stop()
+        console.print_success("Event loop stopped!")
+
+    async def _restart_bot(self):
+        cfg = config.Config()
+        # console.print_info("Calling stop_bot()...")
+        # await self.stop_bot()
+        # console.print_info("Bot stopped!")
+
+        # Create a fresh bot instance
+
+        await self.bot.close()
+
+        console.print_info("Creating a new bot instance...")
+        from ghost import ghost
+        self.bot = ghost(command_prefix=config.Config().get("prefix"), self_bot=True, help_command=None)
+        console.print_info("New bot instance created!")
+
+        # Start the bot
+        console.print_info("Starting the bot...")
+        self.bot_started = True
+        await self.bot.start(cfg.get("token"), reconnect=True)
+        console.print_success("Bot started!")
+
+    def restart_bot(self):
+        """Handles the bot restart from the main thread."""
+        if self.bot_started:
+            self.hide_all_ui()
+
+            loop = self.bot.loop
+            loop.create_task(self.stop_bot())
+            
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            new_loop.run_until_complete(self._restart_bot())
 
 if __name__ == "__main__":
     gui = GhostGUI()
