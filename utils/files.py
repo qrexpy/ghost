@@ -1,15 +1,11 @@
 import os
 import sys
 
-from . import config
-
 def resource_path(relative_path):
-    if config.PRODUCTION:
-        try:
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-
-        return os.path.join(base_path, relative_path)
+    """ Get the absolute path to a resource, handling PyInstaller builds. """
+    if getattr(sys, 'frozen', False):  # Detect if running as a PyInstaller bundle
+        base_path = sys._MEIPASS  # Extracted temp folder
     else:
-        return relative_path
+        base_path = os.path.abspath(".")  # Normal script execution
+
+    return os.path.join(base_path, relative_path)
