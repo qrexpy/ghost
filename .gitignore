@@ -40,3 +40,6 @@ utils/memberfetch.py
 compile.bat
 /.idea
 games.json
+data/icons/.DS_Store
+data/icons/hover/.DS_Store
+__pycache__/*
