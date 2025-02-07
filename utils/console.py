@@ -16,6 +16,18 @@ if not headless: from utils import gui as ghost_gui
 handler = logging.FileHandler(filename='ghost.log', encoding='utf-8', mode='w')
 gui = None
 
+banner = f"""  ▄████  ██░ ██  ▒█████    ██████ ▄▄▄█████▓
+ ██▒ ▀█▒▓██░ ██▒▒██▒  ██▒▒██    ▒ ▓  ██▒ ▓▒
+▒██░▄▄▄░▒██▀▀██░▒██░  ██▒░ ▓██▄   ▒ ▓██░ ▒░
+░▓█  ██▓░▓█ ░██ ▒██   ██░  ▒   ██▒░ ▓██▓ ░ 
+░▒▓███▀▒░▓█▒░██▓░ ████▓▒░▒██████▒▒  ▒██▒ ░ 
+ ░▒   ▒  ▒ ░░▒░▒░ ▒░▒░▒░ ▒ ▒▓▒ ▒ ░  ▒ ░░   
+  ░   ░  ▒ ░▒░ ░  ░ ▒ ▒░ ░ ░▒  ░ ░    ░    
+░ ░   ░  ░  ░░ ░░ ░ ░ ▒  ░  ░  ░    ░      
+      ░  ░  ░  ░    ░ ░        ░           
+                                           
+"""
+
 def init_gui(bot):
     global gui
     gui = ghost_gui.GhostGUI(bot)
@@ -25,12 +37,13 @@ def get_gui():
     return gui if not headless else None
 
 def clear():
-    if sys.platform == "win32":
-        os.system("cls")
-    else:
-        os.system("clear")
+    pass
+    # if sys.platform == "win32":
+    #     os.system("cls")
+    # else:
+    #     os.system("clear")
 
-    gui.clear_console()
+    # gui.clear_console()
 
 def resize(columns, rows):
     if sys.platform == "win32":
@@ -52,17 +65,6 @@ def print_banner():
     if len(banner_line) < total_width:
         banner_line += "—"
 
-    banner = f"""  ▄████  ██░ ██  ▒█████    ██████ ▄▄▄█████▓
- ██▒ ▀█▒▓██░ ██▒▒██▒  ██▒▒██    ▒ ▓  ██▒ ▓▒
-▒██░▄▄▄░▒██▀▀██░▒██░  ██▒░ ▓██▄   ▒ ▓██░ ▒░
-░▓█  ██▓░▓█ ░██ ▒██   ██░  ▒   ██▒░ ▓██▓ ░ 
-░▒▓███▀▒░▓█▒░██▓░ ████▓▒░▒██████▒▒  ▒██▒ ░ 
- ░▒   ▒  ▒ ░░▒░▒░ ▒░▒░▒░ ▒ ▒▓▒ ▒ ░  ▒ ░░   
-  ░   ░  ▒ ░▒░ ░  ░ ▒ ▒░ ░ ░▒  ░ ░    ░    
-░ ░   ░  ░  ░░ ░░ ░ ░ ▒  ░  ░  ░    ░      
-      ░  ░  ░  ░    ░ ░        ░           
-                                           
-"""
     print(colorama.Fore.LIGHTBLUE_EX + colorama.Style.BRIGHT)
     print(pystyle.Center.XCenter(banner))
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}")
