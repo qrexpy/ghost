@@ -1254,6 +1254,8 @@ class GhostGUI:
 
         if cfg.get("gui"):
             if cfg.get("token") == "":
+                self.start_button.destroy()
+                self.load_images()
                 self.draw_onboarding()
             else:
                 self.start_button.invoke()
