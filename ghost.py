@@ -87,7 +87,8 @@ for script_file in os.listdir("scripts"):
 
 @ghost.event
 async def on_connect():
-    if gui: gui.bot_started = True
+    if not headless: 
+        if gui: gui.bot_started = True
     ghost.start_time = time.time()
 
     await ghost.add_cog(ghost_commands.Account(ghost))
@@ -159,9 +160,10 @@ async def on_command_error(ctx, error):
 #     cfg.save()
 
 try:
-    if gui and not headless:
+    if not headless:
         gui.run()
     else:
+        console.print_info("Starting Ghost in headless mode...")
         ghost.run(token, log_handler=console.handler)
 except Exception as e:
     console.print_error(str(e))
