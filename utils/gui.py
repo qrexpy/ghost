@@ -370,7 +370,7 @@ class GhostGUI:
         restart_label.bind("<Button-1>", lambda e: self.restart_bot())
 
         avatar_label.grid(row=0, column=0, sticky=ttk.W, padx=(15, 10), pady=15, rowspan=2)
-        restart_label.grid(row=0, column=3, sticky=ttk.E, padx=(0, 30), pady=15, rowspan=2)
+        # restart_label.grid(row=0, column=3, sticky=ttk.E, padx=(0, 30), pady=15, rowspan=2)
         username_label.grid(row=0, column=1, sticky=ttk.W, pady=(15, 0))
         subtitle.grid(row=1, column=1, sticky=ttk.W, pady=(0, 15))
 
