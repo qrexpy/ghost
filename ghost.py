@@ -4,6 +4,12 @@ import certifi
 import os
 os.environ["SSL_CERT_FILE"] = certifi.where()
 
+headless = False
+try:
+    import ttkbootstrap
+except ModuleNotFoundError:
+    headless = True
+
 import sys
 import requests
 import time
@@ -60,7 +66,7 @@ ghost = commands.Bot(
     help_command=None
 )
 
-gui = console.init_gui(ghost)
+if not headless: gui = console.init_gui(ghost)
 user = requests.get("https://discord.com/api/users/@me", headers={"Authorization": cfg.get("token")}).json()
 rpc_log = ""
 presence = cfg.get_rich_presence()
@@ -153,7 +159,7 @@ async def on_command_error(ctx, error):
 #     cfg.save()
 
 try:
-    if gui:
+    if gui and not headless:
         gui.run()
     else:
         ghost.run(token, log_handler=console.handler)
