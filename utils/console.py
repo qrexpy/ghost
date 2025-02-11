@@ -37,13 +37,12 @@ def get_gui():
     return gui if not headless else None
 
 def clear():
-    pass
-    # if sys.platform == "win32":
-    #     os.system("cls")
-    # else:
-    #     os.system("clear")
+    if sys.platform == "win32":
+        os.system("cls")
+    else:
+        os.system("clear")
 
-    # gui.clear_console()
+    gui.clear_console()
 
 def resize(columns, rows):
     if sys.platform == "win32":
