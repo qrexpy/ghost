@@ -1,4 +1,4 @@
-# Ghost <img width="150" align="right" src="https://github.com/user-attachments/assets/3916f3e8-2bf4-4558-aa6d-a1526d27eeb9">
+# Ghost <img width="150" align="right" src="https://github.com/user-attachments/assets/00fc815f-4cb3-4078-94bf-e16cf3fc9fea">
 The most advanced open source Discord Selfbot.  
 Ghost has 150+ commands and a completely custom built GUI for endless customisation!  
 
