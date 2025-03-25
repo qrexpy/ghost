@@ -22,3 +22,5 @@ Ghost has 150+ commands and a completely custom built GUI for endless customisat
 > python3 ghost.py
 > ```
 > _Ghost requires Python 3.10+_
+
+![ghost showcase](https://github.com/user-attachments/assets/fa74b4a0-ec91-4aad-a47e-26527db578f5)
