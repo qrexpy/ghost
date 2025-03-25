@@ -3,10 +3,10 @@ The most advanced open source Discord Selfbot.
 Ghost has 150+ commands and a completely custom built GUI for endless customisation!  
 
 > [!WARNING]  
-> Using Ghost can and will result in account termination if not used carefully! To avoid termination do not use any commands within big servers especially ones moderated by Discord staff and do not use any of the abuse commands. I would also recommend using Ghost on phone verified accounts!
+> Using Ghost <ins>can</ins> result in account termination! To avoid termination, do not use any commands in bigger servers especially ones moderated by Discord staff and do not use any of the abuse commands. I do not take any responsibility for the actions that may be caused by using Ghost. Please use with caution!
 
 <!--
-> ### Features
+> [!NOTE]
 > - Fully fledged custom GUI for customising your selfbot!
 > - Integrated custom scripting and theming
 > - Custom image embed designed from the ground up using PIL
@@ -22,5 +22,11 @@ Ghost has 150+ commands and a completely custom built GUI for endless customisat
 > python3 ghost.py
 > ```
 > _Ghost requires Python 3.10+_
+
+<!--
 <br>
 <img src="https://github.com/user-attachments/assets/3ed477b8-55a4-49c5-87b2-0e8f98e3832a" width="100%">
+-->
+
+> [!NOTE]
+> Please note that Ghost only works on Windows, Linux and Mac OS. If you want to host Ghost on a server or computer without a desktop environment then Ghost will default to running headless in the terminal!
