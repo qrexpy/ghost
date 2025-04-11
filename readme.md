@@ -29,4 +29,4 @@ Ghost has 150+ commands and a completely custom built GUI for endless customisat
 -->
 
 > [!NOTE]
-> Please note that Ghost only works on Windows, Linux and Mac OS. If you want to host Ghost on a server or computer without a desktop environment then Ghost will default to running headless in the terminal!
+> Please note that Ghost is developed on Mac OS which means the Windows build's made by the pyinstaller action can't be tested and may have issues. However, Ghost will work on Windows, Linux and Mac OS when run from the source code!
