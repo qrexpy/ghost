@@ -29,4 +29,4 @@ Ghost has 150+ commands and a completely custom built GUI for endless customisat
 -->
 
 > [!NOTE]
-> Please note that Ghost is developed on Mac OS which means the Windows build's made by the pyinstaller action can't be tested and may have issues. However, Ghost will work on Windows, Linux and Mac OS when run from the source code!
+> Please note that Ghost is developed on Mac OS which means the Windows build's made by the pyinstaller action can't be tested and may have issues. However, Ghost will work on Windows, Linux and Mac OS when run from the source code! Please follow the steps above or this [setup guide](https://github.com/orgs/ghostselfbot/discussions/5) to insure proper installation!
