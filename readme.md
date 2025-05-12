@@ -16,10 +16,9 @@ Ghost has 150+ commands and a completely custom built GUI for endless customisat
 
 > ```bash
 > git clone https://github.com/ghostselfbot/ghost
-> python3 -m venv .venv
-> source .venv/bin/activate
-> pip install -r requirements.txt
-> python3 ghost.py
+> cd ghost
+> python3 -m venv .venv      # create venv (requires Python 3.10+)
+> source .venv/bin/activate  # or on Windows: .\.venv\Scripts\activate
 > ```
 > _Ghost requires Python 3.10+_
 
