@@ -5,6 +5,12 @@ import ctypes
 import subprocess
 
 from utils.files import resource_path
+from ctypes import wintypes
+
+try:
+    import winreg
+except ImportError:
+    import _winreg as winreg
 
 # FONTS = [
 #     resource_path("data/fonts/Roboto-Regular.ttf"),
@@ -25,6 +31,40 @@ SYSTEM_FONT_DIR = {
     "linux": "/usr/share/fonts",
 }
 
+user32 = ctypes.WinDLL('user32', use_last_error=True)
+gdi32 = ctypes.WinDLL('gdi32', use_last_error=True)
+
+FONTS_REG_PATH = r'Software\Microsoft\Windows NT\CurrentVersion\Fonts'
+
+HWND_BROADCAST   = 0xFFFF
+SMTO_ABORTIFHUNG = 0x0002
+WM_FONTCHANGE    = 0x001D
+GFRI_DESCRIPTION = 1
+GFRI_ISTRUETYPE  = 3
+
+if not hasattr(wintypes, 'LPDWORD'):
+    wintypes.LPDWORD = ctypes.POINTER(wintypes.DWORD)
+
+user32.SendMessageTimeoutW.restype = wintypes.LPVOID
+user32.SendMessageTimeoutW.argtypes = (
+    wintypes.HWND,   # hWnd
+    wintypes.UINT,   # Msg
+    wintypes.LPVOID, # wParam
+    wintypes.LPVOID, # lParam
+    wintypes.UINT,   # fuFlags
+    wintypes.UINT,   # uTimeout
+    wintypes.LPVOID) # lpdwResult
+
+gdi32.AddFontResourceW.argtypes = (
+    wintypes.LPCWSTR,) # lpszFilename
+
+# http://www.undocprint.org/winspool/getfontresourceinfo
+gdi32.GetFontResourceInfoW.argtypes = (
+    wintypes.LPCWSTR, # lpszFilename
+    wintypes.LPDWORD, # cbBuffer
+    wintypes.LPVOID,  # lpBuffer
+    wintypes.DWORD)   # dwQueryType
+
 def get_fonts():
     font_files = [os.path.basename(font) for font in FONTS]
     
@@ -44,7 +84,16 @@ def already_installed(font_path):
     if system_platform == "darwin":
         font_dir = os.path.expanduser("~/Library/Fonts")
     elif system_platform == "win32":
-        font_dir = os.path.expandvars("%WINDIR%\\Fonts")
+        font_dir = "C:\\Windows\\Fonts"
+        
+        # Check if the font is in the registry
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, FONTS_REG_PATH) as key:
+            try:
+                winreg.QueryValueEx(key, font_name)
+                return True
+            except FileNotFoundError:
+                pass
+        
     elif system_platform == "linux":
         font_dir = "/usr/share/fonts"
     else:
@@ -78,11 +127,37 @@ def load_custom_font(font_path):
     if system_platform == "darwin":
         install_dir = os.path.expanduser("~/Library/Fonts")
     elif system_platform == "win32":
-        install_dir = os.path.expandvars("%WINDIR%\\Fonts")
-        shutil.copy(font_path, os.path.join(install_dir, font_name))
-        ctypes.windll.gdi32.AddFontResourceEx(os.path.join(install_dir, font_name), 0, 0)
-        print(f"Font installed: {font_path}")
-        return
+        # copy the font to the Windows Fonts folder
+        dst_path = os.path.join(os.environ['SystemRoot'], 'Fonts',
+                                os.path.basename(font_path))
+        shutil.copy(font_path, dst_path)
+        # load the font in the current session
+        if not gdi32.AddFontResourceW(dst_path):
+            os.remove(dst_path)
+            raise OSError('AddFontResource failed to load "%s"' % font_path)
+        # notify running programs
+        user32.SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0,
+                                SMTO_ABORTIFHUNG, 1000, None)
+        # store the fontname/filename in the registry
+        filename = os.path.basename(dst_path)
+        fontname = os.path.splitext(filename)[0]
+        # try to get the font's real name
+        cb = wintypes.DWORD()
+        if gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb), None,
+                                    GFRI_DESCRIPTION):
+            buf = (ctypes.c_wchar * cb.value)()
+            if gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb), buf,
+                                        GFRI_DESCRIPTION):
+                fontname = buf.value
+        is_truetype = wintypes.BOOL()
+        cb.value = ctypes.sizeof(is_truetype)
+        gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb),
+            ctypes.byref(is_truetype), GFRI_ISTRUETYPE)
+        if is_truetype:
+            fontname += ' (TrueType)'
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, FONTS_REG_PATH, 0,
+                            winreg.KEY_SET_VALUE) as key:
+            winreg.SetValueEx(key, fontname, 0, winreg.REG_SZ, filename)
     elif system_platform == "linux":
         install_dir = "/usr/share/fonts"
     else:
