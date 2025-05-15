@@ -1,15 +1,19 @@
 import discord
 import os
+import time
+import datetime
 import json
 import requests
 import asyncio
+import calendar
 
 from discord.ext import commands
 from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
 from utils import console
+from utils import files
+import bot.helpers.cmdhelper as cmdhelper
+import bot.helpers.codeblock as codeblock
+import bot.helpers.imgembed as imgembed
 
 class Info(commands.Cog):
     def __init__(self, bot):
@@ -19,7 +23,7 @@ class Info(commands.Cog):
 
     @commands.command(name="info", description="Information commands.", aliases=["information"], usage="")
     async def info(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Info")
 
         await cmdhelper.send_message(ctx, {
@@ -170,7 +174,7 @@ class Info(commands.Cog):
         msg = None
         read_from_cache = False
 
-        if not os.path.exists("data/cache/guilds.json"):
+        if not os.path.exists(files.get_application_support() + "/data/cache/guilds.json"):
             msg = await cmdhelper.send_message(ctx, {"title": "Mutual Server Members", "description": "This could take a while, watch the console for progress."}, delete_after=False)
             console.print_info(f"Fetching members from {len(bot_guilds)} guilds...")
 
@@ -195,7 +199,7 @@ class Info(commands.Cog):
 
                 await asyncio.sleep(0.3)
 
-            with open("data/cache/guilds.json", "w") as f:
+            with open(files.get_application_support() + "/data/cache/guilds.json", "w") as f:
                 f.write(json.dumps(guilds_data, indent=4, sort_keys=True, default=str))
                 console.print_success("Cached guilds data.")
         else:
@@ -203,7 +207,7 @@ class Info(commands.Cog):
             console.print_warning("This may be out of date. Clear cache using the 'clearcache' command.")
             read_from_cache = True
 
-            with open("data/cache/guilds.json", "r") as f:
+            with open(files.get_application_support() + "/data/cache/guilds.json", "r") as f:
                 guilds_data = json.load(f)
 
         for guild in guilds_data:
@@ -239,10 +243,10 @@ class Info(commands.Cog):
 
         if len(str(response_codeblock)) > 2000:
             console.print_warning("The response is too large, sending as a file instead.")
-            with open("mutual_server_members.json", "w") as f:
+            with open(files.get_application_support() + "/mutual_server_members.json", "w") as f:
                 f.write(description)
 
-            await ctx.send(file=discord.File("mutual_server_members.json"), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
+            await ctx.send(file=discord.File(files.get_application_support() + "/mutual_server_members.json"), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
             os.remove("mutual_server_members.json")
             response_codeblock.description = "The data was too large, so it has been sent as a file instead."
 
@@ -252,7 +256,7 @@ class Info(commands.Cog):
 
     @commands.command(name="avatar", description="Get the avatar of a user.", aliases=["av"], usage="[user]")
     async def avatar(self, ctx, user: discord.User = None):
-        cfg = config.Config()
+        cfg = self.cfg
 
         if user is None:
             user = ctx.author
@@ -346,6 +350,48 @@ class Info(commands.Cog):
     @commands.command(name="dogecoin", description="Get the current data on Dogecoin.", aliases=["doge"])
     async def dogecoin(self, ctx):
         await self.crypto(ctx, "dogecoin")
+
+    @commands.command(name="timestamp", description="Create a relative dynamic timestamp.", usage="[DD MM YYYY HH:MM:SS]")
+    async def timestamp(self, ctx, *args):
+        try:
+            if not args:
+                timestamp = int(time.time())
+            else:
+                date_str = " ".join(args)
+                formats = [
+                    "%d %m %Y %H:%M:%S",   # 21 03 1800 14:30:00
+                    "%d-%m-%Y %H:%M:%S",   # 21-03-1800 14:30:00
+                    "%d %B %Y %H:%M:%S",   # 21 March 1800 14:30:00
+                    "%d-%m-%Y %H:%M",      # 21-03-1800 14:30
+                    "%d %m %Y",            # 21 03 1800
+                    "%d-%m-%Y",            # 21-03-1800
+                    "%d %B %Y",            # 21 March 1800
+                ]
+                
+                for fmt in formats:
+                    try:
+                        dt = datetime.datetime.strptime(date_str, fmt)
+                        timestamp = calendar.timegm(dt.utctimetuple())
+                        break
+                    except ValueError:
+                        continue
+                else:
+                    return await cmdhelper.send_message(ctx, {
+                        "title": "Error",
+                        "description": "Invalid date format! Use `DD MM YYYY HH:MM:SS` or `DD Month YYYY HH:MM:SS`.",
+                        "colour": "#ff0000"
+                    })
+
+            timestamp_format = f"<t:{timestamp}:R>"
+
+            await ctx.send(f"{timestamp_format}")
+
+        except Exception as e:
+            await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": f"An error occurred: {e}",
+                "colour": "#ff0000"
+            })
 
 def setup(bot):
     bot.add_cog(Info(bot))

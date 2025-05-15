@@ -1,14 +1,9 @@
 import requests
-import discord
-import os
 import random
 
 from discord.ext import commands
-
 from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
+import bot.helpers.cmdhelper as cmdhelper
 
 class RedditNSFW:
     def __init__(self):
@@ -83,7 +78,7 @@ class Nsfw(commands.Cog):
 
     @commands.command(name="nsfw", description="NSFW commands.", aliases=["notsafeforwork"], usage="")
     async def nsfw(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Nsfw")
 
         await cmdhelper.send_message(ctx, {

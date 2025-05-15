@@ -7,13 +7,10 @@ import asyncio
 import time
 
 from discord.ext import commands
-from discord.utils import get
-
 from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
 from utils import console
+from utils import files
+import bot.helpers.cmdhelper as cmdhelper
 
 class Account(commands.Cog):
     def __init__(self, bot):
@@ -28,7 +25,7 @@ class Account(commands.Cog):
 
     @commands.command(name="account", description="Account commands.", aliases=["acc"], usage="")
     async def account(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Account")
 
         await cmdhelper.send_message(ctx, {
@@ -58,7 +55,7 @@ class Account(commands.Cog):
             
     @commands.group(name="backup", description="Backup commands.", usage="")
     async def backup(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
 
         if ctx.invoked_subcommand is None:
             description = ""
@@ -70,9 +67,29 @@ class Account(commands.Cog):
             
             await cmdhelper.send_message(ctx, {"title": "Backup Commands", "description": description})
 
+    @backup.command(name="account", description="Backup your account information.", usage="")
+    async def account(self, ctx):
+        backup = {
+            "id": self.bot.user.id,
+            "name": self.bot.user.name,
+            "display_name": self.bot.user.display_name,
+            "accent_colour": self.bot.user.accent_colour,
+            "avatar": self.bot.user.avatar.url,
+            "banner": self.bot.user.banner.url,
+            "bio": self.bot.user.bio
+        }
+
+        if not os.path.exists(files.get_application_support() + "/backups/"):
+            os.mkdir(files.get_application_support() + "/backups/")
+
+        with open(files.get_application_support() + "/backups/account.json", "w") as f:
+            f.write(json.dumps(backup))
+
+        await cmdhelper.send_message(ctx, {"title": "Account Backup", "description": f"Saved some information about your account in account.json"})
+
     @backup.command(name="friends", description="Backup your friends.", usage="")
     async def friends(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
         resp = requests.get("https://discord.com/api/users/@me/relationships", headers={
             "Authorization": f"{cfg.get('token')}",
             "Content-Type": "application/json",
@@ -97,10 +114,10 @@ class Account(commands.Cog):
                     "id": friend['user']['id']
                 })
 
-        if not os.path.exists("backups/"):
-            os.mkdir("backups/")
+        if not os.path.exists(files.get_application_support() + "/backups/"):
+            os.mkdir(files.get_application_support() + "/backups/")
 
-        with open("backups/friends.json", "w") as f:
+        with open(files.get_application_support() + "/backups/friends.json", "w") as f:
             f.write(json.dumps(backup))
         
         await cmdhelper.send_message(ctx, {"title": "Friends Backup", "description": f"Saved {len(friends)} friends to friends.json"})
@@ -134,20 +151,20 @@ class Account(commands.Cog):
             
             await asyncio.sleep(1)
 
-        if not os.path.exists("backups/"):
-            os.mkdir("backups/")
+        if not os.path.exists(files.get_application_support() + "/backups/"):
+            os.mkdir(files.get_application_support() + "/backups/")
 
-        with open("backups/guilds.json", "w") as f:
+        with open(files.get_application_support() + "/backups/guilds.json", "w") as f:
             f.write(json.dumps(backup))
 
         await cmdhelper.send_message(ctx, {"title": "Guilds Backup", "description": f"Saved {len(self.bot.guilds)} guilds to guilds.json"})
 
     @backup.command(name="restore", description="Restore a backup.", usage="[backup]")
     async def restore(self, ctx, backup: str):
-        if not os.path.exists("backups/"):
-            os.mkdir("backups/")
-        backup_path = f"backups/{backup}.json"
-        cfg = config.Config()
+        if not os.path.exists(files.get_application_support() + "/backups/"):
+            os.mkdir(files.get_application_support() + "/backups/")
+        backup_path = files.get_application_support() + f"/backups/{backup}.json"
+        cfg = self.cfg
         headers = {
                     "Authorization": f"{cfg.get('token')}",
                     "Content-Type": "application/json",
@@ -198,7 +215,7 @@ class Account(commands.Cog):
             await cmdhelper.send_message(ctx, {"title": "Error", "description": f"Unknown backup type {backup['type']}. Ghost backup restore only supports backups made using Ghost.", "colour": "ff0000"})
 
     @commands.command(name="hypesquad", description="Change your hypesquad.", usage="[hypesquad]", aliases=["changehypesquad"])
-    async def hypesquad(self, ctx, house: str):
+    async def hypesquad(self, ctx, house: str = ""):
         houses = {
             "bravery": "1",
             "brilliance": "2",
@@ -206,7 +223,7 @@ class Account(commands.Cog):
         }
         house = house.lower()
 
-        if house not in houses:
+        if house not in houses or house == "" or house == None:
             await cmdhelper.send_message(ctx, {"title": "Error", "description": f"Invalid house. Please choose from Bravery, Brilliance and Balance.", "colour": "ff0000"})
             return
         
@@ -237,8 +254,7 @@ class Account(commands.Cog):
 
     @commands.command(name="customstatus", description="Change your custom status.", usage="[status]", aliases=["changecustomstatus"])
     async def customstatus(self, ctx, *, status: str):
-        status = discord.CustomActivity(name=status)
-        await self.bot.change_presence(activity=status)
+        await self.bot.change_presence(activity=discord.CustomActivity(name=status))
         await cmdhelper.send_message(ctx, {"title": "Custom Status", "description": f"Changed custom status to {status}."})
 
     @commands.command(name="clearstatus", description="Clear your custom status.", usage="")
@@ -249,13 +265,13 @@ class Account(commands.Cog):
     @commands.command(name="playing", description="Change your playing status.", usage="[status]", aliases=["changeplaying"])
     async def playing(self, ctx, *, status: str):
         game = discord.Game(status)
-        await self.bot.change_presence(activity=game)
+        await self.bot.change_presence(activity=game, edit_settings=False)
         await cmdhelper.send_message(ctx, {"title": "Playing Status", "description": f"Changed playing status to {status}."})
 
     @commands.command(name="streaming", description="Change your streaming status.", usage="[status]", aliases=["changestreaming"])
     async def streaming(self, ctx, *, status: str):
         stream = discord.Streaming(name=status, url="https://twitch.tv/ghost")
-        await self.bot.change_presence(activity=stream)
+        await self.bot.change_presence(activity=stream, edit_settings=False)
         await cmdhelper.send_message(ctx, {"title": "Streaming Status", "description": f"Changed streaming status to {status}."})
 
     @commands.command(name="nickname", description="Change your nickname.", usage="[nickname]", aliases=["changenickname", "nick"])
@@ -301,9 +317,9 @@ class Account(commands.Cog):
         
         await cmdhelper.send_message(ctx, {"title": "Theme", "description": f"Changed theme to {theme}."})
 
-    @commands.command(name="yoinkrpc", description="Yoink someone's RPC.", usage="[user]", aliases=["rpcyoink", "stealrpc", "stealrichpresence", "yoinkrichpresence"])
+    @commands.command(name="yoinkrpc", description="Yoink someone's RPC.", usage="[user]", aliases=["rpcyoink", "stealrpc", "stealrichpresence", "yoinkrichpresence", "clonerpc", "clonerichpresence"])
     async def yoinkrpc(self, ctx, user, guild_id: int = None):
-        cfg = config.Config()
+        cfg = self.cfg
         guild = None
         
         if not user:
@@ -351,7 +367,7 @@ class Account(commands.Cog):
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "User has no RPC.", "colour": "ff0000"})
             return
         
-        with open("rpc.json", "w") as f:
+        with open(files.get_application_support() + "/rpc.json", "w") as f:
             json.dump([activity.to_dict() for activity in activities], f)
         
         if len(activities) > 1:
@@ -400,7 +416,8 @@ class Account(commands.Cog):
         })
         
         cfg.save()
-        os.execl(sys.executable, sys.executable, *sys.argv)
+        
+        await ctx.invoke(self.bot.get_command("restart"))
         
     @commands.command(name="yoinkmemberrpc", description="yoinkrpc for member pings only!", usage="[member]")
     async def yoinkmemberrpc(self, ctx, member: discord.Member):

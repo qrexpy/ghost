@@ -1,12 +1,8 @@
-import os
-import sys
 import discord
 
 from discord.ext import commands
 from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
+import bot.helpers.cmdhelper as cmdhelper
 
 class Theming(commands.Cog):
     def __init__(self, bot):
@@ -16,7 +12,7 @@ class Theming(commands.Cog):
 
     @commands.command(name="theming", description="Theme commands.", aliases=["design"], usage="")
     async def theming(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Theming")
 
         await cmdhelper.send_message(ctx, {
@@ -28,7 +24,7 @@ class Theming(commands.Cog):
 
     @commands.command(name="themes", description="Lists all your themes.", usage="")
     async def themes(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
         desc = ""
 
         for theme in cfg.get_themes():
@@ -43,7 +39,7 @@ class Theming(commands.Cog):
 
     @commands.group(name="theme", description="Theme commands.", usage="")
     async def theme(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
 
         if ctx.invoked_subcommand is None:
             msg_split = ctx.message.content.split(" ")
@@ -61,14 +57,13 @@ class Theming(commands.Cog):
 
     @theme.command(name="set", description="Change your theme", usage="[theme]")
     async def change_theme(self, ctx, theme_name: str = None):
-        cfg = config.Config()
+        cfg = self.cfg
         description = ""
         colour = cfg.theme.colour
         theme = cfg.get_theme_file(theme_name)
 
         if theme:
             cfg.set_theme(theme_name)
-            cfg = config.Config()
 
             colour = cfg.theme.colour
             description = f"Theme set to {theme_name}"
@@ -76,18 +71,17 @@ class Theming(commands.Cog):
             colour = "#ff0000"
             description = f"There isn't a theme named {theme_name}"
         
-        cfg.save()
-        cfg = config.Config() # Re iniate the config var because it needs to load the new local version of the config dict
-        
         await cmdhelper.send_message(ctx, {
             "title": "Theme",
             "description": description,
             "colour": colour,
             "footer": cfg.theme.footer,
         })
+        
+        cfg.save()
 
     async def theme_set(self, ctx, subkey, value):
-        cfg = config.Config()
+        cfg = self.cfg
         description = ""
 
         key = "message_settings" if subkey == "style" else "theme"
@@ -96,22 +90,21 @@ class Theming(commands.Cog):
             theme = cfg.theme
             theme.__dict__[subkey] = value
             description = f"Theme {subkey} set to {value}"
-            cfg.theme.save()
+            cfg.theme.save(notify=False)
 
         elif key == "message_settings":
             message_settings = cfg.get(key)
             message_settings[subkey] = value
             description = f"Message setting {subkey} set to {value}"
 
-        cfg.save()
-        cfg = config.Config() # Re iniate the config var because it needs to load the new local version of the config dict
-        
         await cmdhelper.send_message(ctx, {
             "title": "Theme",
             "description": description,
             "colour": cfg.theme.colour,
             "footer": cfg.theme.footer,
         })
+
+        cfg.save()
 
     @theme.command(name="title", description="Set the title of the embed.", usage="[title]")
     async def theme_title(self, ctx, *, title: str):
@@ -143,7 +136,7 @@ class Theming(commands.Cog):
 
     @commands.command(name="richembedmode", description="Set your theme style to embed.", usage="", aliases=["embedmode"])
     async def richembedmode(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
 
         if cfg.get("rich_embed_webhook") == "":
             await cmdhelper.send_message(ctx, {
@@ -158,7 +151,7 @@ class Theming(commands.Cog):
 
     @commands.command(name="richembedwebhook", description="Set your rich embed webhook.", usage="[webhook]")
     async def richembedwebhook(self, ctx, webhook_url: str = None):
-        cfg = config.Config()
+        cfg = self.cfg
         
         if webhook_url is None:
             await cmdhelper.send_message(ctx, {

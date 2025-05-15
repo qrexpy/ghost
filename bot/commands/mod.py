@@ -2,12 +2,12 @@ import discord
 import asyncio
 import datetime
 import requests
-import random
 
 from discord.ext import commands
 from utils import config
 from utils import console
-from utils import cmdhelper
+from utils import files
+import bot.helpers.cmdhelper as cmdhelper
 
 class Mod(commands.Cog):
     def __init__(self, bot):
@@ -17,7 +17,7 @@ class Mod(commands.Cog):
 
     @commands.command(name="mod", description="Moderation commands.", aliases=["moderation"], usage="")
     async def mod(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Mod")
 
         await cmdhelper.send_message(ctx, {
@@ -51,6 +51,35 @@ class Mod(commands.Cog):
             "title": "Clear",
             "description": f"Cleared {len(deleted) - 1} messages."
         })
+        
+    @commands.command(name="dmpurge", description="Purge a number of messages in a DM.", usage="[number] [user id]")
+    async def dmpurge(self, ctx, number: int, user_id: int):
+        user = self.bot.get_user(user_id)
+        
+        if isinstance(user, discord.User):
+            latest_msg = [msg async for msg in user.dm_channel.history(limit=1)][0]
+            context = await self.bot.get_context(latest_msg)
+            channel = context.channel
+            messages = [msg async for msg in channel.history(limit=number) if msg.author.id == self.bot.user.id]
+            
+            for i, msg in enumerate(messages):
+                if i % 5 == 0:
+                    await asyncio.sleep(1)
+                
+                await msg.delete()
+                await asyncio.sleep(0.75)
+                
+            await cmdhelper.send_message(ctx, {
+                "title": "DM Purge",
+                "description": f"Purged {len(messages)} messages."
+            })
+            
+        else:
+            await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": "User not found.",
+                "colour": "ff0000"
+            })
 
     @commands.command(name="purgechat", description="Purge the entire chat.", usage="")
     async def purgechat(self, ctx):
@@ -67,22 +96,44 @@ class Mod(commands.Cog):
             "description": f"Purged {len(delete)} messages."
         })
 
-    @commands.command(name="dumpchat", description="Get the chats history.", usage="[message count]")
-    async def dumpchat(self, ctx, count: int):
-        messages = [message async for message in ctx.channel.history(limit=count)]
-        dump = "\n".join([f"{str(message.created_at).split('.')[0]}|{message.author.id}|{message.author.name} : {message.content}" for message in messages])
+    @commands.command(name="dumpchat", description="Get the chats history.", usage="[message count] [channel id]")
+    async def dumpchat(self, ctx, count: int, channel_id: int = None):
+        channel = ctx.channel if channel_id is None else self.bot.get_channel(channel_id)
+        messages = [message async for message in channel.history(limit=count)]
+        # dump = "\n".join([f"{str(message.created_at).split('.')[0]}|{message.author.id}|{message.author.name} : {message.content}" for message in messages])
+        
+        dump = ""
+        for message in messages:
+            attachments = [f"[{attachment.filename}]({attachment.url})" for attachment in message.attachments]
+            attachments = "\n".join(attachments)
+            
+            if attachments:
+                dump += f"{str(message.created_at).split('.')[0]}|{message.author.id}|{message.author.name} : {message.content}\n{attachments}\n"
+            else:
+                dump += f"{str(message.created_at).split('.')[0]}|{message.author.id}|{message.author.name} : {message.content}\n"
 
-        with open(f"data/{ctx.channel.id}-dump.txt", "w") as f:
+        with open(files.get_application_support() + f"/data/{channel.id}-dump.txt", "w") as f:
             f.write(dump)
 
-        await ctx.send(file=discord.File(f"data/{ctx.channel.id}-dump.txt"))
+        await ctx.send(file=discord.File(f"data/{channel.id}-dump.txt"))
 
     @commands.command(name="firstmessage", description="Get the first message in the chat.", usage="")
     async def firstmessage(self, ctx):
         waiting = await ctx.send("> Fetching first message...")
 
-        messages = [message async for message in ctx.channel.history(limit=100000000000)]
-        message = messages[-1]
+        messages = [message async for message in ctx.channel.history(limit=1, oldest_first=True)]
+        message = messages[0]
+    
+        attachments = [f"[{attachment.filename}]({attachment.url})" for attachment in message.attachments]
+        attachments = "\n".join(attachments)
+        
+        if attachments:
+            await waiting.delete()
+            await cmdhelper.send_message(ctx, {
+                "title": "First Message",
+                "description": f"{message.author.name}: {message.content}\n{attachments}"
+            })
+            return
 
         await waiting.delete()
         await cmdhelper.send_message(ctx, {
@@ -152,7 +203,16 @@ class Mod(commands.Cog):
             })
 
     @commands.command(name="ban", description="Ban a member from the command server.", usage="[member]")
-    async def ban(self, ctx, member: discord.Member):
+    async def ban(self, ctx, member):
+        try:
+            member = ctx.guild.get_member(int(member[3:-1])) if "<@" in member else self.bot.get_user(int(member))
+        except Exception as e:
+            return await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": f"Failed to find user: {e}",
+                "colour": "ff0000"
+            })
+        
         if not ctx.message.author.guild_permissions.ban_members:
             await cmdhelper.send_message(ctx, {
                 "title": "Error",
@@ -162,7 +222,7 @@ class Mod(commands.Cog):
             return
 
         try:
-            await member.ban()
+            await ctx.guild.ban(member)
             await cmdhelper.send_message(ctx, {
                 "title": "Ban",
                 "description": f"Banned {member.name}"
@@ -200,7 +260,16 @@ class Mod(commands.Cog):
         })
 
     @commands.command(name="kick", description="Kick a member from the command server.", usage="[member]")
-    async def kick(self, ctx, member: discord.Member):
+    async def kick(self, ctx, member):
+        try:
+            member = ctx.guild.get_member(int(member[3:-1])) if "<@" in member else self.bot.get_user(int(member))
+        except Exception as e:
+            return await cmdhelper.send_message(ctx, {
+                "title": "Error",
+                "description": f"Failed to find user: {e}",
+                "colour": "ff0000"
+            })
+        
         if not ctx.message.author.guild_permissions.kick_members:
             await cmdhelper.send_message(ctx, {
                 "title": "Error",
@@ -210,7 +279,7 @@ class Mod(commands.Cog):
             return
 
         try:
-            await member.kick()
+            await ctx.guild.kick(member)
             await cmdhelper.send_message(ctx, {
                 "title": "Kick",
                 "description": f"Kicked {member.name}"

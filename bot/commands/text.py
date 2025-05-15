@@ -1,16 +1,11 @@
-import discord
-import requests
 import asyncio
 import random
 import art as asciiart
-import os
 
 from discord.ext import commands
 from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import fonts
-from utils import imgembed
+import bot.helpers.cmdhelper as cmdhelper
+import bot.helpers.fonts as fonts
 
 class Text(commands.Cog):
     def __init__(self, bot):
@@ -20,7 +15,7 @@ class Text(commands.Cog):
 
     @commands.command(name="text", description="Text commands.", usage="")
     async def text(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Text")
 
         await cmdhelper.send_message(ctx, {

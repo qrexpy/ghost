@@ -5,16 +5,12 @@ import random
 import faker
 import datetime
 import os
-import threading
 
-from PIL import Image, ImageDraw, ImageFont
 from discord.ext import commands
-from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
-from utils import soundboard
-from utils import console
+from utils import config, files
+import bot.helpers.cmdhelper as cmdhelper
+import bot.helpers.soundboard as soundboard
+import bot.helpers.codeblock as codeblock
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -34,7 +30,7 @@ class Fun(commands.Cog):
 
     @commands.command(name="fun", description="Fun commands.", usage="")
     async def fun(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Fun")
 
         await cmdhelper.send_message(ctx, {
@@ -228,7 +224,6 @@ class Fun(commands.Cog):
 
     @commands.command(name="dice", description="Roll a dice with a specific side count.", usage="[sides]", aliases=["roll"])
     async def dice(self, ctx, sides: int = 6):
-        cfg = config.Config()
         number = random.randint(1, sides)
 
         embed = discord.Embed(title=f"{sides} side dice", description=f"You rolled a {number}.")
@@ -282,8 +277,6 @@ class Fun(commands.Cog):
 
     @commands.command(name="dox", description="Dox a user.", usage=["[user]"])
     async def dox(self, ctx, *, user: discord.User):
-        cfg = config.Config()
-
         name = self.fake.name()
         email = name.lower().split(" ")[0][:random.randint(3, 5)] + "." + name.lower().split(" ")[1] + str(random.randint(10, 99)) + random.choice(["@gmail.com", "@yahoo.com", "@hotmail.com", "@outlook.com"])
         dob = datetime.date(random.randint(1982, 2010), random.randint(1, 12), random.randint(1, 28))
@@ -483,7 +476,7 @@ class Fun(commands.Cog):
 
     @commands.command(name="playsound", description="Play a 5 second sound.", usage="[mp3_url]")
     async def playsound(self, ctx, mp3_url = None):
-        cfg = config.Config()
+        cfg = self.cfg
         voice_state = ctx.author.voice
         
         if len(ctx.message.attachments) > 0 and mp3_url is None:
@@ -522,7 +515,7 @@ class Fun(commands.Cog):
             })
             return
 
-        with open("data/cache/mysound.mp3", "wb") as sound_file:
+        with open(files.get_application_support() + "/data/cache/mysound.mp3", "wb") as sound_file:
             sound_file.write(sound_res.content)
 
         soundeffects = soundboard.Soundboard(cfg.get("token"), ctx.guild.id, voice_state.channel.id)
