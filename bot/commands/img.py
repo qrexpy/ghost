@@ -2,17 +2,12 @@ import requests
 import discord
 import os
 import random
-import json
 import mimetypes
 import shutil
 
-from PIL import Image
 from discord.ext import commands
-
-from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
+from utils import config, files
+import bot.helpers.cmdhelper as cmdhelper
 
 class Img(commands.Cog):
     def __init__(self, bot):
@@ -22,7 +17,7 @@ class Img(commands.Cog):
 
     @commands.command(name="img", description="Image commands.", aliases=["image"], usage="")
     async def img(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
+        cfg = self.cfg
         pages = cmdhelper.generate_help_pages(self.bot, "Img")
 
         await cmdhelper.send_message(ctx, {
@@ -34,7 +29,7 @@ class Img(commands.Cog):
 
     @commands.command(name="gato", description="Get a random cat picture.", aliases=["cat", "catpic"], usage="")
     async def gato(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
         resp = requests.get("https://api.alexflipnote.dev/cats")
         image = resp.json()["file"]
 
@@ -42,7 +37,7 @@ class Img(commands.Cog):
 
     @commands.command(name="doggo", description="Get a random dog picture.", aliases=["dog", "dogpic"], usage="")
     async def doggo(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
         resp = requests.get("https://api.alexflipnote.dev/dogs")
         image = resp.json()["file"]
 
@@ -50,7 +45,7 @@ class Img(commands.Cog):
 
     @commands.command(name="bird", description="Get a random bird picture.", aliases=["birb", "birdpic"], usage="")
     async def birb(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
         resp = requests.get("https://api.alexflipnote.dev/birb")
         image = resp.json()["file"]
 
@@ -58,7 +53,7 @@ class Img(commands.Cog):
 
     @commands.command(name="fox", description="Get a random fox picture.", aliases=["foxpic"], usage="")
     async def fox(self, ctx):
-        cfg = config.Config()
+        cfg = self.cfg
         resp = requests.get("https://randomfox.ca/floof/")
         image = resp.json()["image"]
 
@@ -98,7 +93,7 @@ class Img(commands.Cog):
 
         achievement_resp = session.get(f"{base_url}?text={text.replace(' ', '+')}&icon={given_icon}", stream=True)
         if achievement_resp.status_code == 200:
-            with open("data/cache/achievement.png", "wb") as photo_file:
+            with open(files.get_application_support() + "/data/cache/achievement.png", "wb") as photo_file:
                 shutil.copyfileobj(achievement_resp.raw, photo_file)
 
             await ctx.send(file=discord.File(r"data/cache/achievement.png"))
@@ -144,7 +139,7 @@ class Img(commands.Cog):
 
         achievement_resp = session.get(f"{base_url}?text={text.replace(' ', '+')}&icon={given_icon}", stream=True)
         if achievement_resp.status_code == 200:
-            with open("data/cache/challenge.png", "wb") as photo_file:
+            with open(files.get_application_support() + "/data/cache/challenge.png", "wb") as photo_file:
                 shutil.copyfileobj(achievement_resp.raw, photo_file)
 
             await ctx.send(file=discord.File(r"data/cache/challenge.png"))
@@ -175,7 +170,7 @@ class Img(commands.Cog):
         response = requests.get(f"https://benny.fun/api/discordmessage?avatar_url={user.avatar.url}&username={user.name}&text={message}")
 
         if response.status_code == 200:
-            with open("data/cache/discordmessage.png", "wb") as file:
+            with open(files.get_application_support() + "/data/cache/discordmessage.png", "wb") as file:
                 file.write(response.content)
 
             await ctx.send(file=discord.File("data/cache/discordmessage.png"))
@@ -189,8 +184,17 @@ class Img(commands.Cog):
 
     @commands.command(name="searchimage", description="Search for an image on google", usage="[query]", aliases=["searchimg", "imgsearch", "imagesearch"])
     async def searchimage(self, ctx, *, query):
-        cfg = config.Config()
+        cfg = self.cfg
         api_key = cfg.get("apis")["serpapi"]
+        
+        if api_key == "":
+            return await cmdhelper.send_message(ctx, {
+                "title": "Image Search",
+                "description": "Please provide a SerpAPI key in settings > apis to use this command.",
+                "colour": "#ff0000",
+                "footer": cfg.theme.footer,
+            })
+        
         base_url = "https://serpapi.com/search.json?"
 
         params = {
@@ -250,7 +254,7 @@ class Img(commands.Cog):
                         if extension in ["jpeg", "png", "jpg"]:
                             new_name = str(random.randint(1000,9999)) + f".{extension}"
 
-                            with open(f"data/cache/{new_name}", "wb") as file:
+                            with open(files.get_application_support() + f"/data/cache/{new_name}", "wb") as file:
                                 file.write(res.content)
 
                                 images.append(new_name)

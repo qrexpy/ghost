@@ -3,18 +3,13 @@ import requests
 import asyncio
 import random
 import faker
-import datetime
 import os
 import threading
 
-from PIL import Image, ImageDraw, ImageFont
 from discord.ext import commands
 from utils import config
-from utils import codeblock
-from utils import cmdhelper
-from utils import imgembed
-from utils import soundboard
 from utils import console
+import bot.helpers.cmdhelper as cmdhelper
 
 class Abuse(commands.Cog):
     def __init__(self, bot):
@@ -25,13 +20,12 @@ class Abuse(commands.Cog):
 
     @commands.command(name="abuse", description="Abusive commands.", usage="")
     async def abuse(self, ctx, selected_page: int = 1):
-        cfg = config.Config()
         pages = cmdhelper.generate_help_pages(self.bot, "Abuse")
 
         await cmdhelper.send_message(ctx, {
             "title": f"🎯 abuse commands",
-            "description": pages[cfg.get("message_settings")["style"]][selected_page - 1 if selected_page - 1 < len(pages[cfg.get("message_settings")["style"]]) else 0],
-            "footer": f"Page {selected_page}/{len(pages[cfg.get('message_settings')['style']])}",
+            "description": pages[self.cfg.get("message_settings")["style"]][selected_page - 1 if selected_page - 1 < len(pages[self.cfg.get("message_settings")["style"]]) else 0],
+            "footer": f"Page {selected_page}/{len(pages[self.cfg.get('message_settings')['style']])}",
             "codeblock_desc": pages["codeblock"][selected_page - 1 if selected_page - 1 < len(pages["codeblock"]) else 0]
         }, extra_title=f"Page {selected_page}/{len(pages['codeblock'])}")
 
