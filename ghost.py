@@ -1,5 +1,3 @@
-#!/Users/benny/Documents/Scripts/ghost-v4/.venv/bin python3
-
 import threading
 import certifi
 import os
