@@ -76,6 +76,6 @@ class FontCheckGUI:
         skip_button.pack(side=ttk.LEFT, padx=(5, 0))
         
     def run(self):
-        layout.center_window(self.root, 335, 354)
-        self.root.resizable(False, False)
+        layout.center_window(self.root, 450, 450)
+        # self.root.resizable(False, False)
         self.root.mainloop()
