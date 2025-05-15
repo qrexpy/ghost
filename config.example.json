@@ -1,10 +1,10 @@
 {
     "token": "",
     "prefix": ".",
-    "rich_presence": true,
     "theme": "ghost",
-    "gui": true,
-    "rich_embed_webhook": "",
+    "apis": {
+        "serpapi": ""
+    },
     "message_settings": {
         "auto_delete_delay": 15,
         "style": "image"
@@ -17,15 +17,26 @@
         "nitro": {
             "enabled": true,
             "ignore_invalid": false,
-            "webhook": ""
+            "webhook": "",
+            "name": "nitro"
         },
         "privnote": {
             "enabled": true,
             "ignore_invalid": false,
-            "webhook": ""
+            "webhook": "",
+            "name": "privnote"
         }
     },
-    "apis": {
-        "serpapi": ""
-    }
+    "rich_presence": {
+    "enabled": false,
+    "client_id": "1018195507560063039",
+    "state": "ghost aint dead",
+    "details": "",
+    "large_image": "ghost",
+    "large_text": "",
+    "small_image": "",
+    "small_text": "",
+    "name": "Ghost"
+},
+    "rich_embed_webhook": ""
 }
