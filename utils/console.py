@@ -1,21 +1,14 @@
-import colorama
-import datetime
+import os
+import sys
 import logging
-import os, sys, pystyle
+import datetime
+import colorama
+import pystyle
 
 from . import config
 
-headless = False
-try:
-    import ttkbootstrap
-except ModuleNotFoundError:
-    headless = True
-
-if not headless: from utils import gui as ghost_gui
-
-handler = logging.FileHandler(filename='ghost.log', encoding='utf-8', mode='w')
+# handler = logging.FileHandler(filename='ghost.log', encoding='utf-8', mode='w')
 gui = None
-
 banner = f"""  ▄████  ██░ ██  ▒█████    ██████ ▄▄▄█████▓
  ██▒ ▀█▒▓██░ ██▒▒██▒  ██▒▒██    ▒ ▓  ██▒ ▓▒
 ▒██░▄▄▄░▒██▀▀██░▒██░  ██▒░ ▓██▄   ▒ ▓██░ ▒░
@@ -28,30 +21,35 @@ banner = f"""  ▄████  ██░ ██  ▒█████    ██�
                                            
 """
 
-def init_gui(bot):
+def set_gui(ghost_gui):
     global gui
-    gui = ghost_gui.GhostGUI(bot)
-    return get_gui()
+    gui = ghost_gui
 
-def get_gui():
-    return gui if not headless else None
+def log_to_gui(prefix, text):
+    if gui and gui.console:
+        gui.console.add_log(prefix, text)
+
+def log_sniper_to_gui(sniper_obj):
+    if gui and gui.console:
+        gui.console.add_sniper(sniper_obj)
+
+def clear_gui():
+    if gui and gui.console:
+        gui.console.clear()
 
 def clear():
-    if sys.platform == "win32":
-        os.system("cls")
-    else:
-        os.system("clear")
-
-    gui.clear_console()
+    clear_gui()
+    try:
+        os.system("cls" if sys.platform == "win32" else "clear")
+    except:
+        pass
 
 def resize(columns, rows):
-    if sys.platform == "win32":
-        os.system(f"mode con cols={columns} lines={rows}")
-    else:
-        os.system(f"echo '\033[8;{rows};{columns}t'")
-
-def get_formatted_time():
-    return datetime.datetime.now().strftime("%H:%M:%S")
+    try:
+        command = f"mode con cols={columns} lines={rows}" if sys.platform == "win32" else f"echo '\033[8;{rows};{columns}t'"
+        os.system(command)
+    except:
+        pass
 
 def print_banner():
     copyright_ = f"( Ghost v{config.VERSION} )"
@@ -72,66 +70,36 @@ def print_banner():
     print(f"{colorama.Fore.BLUE}{banner_line}")
     print(f"{colorama.Style.RESET_ALL}")
 
+get_formatted_time = lambda: datetime.datetime.now().strftime("%H:%M:%S")
+print_colour       = lambda colour, text: print(colour + text + colorama.Style.RESET_ALL)
 
-def print_color(color, text):
-    print(color + text + colorama.Style.RESET_ALL)
-
-def print_cmd(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTBLUE_EX}{colorama.Style.BRIGHT}[COMMAND]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("COMMAND", text)
+def _log_and_print(prefix, colour, text):
+    # print(f"[{prefix}] {text}")
+    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colour}{colorama.Style.BRIGHT}[{prefix}]{colorama.Style.RESET_ALL} {text}")
+    try:
+        log_to_gui(prefix, text)
     except:
         pass
 
-def print_info(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTGREEN_EX}{colorama.Style.BRIGHT}[INFO]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("INFO", text)
-    except:
-        pass
+print_cmd     = lambda text: _log_and_print("COMMAND", colorama.Fore.LIGHTBLUE_EX, text)
+print_info    = lambda text: _log_and_print("INFO", colorama.Fore.LIGHTCYAN_EX, text)
+print_success = lambda text: _log_and_print("SUCCESS", colorama.Fore.LIGHTGREEN_EX, text)
+print_error   = lambda text: _log_and_print("ERROR", colorama.Fore.LIGHTRED_EX, text)
+print_warning = lambda text: _log_and_print("WARNING", colorama.Fore.LIGHTYELLOW_EX, text)
+print_cli     = lambda text: _log_and_print("CLI", colorama.Fore.LIGHTMAGENTA_EX, text)
+print_rpc     = lambda text: _log_and_print("RPC", colorama.Fore.LIGHTMAGENTA_EX, text)
 
-def print_success(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTGREEN_EX}{colorama.Style.BRIGHT}[SUCCESS]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("SUCCESS", text)
-    except:
-        pass
+cmd     = lambda text: print_cmd(text)
+info    = lambda text: print_info(text)
+success = lambda text: print_success(text)
+error   = lambda text: print_error(text)
+warning = lambda text: print_warning(text)
+cli     = lambda text: print_cli(text)
+rpc     = lambda text: print_rpc(text)
 
-def print_error(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTRED_EX}{colorama.Style.BRIGHT}[ERROR]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("ERROR", text)
-    except:
-        pass
-
-def print_warning(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTYELLOW_EX}{colorama.Style.BRIGHT}[WARNING]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("WARNING", text)
-    except:
-        pass
-
-def print_cli(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTMAGENTA_EX}{colorama.Style.BRIGHT}[CLI]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("CLI", text)
-    except:
-        pass
-
-def print_rpc(text):
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colorama.Fore.LIGHTMAGENTA_EX}{colorama.Style.BRIGHT}[RPC]{colorama.Style.RESET_ALL} {text}")
-    try: 
-        gui.add_console("RPC", text)
-    except:
-        pass
-
-def print_sniper(sniper, title, description: dict, success=True):
+def print_sniper(sniper, title, description, success=True):
+    log_sniper_to_gui({"type": sniper, "title": title, "description": description})
     colour = colorama.Fore.LIGHTGREEN_EX if success else colorama.Fore.LIGHTRED_EX
-    print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colour}{colorama.Style.BRIGHT}[{sniper.upper()}]{colorama.Style.RESET_ALL} {title}")
-    gui.add_console(sniper.upper(), title)
-
+    _log_and_print(sniper.upper(), colour, title)
     for key, value in description.items():
         print(f"{' '*10} {colorama.Fore.LIGHTYELLOW_EX}{colorama.Style.NORMAL}{key}: {colorama.Style.RESET_ALL}{value}")
-        gui.add_console("SNIPER_ARG|{sniper.upper()}", f"{key}: {value}")
-
-    print()

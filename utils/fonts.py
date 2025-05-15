@@ -1,77 +1,157 @@
-bypass_fonts = {
-    'a': '𝚊',
-    'b': '𝚋',
-    'c': '𝚌',
-    'd': '𝚍',
-    'e': '𝚎',
-    'f': '𝚏',
-    'g': '𝚐',
-    'h': '𝚑',
-    'i': '𝚒',
-    'j': '𝚓',
-    'k': '𝚔',
-    'l': '𝚕',
-    'm': '𝚖',
-    'n': '𝚗',
-    'o': '𝚘',
-    'p': '𝚙',
-    'q': '𝚚',
-    'r': '𝚛',
-    's': '𝚜',
-    't': '𝚝',
-    'u': '𝚞',
-    'v': '𝚟',
-    'w': '𝚠',
-    'x': '𝚡',
-    'y': '𝚢',
-    'z': '𝚣'
+import os
+import shutil
+import sys
+import ctypes
+import subprocess
+
+from utils.files import resource_path
+
+# FONTS = [
+#     resource_path("data/fonts/Roboto-Regular.ttf"),
+#     resource_path("data/fonts/Roboto-Bold.ttf"),
+#     resource_path("data/fonts/Roboto-LightItalic.ttf")
+# ]
+
+FONTS = [resource_path(f"data/fonts/{path}") for path in os.listdir(resource_path("data/fonts")) if path.endswith(".ttf")
+         and not path.startswith(".")
+         and not path.startswith("_")
+         and not path.startswith("~")
+         and not path.startswith("#")
+         and not path.startswith("._")]
+
+SYSTEM_FONT_DIR = {
+    "darwin": os.path.expanduser("~/Library/Fonts"),
+    "win32": os.path.expandvars("%WINDIR%\\Fonts"),
+    "linux": "/usr/share/fonts",
 }
 
-regional_indicators = {
-    'a': '<:regional_indicator_a:803940414524620800>',
-    'b': '<:regional_indicator_b:803940414524620800>',
-    'c': '<:regional_indicator_c:803940414524620800>',
-    'd': '<:regional_indicator_d:803940414524620800>',
-    'e': '<:regional_indicator_e:803940414524620800>',
-    'f': '<:regional_indicator_f:803940414524620800>',
-    'g': '<:regional_indicator_g:803940414524620800>',
-    'h': '<:regional_indicator_h:803940414524620800>',
-    'i': '<:regional_indicator_i:803940414524620800>',
-    'j': '<:regional_indicator_j:803940414524620800>',
-    'k': '<:regional_indicator_k:803940414524620800>',
-    'l': '<:regional_indicator_l:803940414524620800>',
-    'm': '<:regional_indicator_m:803940414524620800>',
-    'n': '<:regional_indicator_n:803940414524620800>',
-    'o': '<:regional_indicator_o:803940414524620800>',
-    'p': '<:regional_indicator_p:803940414524620800>',
-    'q': '<:regional_indicator_q:803940414524620800>',
-    'r': '<:regional_indicator_r:803940414524620800>',
-    's': '<:regional_indicator_s:803940414524620800>',
-    't': '<:regional_indicator_t:803940414524620800>',
-    'u': '<:regional_indicator_u:803940414524620800>',
-    'v': '<:regional_indicator_v:803940414524620800>',
-    'w': '<:regional_indicator_w:803940414524620800>',
-    'x': '<:regional_indicator_x:803940414524620800>',
-    'y': '<:regional_indicator_y:803940414524620800>',
-    'z': '<:regional_indicator_z:803940414524620800>'
-}
+def get_fonts():
+    font_files = [os.path.basename(font) for font in FONTS]
+    
+    # sort them by first letter
+    font_files.sort()
+    
+    return font_files
 
-def bypass(text):
-    text = text.lower()
-    result = ""
-    for char in text:
-        if char in bypass_fonts:
-            result += bypass_fonts[char]
-        else:
-            result += char
-    return result
+def already_installed(font_path):
+    """
+    Checks if the font is already installed on the system.
+    """
+    font_name = os.path.basename(font_path)
+    system_platform = sys.platform
 
-def regional(text):
-    text = text.lower()
-    result = ""
-    for char in text:
-        if char in regional_indicators:
-            result += regional_indicators[char]
+    # Check if the font exists in the system font directories
+    if system_platform == "darwin":
+        font_dir = os.path.expanduser("~/Library/Fonts")
+    elif system_platform == "win32":
+        font_dir = os.path.expandvars("%WINDIR%\\Fonts")
+    elif system_platform == "linux":
+        font_dir = "/usr/share/fonts"
+    else:
+        return False  # Unsupported platform
+    
+    # Check if the font file is present in the system font directory
+    font_installed = os.path.join(font_dir, font_name)
+    return os.path.exists(font_installed)
+
+def check_fonts():
+    installed = []
+    
+    for font in FONTS:
+        if already_installed(font):
+            installed.append(font)
+            
+    return len(installed) == len(FONTS)
+
+def load_custom_font(font_path):
+    """
+    Load the font into the system if not already installed.
+    """
+    if already_installed(font_path):
+        print(f"Font already installed: {font_path}")
+        return
+    
+    font_name = os.path.basename(font_path)
+    system_platform = sys.platform
+
+    # Define where to install the font based on the platform
+    if system_platform == "darwin":
+        install_dir = os.path.expanduser("~/Library/Fonts")
+    elif system_platform == "win32":
+        install_dir = os.path.expandvars("%WINDIR%\\Fonts")
+        shutil.copy(font_path, os.path.join(install_dir, font_name))
+        ctypes.windll.gdi32.AddFontResourceEx(os.path.join(install_dir, font_name), 0, 0)
+        print(f"Font installed: {font_path}")
+        return
+    elif system_platform == "linux":
+        install_dir = "/usr/share/fonts"
+    else:
+        print(f"Unsupported platform: {system_platform}")
+        return
+    
+    # Install the font by copying it to the system directory
+    shutil.copy(font_path, os.path.join(install_dir, font_name))
+    print(f"Font installed: {font_path}")
+
+def load_fonts():
+    """
+    Loads all fonts into the system.
+    """
+    for font in FONTS:
+        if not os.path.exists(font):
+            print(f"Warning: Font file '{font}' not found.")
+            continue
+        
+        try:
+            load_custom_font(font)
+        except Exception as e:
+            print(f"Failed to load font '{font}': {e}")
+
+def uninstall_fonts():
+    """
+    Removes all fonts from the system after app is finished.
+    """
+    for font in FONTS:
+        font_name = os.path.basename(font)
+        system_platform = sys.platform
+
+        # Uninstall fonts based on platform
+        if system_platform == "darwin":
+            font_dir = os.path.expanduser("~/Library/Fonts")
+            font_path = os.path.join(font_dir, font_name)
+            if os.path.exists(font_path):
+                os.remove(font_path)
+                print(f"Uninstalled font: {font_name}")
+                # Run the AppleScript to remove the font from Font Book (macOS)
+                uninstall_mac_font(font_name)
+        elif system_platform == "win32":
+            font_dir = os.path.expandvars("%WINDIR%\\Fonts")
+            font_path = os.path.join(font_dir, font_name)
+            if os.path.exists(font_path):
+                os.remove(font_path)
+                print(f"Uninstalled font: {font_name}")
+        elif system_platform == "linux":
+            font_dir = "/usr/share/fonts"
+            font_path = os.path.join(font_dir, font_name)
+            if os.path.exists(font_path):
+                os.remove(font_path)
+                print(f"Uninstalled font: {font_name}")
         else:
-            result += char
-    return result
+            print(f"Unsupported platform: {system_platform}")
+
+def uninstall_mac_font(font_name):
+    """
+    Uses AppleScript to remove the font from Font Book on macOS.
+    """
+    script = f'''
+    tell application "Font Book"
+        set theFont to (first font whose name is "{font_name}")
+        remove theFont
+    end tell
+    '''
+    
+    try:
+        subprocess.run(['osascript', '-e', script], check=True)
+        print(f"Font '{font_name}' removed from Font Book.")
+    except subprocess.CalledProcessError:
+        print(f"Failed to remove font '{font_name}' from Font Book.")
