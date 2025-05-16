@@ -515,11 +515,11 @@ class Fun(commands.Cog):
             })
             return
 
-        with open(files.get_application_support() + "/data/cache/mysound.mp3", "wb") as sound_file:
+        with open(files.get_cache_path() + "/mysound.mp3", "wb") as sound_file:
             sound_file.write(sound_res.content)
 
         soundeffects = soundboard.Soundboard(cfg.get("token"), ctx.guild.id, voice_state.channel.id)
-        sound = soundeffects.upload_sound("data/cache/mysound.mp3", "ghost_sound_player", volume=1, emoji_id=None)
+        sound = soundeffects.upload_sound(files.get_cache_path() + "/mysound.mp3", "ghost_sound_player", volume=1, emoji_id=None)
 
         if sound.id:
             await cmdhelper.send_message(ctx, {
@@ -529,7 +529,7 @@ class Fun(commands.Cog):
 
             soundeffects.play_sound(sound.id, source_guild_id=ctx.guild.id)
             soundeffects.delete_sound(sound.id)
-            os.remove("data/cache/mysound.mp3")
+            os.remove(files.get_cache_path() + "/mysound.mp3")
 
         else:
             await cmdhelper.send_message(ctx, {
