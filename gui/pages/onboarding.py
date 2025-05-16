@@ -1,6 +1,7 @@
 import os
 import sys
 import ttkbootstrap as ttk
+import threading
 
 from utils.config import Config
 from utils import files
@@ -8,8 +9,10 @@ from gui.components import RoundedFrame, RoundedButton
 from gui.helpers import Images
 
 class OnboardingPage:
-    def __init__(self, root):
+    def __init__(self, root, run, bot_controller):
         self.root = root
+        self.run = run
+        self.bot_controller = bot_controller
         self.width = 450
         self.height = 115
         self.images = Images()
@@ -18,6 +21,10 @@ class OnboardingPage:
         self.root.bind("<Button-1>", self._remove_focus)
         self.token_entry_placeholder = "Paste your token here..."
         self.prefix_entry_placeholder = "Enter your desired prefix..."
+       
+    def clear(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
        
     def _remove_focus(self, event):
         widget = event.widget
@@ -45,7 +52,10 @@ class OnboardingPage:
                 f.write("True")
                 
         self.cfg.save()
-        os.execl(sys.executable, sys.executable, *sys.argv)
+        # os.execl(sys.executable, sys.executable, *sys.argv)
+        self.clear()
+        threading.Thread(target=self.bot_controller.start, daemon=True).start()
+        self.root.after(150, lambda: self.run())
         
     def _draw_token_entry(self):
         entry_wrapper = RoundedFrame(self.root, radius=(15, 15, 15, 15), bootstyle="dark.TFrame")
