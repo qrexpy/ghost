@@ -7,11 +7,6 @@ import subprocess
 from utils.files import resource_path
 from ctypes import wintypes
 
-try:
-    import winreg
-except ImportError:
-    import _winreg as winreg
-
 # FONTS = [
 #     resource_path("data/fonts/Roboto-Regular.ttf"),
 #     resource_path("data/fonts/Roboto-Bold.ttf"),
@@ -31,39 +26,45 @@ SYSTEM_FONT_DIR = {
     "linux": "/usr/share/fonts",
 }
 
-user32 = ctypes.WinDLL('user32', use_last_error=True)
-gdi32 = ctypes.WinDLL('gdi32', use_last_error=True)
+if sys.platform == "win32":
+    try:
+        import winreg
+    except ImportError:
+        import _winreg as winreg
 
-FONTS_REG_PATH = r'Software\Microsoft\Windows NT\CurrentVersion\Fonts'
+    user32 = ctypes.WinDLL('user32', use_last_error=True)
+    gdi32 = ctypes.WinDLL('gdi32', use_last_error=True)
 
-HWND_BROADCAST   = 0xFFFF
-SMTO_ABORTIFHUNG = 0x0002
-WM_FONTCHANGE    = 0x001D
-GFRI_DESCRIPTION = 1
-GFRI_ISTRUETYPE  = 3
+    FONTS_REG_PATH = r'Software\Microsoft\Windows NT\CurrentVersion\Fonts'
 
-if not hasattr(wintypes, 'LPDWORD'):
-    wintypes.LPDWORD = ctypes.POINTER(wintypes.DWORD)
+    HWND_BROADCAST   = 0xFFFF
+    SMTO_ABORTIFHUNG = 0x0002
+    WM_FONTCHANGE    = 0x001D
+    GFRI_DESCRIPTION = 1
+    GFRI_ISTRUETYPE  = 3
 
-user32.SendMessageTimeoutW.restype = wintypes.LPVOID
-user32.SendMessageTimeoutW.argtypes = (
-    wintypes.HWND,   # hWnd
-    wintypes.UINT,   # Msg
-    wintypes.LPVOID, # wParam
-    wintypes.LPVOID, # lParam
-    wintypes.UINT,   # fuFlags
-    wintypes.UINT,   # uTimeout
-    wintypes.LPVOID) # lpdwResult
+    if not hasattr(wintypes, 'LPDWORD'):
+        wintypes.LPDWORD = ctypes.POINTER(wintypes.DWORD)
 
-gdi32.AddFontResourceW.argtypes = (
-    wintypes.LPCWSTR,) # lpszFilename
+    user32.SendMessageTimeoutW.restype = wintypes.LPVOID
+    user32.SendMessageTimeoutW.argtypes = (
+        wintypes.HWND,   # hWnd
+        wintypes.UINT,   # Msg
+        wintypes.LPVOID, # wParam
+        wintypes.LPVOID, # lParam
+        wintypes.UINT,   # fuFlags
+        wintypes.UINT,   # uTimeout
+        wintypes.LPVOID) # lpdwResult
 
-# http://www.undocprint.org/winspool/getfontresourceinfo
-gdi32.GetFontResourceInfoW.argtypes = (
-    wintypes.LPCWSTR, # lpszFilename
-    wintypes.LPDWORD, # cbBuffer
-    wintypes.LPVOID,  # lpBuffer
-    wintypes.DWORD)   # dwQueryType
+    gdi32.AddFontResourceW.argtypes = (
+        wintypes.LPCWSTR,) # lpszFilename
+
+    # http://www.undocprint.org/winspool/getfontresourceinfo
+    gdi32.GetFontResourceInfoW.argtypes = (
+        wintypes.LPCWSTR, # lpszFilename
+        wintypes.LPDWORD, # cbBuffer
+        wintypes.LPVOID,  # lpBuffer
+        wintypes.DWORD)   # dwQueryType
 
 def get_fonts():
     font_files = [os.path.basename(font) for font in FONTS]
