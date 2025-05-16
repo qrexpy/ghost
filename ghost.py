@@ -8,7 +8,7 @@ os.environ["SSL_CERT_FILE"] = certifi.where()
 HEADLESS = "DISPLAY" not in os.environ and sys.platform == "linux"
 
 from bot.controller import BotController
-from utils import startup_check, check_fonts
+from utils import startup_check, check_fonts, console
 from utils.files import get_application_support
 from utils.config import Config
 
@@ -35,6 +35,18 @@ def gui_only():
     
 def no_gui():
     startup_check.check()
+    cfg = Config()
+    
+    if cfg.get("token") == "":
+        console.error("No token found. Please enter one below.")
+        token = input("> ")
+        cfg.set("token", token)
+        cfg.save()
+    else:
+        console.info("Token found. Starting bot.")
+    
+    console.info("Starting bot.")
+    
     controller = BotController()
     controller.start()
     
