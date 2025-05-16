@@ -15,3 +15,4 @@ cupcake-editor
 filetype
 toml
 pygments
+certifi
