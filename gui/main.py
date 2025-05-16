@@ -29,6 +29,7 @@ class GhostGUI:
         self.root = ttk.tk.Tk()
         self.root.title("Ghost")
         # self.root.resizable(False, False)
+        self.root.iconbitmap(resource_path("data/icon.ico"))
         self.root.geometry(f"{self.size[0]}x{self.size[1]}")
         self.root.minsize(self.size[0], self.size[1])
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
