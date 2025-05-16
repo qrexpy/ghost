@@ -52,6 +52,6 @@ def open_path_in_explorer(path):
     if sys.platform == "darwin":
         os.system(f"open '{path}'")
     elif sys.platform == "win32":
-        os.system(f"start '{path}'")
+        os.system(f'start "" "{path}"')
     else:
         os.system(f"xdg-open '{path}'")
