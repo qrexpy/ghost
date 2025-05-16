@@ -21,14 +21,16 @@ if getattr(sys, 'frozen', False):
 
 def run():
     cfg = Config()
+    controller = BotController()
+    
     if cfg.get("token") == "":
         print("No token found. Running in GUI mode.")
-        gui_only()
+        # gui_only()
     else:
         startup_check.check()
-        controller = BotController()
         threading.Thread(target=controller.start, daemon=True).start()
-        GhostGUI(controller).run()
+    
+    GhostGUI(controller).run()
     
 def gui_only():
     GhostGUI(None).run()

@@ -61,7 +61,7 @@ class GhostGUI:
         
         self.layout          = Layout(self.root, self.sidebar)
         self.loading_page    = LoadingPage(self.root)
-        self.onboarding_page = OnboardingPage(self.root)
+        self.onboarding_page = OnboardingPage(self.root, self.run, self.bot_controller)
         self.console         = Console(self.root, self.bot_controller)
         self.home_page       = HomePage(self.root, self.bot_controller, self._restart_bot)
         self.settings_page   = SettingsPage(self.root, self.bot_controller)
