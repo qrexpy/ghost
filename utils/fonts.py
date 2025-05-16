@@ -128,37 +128,42 @@ def load_custom_font(font_path):
     if system_platform == "darwin":
         install_dir = os.path.expanduser("~/Library/Fonts")
     elif system_platform == "win32":
-        # copy the font to the Windows Fonts folder
-        dst_path = os.path.join(os.environ['SystemRoot'], 'Fonts',
-                                os.path.basename(font_path))
-        shutil.copy(font_path, dst_path)
-        # load the font in the current session
-        if not gdi32.AddFontResourceW(dst_path):
-            os.remove(dst_path)
-            raise OSError('AddFontResource failed to load "%s"' % font_path)
-        # notify running programs
-        user32.SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0,
-                                SMTO_ABORTIFHUNG, 1000, None)
-        # store the fontname/filename in the registry
-        filename = os.path.basename(dst_path)
-        fontname = os.path.splitext(filename)[0]
-        # try to get the font's real name
-        cb = wintypes.DWORD()
-        if gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb), None,
-                                    GFRI_DESCRIPTION):
-            buf = (ctypes.c_wchar * cb.value)()
-            if gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb), buf,
+        try:
+            # copy the font to the Windows Fonts folder
+            dst_path = os.path.join(os.environ['SystemRoot'], 'Fonts',
+                                    os.path.basename(font_path))
+            shutil.copy(font_path, dst_path)
+            # load the font in the current session
+            if not gdi32.AddFontResourceW(dst_path):
+                os.remove(dst_path)
+                raise OSError('AddFontResource failed to load "%s"' % font_path)
+            # notify running programs
+            user32.SendMessageTimeoutW(HWND_BROADCAST, WM_FONTCHANGE, 0, 0,
+                                    SMTO_ABORTIFHUNG, 1000, None)
+            # store the fontname/filename in the registry
+            filename = os.path.basename(dst_path)
+            fontname = os.path.splitext(filename)[0]
+            # try to get the font's real name
+            cb = wintypes.DWORD()
+            if gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb), None,
                                         GFRI_DESCRIPTION):
-                fontname = buf.value
-        is_truetype = wintypes.BOOL()
-        cb.value = ctypes.sizeof(is_truetype)
-        gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb),
-            ctypes.byref(is_truetype), GFRI_ISTRUETYPE)
-        if is_truetype:
-            fontname += ' (TrueType)'
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, FONTS_REG_PATH, 0,
-                            winreg.KEY_SET_VALUE) as key:
-            winreg.SetValueEx(key, fontname, 0, winreg.REG_SZ, filename)
+                buf = (ctypes.c_wchar * cb.value)()
+                if gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb), buf,
+                                            GFRI_DESCRIPTION):
+                    fontname = buf.value
+            is_truetype = wintypes.BOOL()
+            cb.value = ctypes.sizeof(is_truetype)
+            gdi32.GetFontResourceInfoW(filename, ctypes.byref(cb),
+                ctypes.byref(is_truetype), GFRI_ISTRUETYPE)
+            if is_truetype:
+                fontname += ' (TrueType)'
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, FONTS_REG_PATH, 0,
+                                winreg.KEY_SET_VALUE) as key:
+                winreg.SetValueEx(key, fontname, 0, winreg.REG_SZ, filename)
+            print(f"Font installed: {font_path}")
+        except Exception as e:
+            print(f"Failed to install font '{font_name}': {e}")
+            return
     elif system_platform == "linux":
         install_dir = "/usr/share/fonts"
     else:
@@ -166,8 +171,9 @@ def load_custom_font(font_path):
         return
     
     # Install the font by copying it to the system directory
-    shutil.copy(font_path, os.path.join(install_dir, font_name))
-    print(f"Font installed: {font_path}")
+    if system_platform != "win32":
+        shutil.copy(font_path, os.path.join(install_dir, font_name))
+        print(f"Font installed: {font_path}")
 
 def load_fonts():
     """
