@@ -12,7 +12,8 @@ class FontCheckGUI:
         self.cfg = Config()
         self.root = ttk.tk.Tk()
         self.root.title("Ghost")
-        self.root.iconbitmap(resource_path("data/icon.ico"))
+        if os.name == "nt":
+            self.root.iconbitmap(resource_path("data/icon.ico"))
         
         self.root.style = ttk.Style()
         # self.root.style.theme_use("darkly")
