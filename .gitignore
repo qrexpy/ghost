@@ -8,6 +8,4 @@ __pycache__/
 tokens.txt
 build/
 dist/
-compile.sh
-assets/
 Ghost.spec
