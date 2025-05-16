@@ -5,11 +5,7 @@ import sys
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
 
-try:
-    import ttkbootstrap
-    HEADLESS = False
-except ImportError:
-    HEADLESS = True
+HEADLESS = "DISPLAY" not in os.environ and sys.platform == "linux"
 
 from bot.controller import BotController
 from utils import startup_check, check_fonts
