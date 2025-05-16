@@ -8,7 +8,7 @@ def build():
     
     name = "Ghost"
     entry_script = "ghost.py"
-    icon = "data/icon.png"
+    icon = "data/icon-win.png" if system == "Windows" else "data/icon.png"
 
     common_args = [
         "pyinstaller",
