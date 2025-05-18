@@ -19,6 +19,8 @@ def build():
         f"--icon={icon}",
         "--hidden-import=discord",
         "--hidden-import=discord.ext.commands",
+        "--hidden-import=PIL.ImageTk",
+        "--hidden-import=PIL._tkinter_finder",
         "--collect-submodules=discord",
         entry_script
     ]
