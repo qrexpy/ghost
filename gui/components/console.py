@@ -1,4 +1,4 @@
-import json
+import sys
 import ttkbootstrap as ttk
 from gui.components.rounded_frame import RoundedFrame
 from gui.helpers.images import Images
@@ -13,6 +13,8 @@ class Console:
         self.console = []
         self.textarea = None
         self.avatar = None
+        self.darwin_font_size = 12
+        self.non_darwin_font_size = 10
         
     def update(self):
         try:
@@ -66,15 +68,15 @@ class Console:
         self.textarea.tag_config("timestamp", foreground="gray")
         self.textarea.tag_config("log_text",  foreground="lightgrey")
         
-        self.textarea.tag_config("prefix_sniper",  foreground="red",     font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("sniper_key",     foreground="#eceb18", font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_command", foreground="#0b91ff", font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_info",    foreground="#2aefef", font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_success", foreground="#4fee4c", font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_warning", foreground="#eceb18", font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_error",   foreground="red",     font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_cli",     foreground="pink",    font=("JetBrainsMono NF Bold", 12))
-        self.textarea.tag_config("prefix_rpc",     foreground="pink",    font=("JetBrainsMono NF Bold", 12))
+        self.textarea.tag_config("prefix_sniper",  foreground="red",     font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("sniper_key",     foreground="#eceb18", font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_command", foreground="#0b91ff", font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_info",    foreground="#2aefef", font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_success", foreground="#4fee4c", font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_warning", foreground="#eceb18", font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_error",   foreground="red",     font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_cli",     foreground="pink",    font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+        self.textarea.tag_config("prefix_rpc",     foreground="pink",    font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
     
     def _draw_footer(self, parent):
         """ Draw the footer with user info and clear button. """
@@ -104,7 +106,7 @@ class Console:
         wrapper = RoundedFrame(parent, radius=15, bootstyle="dark.TFrame")
         wrapper.pack(side="top", fill="both", expand=True)
         
-        self.textarea = ttk.Text(wrapper, wrap="word", height=20, font=("JetBrainsMono NF Regular", 12))
+        self.textarea = ttk.Text(wrapper, wrap="word", height=20, font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
         self.textarea.config(
             border=0,
             background=self.root.style.colors.get("dark"),
