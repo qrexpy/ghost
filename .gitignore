@@ -9,3 +9,4 @@ tokens.txt
 build/
 dist/
 Ghost.spec
+changelog.py
