@@ -1,4 +1,4 @@
-import webbrowser, discord
+import webbrowser, discord, sys
 import ttkbootstrap as ttk
 import tkinter.font as tkFont
 from ttkbootstrap.scrolled import ScrolledFrame
@@ -106,11 +106,11 @@ class HomePage:
             avatar.grid(row=0, column=0, sticky=ttk.W, padx=(15, 10), pady=15, rowspan=2)
             
         if not self.restart:
-            display_name = ttk.Label(wrapper, text=self.bot_controller.get_user().display_name, font=("Host Grotesk", 20, "bold"))
+            display_name = ttk.Label(wrapper, text=self.bot_controller.get_user().display_name, font=("Host Grotesk", 16 if sys.platform != "darwin" else 20, "bold"))
             display_name.configure(background=self.root.style.colors.get("secondary"))
             display_name.grid(row=0, column=1, sticky=ttk.W, pady=(15, 0))
 
-            username = ttk.Label(wrapper, text=self.bot_controller.get_user().name, font=("Host Grotesk", 14, "italic"))
+            username = ttk.Label(wrapper, text=self.bot_controller.get_user().name, font=("Host Grotesk", 12 if sys.platform != "darwin" else 14, "italic"))
             username.configure(background=self.root.style.colors.get("secondary"), foreground="lightgrey")
             username.grid(row=1, column=1, sticky=ttk.W, pady=(0, 15))
             
@@ -121,7 +121,7 @@ class HomePage:
             
             wrapper.grid_columnconfigure(2, weight=1)
         else:
-            self.restart_title = ttk.Label(wrapper, text="Ghost is restarting...", font=("Host Grotesk", 20, "bold"), anchor="center")
+            self.restart_title = ttk.Label(wrapper, text="Ghost is restarting...", font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"), anchor="center")
             self.restart_title.configure(background=self.root.style.colors.get("secondary"))
             self.restart_title.grid(row=0, column=0, sticky=ttk.NSEW, pady=26, padx=15, columnspan=2)
             wrapper.grid_columnconfigure(0, weight=1)
@@ -145,18 +145,18 @@ class HomePage:
         if self.restart:
             return
         
-        title = ttk.Label(wrapper, text="Discord", font=("Host Grotesk", 16, "bold"))
+        title = ttk.Label(wrapper, text="Discord", font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"))
         title.configure(background=self.root.style.colors.get("dark"))
         title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=(10, 0))
         
         ttk.Separator(wrapper, orient="horizontal").grid(row=1, column=0, columnspan=2, sticky="we", padx=(10, 10), pady=5)
         wrapper.grid_columnconfigure(1, weight=1)
         
-        self.friends_label = ttk.Label(wrapper, text=f"Friends: {len(self.bot_controller.get_friends())}", font=("Host Grotesk", 14))
+        self.friends_label = ttk.Label(wrapper, text=f"Friends: {len(self.bot_controller.get_friends())}", font=("Host Grotesk", 12 if sys.platform != "darwin" else 14))
         self.friends_label.configure(background=self.root.style.colors.get("dark"), foreground="white" if not self.restart else "lightgrey")
         self.friends_label.grid(row=2, column=0, sticky=ttk.W, padx=10, pady=(5, 0))
         
-        self.guilds_label = ttk.Label(wrapper, text=f"Guilds: {len(self.bot_controller.get_guilds())}", font=("Host Grotesk", 14))
+        self.guilds_label = ttk.Label(wrapper, text=f"Guilds: {len(self.bot_controller.get_guilds())}", font=("Host Grotesk", 12 if sys.platform != "darwin" else 14))
         self.guilds_label.configure(background=self.root.style.colors.get("dark"), foreground="white" if not self.restart else "lightgrey")
         self.guilds_label.grid(row=3, column=0, sticky=ttk.W, padx=10, pady=(0, 10))
         
@@ -167,22 +167,22 @@ class HomePage:
         if self.restart:
             return
         
-        title = ttk.Label(wrapper, text="Ghost", font=("Host Grotesk", 16, "bold"))
+        title = ttk.Label(wrapper, text="Ghost", font=("Host Grotesk", 14 if sys.platform != "darwin" else 16, "bold"))
         title.configure(background=self.root.style.colors.get("dark"))
         title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=(10, 0))
         
         ttk.Separator(wrapper, orient="horizontal").grid(row=1, column=0, columnspan=2, sticky="we", padx=(10, 10), pady=5)
         wrapper.grid_columnconfigure(1, weight=1)
         
-        version = ttk.Label(wrapper, text=f"Version: {VERSION}", font=("Host Grotesk", 14))
+        version = ttk.Label(wrapper, text=f"Version: {VERSION}", font=("Host Grotesk", 12 if sys.platform != "darwin" else 14))
         version.configure(background=self.root.style.colors.get("dark"))
         version.grid(row=2, column=0, sticky=ttk.W, padx=(10, 0), pady=(5, 0))    
         
-        self.uptime_label = ttk.Label(wrapper, text=f"Uptime: {self.bot_controller.get_uptime()}", font=("Host Grotesk", 14))
+        self.uptime_label = ttk.Label(wrapper, text=f"Uptime: {self.bot_controller.get_uptime()}", font=("Host Grotesk", 12 if sys.platform != "darwin" else 14))
         self.uptime_label.configure(background=self.root.style.colors.get("dark"), foreground="white" if not self.restart else "lightgrey")
         self.uptime_label.grid(row=3, column=0, sticky=ttk.W, padx=(10, 0))
         
-        self.latency_label = ttk.Label(wrapper, text=f"Latency: {self.bot_controller.get_latency()}", font=("Host Grotesk", 14))
+        self.latency_label = ttk.Label(wrapper, text=f"Latency: {self.bot_controller.get_latency()}", font=("Host Grotesk", 12 if sys.platform != "darwin" else 14))
         self.latency_label.configure(background=self.root.style.colors.get("dark"), foreground="white" if not self.restart else "lightgrey")
         self.latency_label.grid(row=4, column=0, sticky=ttk.W, padx=(10, 0), pady=(0, 10))
         
@@ -216,18 +216,18 @@ class HomePage:
             avatar.configure(background=self.root.style.colors.get("secondary"))
             avatar.grid(row=0, column=0, sticky=ttk.NW, padx=(5, 5), rowspan=3, pady=5)
             
-            author_label = ttk.Label(frame, text=author.display_name, font=("Host Grotesk", 14, "bold"))
+            author_label = ttk.Label(frame, text=author.display_name, font=("Host Grotesk", 12 if sys.platform != "darwin" else 14, "bold"))
             author_label.configure(background=self.root.style.colors.get("secondary"))
             author_label.grid(row=0, column=1, sticky=ttk.NW, padx=(0, 10), pady=(5, 0))
             
             message_content = message.content[:250] + "..." if len(message.content) > 250 else message.content
             
-            message_label = ttk.Label(frame, text=message_content, font=("Host Grotesk", 12), wraplength=350)
+            message_label = ttk.Label(frame, text=message_content, font=("Host Grotesk", 10 if sys.platform != "darwin" else 12), wraplength=350)
             message_label.configure(background=self.root.style.colors.get("secondary"))
             message_label.grid(row=1, column=1, sticky=ttk.NW, padx=(0, 10))
             
             channel_label_text = f"Deleted in DMs" if isinstance(message.channel, discord.DMChannel) else f"Deleted in {message.guild.name} > #{message.channel.name}"
-            channel_label = ttk.Label(frame, text=channel_label_text, font=("Host Grotesk", 10, "italic"))
+            channel_label = ttk.Label(frame, text=channel_label_text, font=("Host Grotesk", 8 if sys.platform != "darwin" else 10, "italic"))
             channel_label.configure(background=self.root.style.colors.get("secondary"), foreground="lightgrey")
             channel_label.grid(row=2, column=1, sticky=ttk.NW, padx=(0, 10), pady=(0, 5))
             
@@ -323,12 +323,12 @@ class HomePage:
         header_wrapper = RoundedFrame(wrapper, radius=(15, 15, 0, 0), style="secondary.TFrame")
         header_wrapper.pack(fill=ttk.BOTH, expand=False)
         
-        title = ttk.Label(header_wrapper, text="Deleted Messages", font=("Host Grotesk", 16, "bold"))
+        title = ttk.Label(header_wrapper, text="Deleted Messages", font=("Host Grotesk", 14 if sys.platform != "darwin" else 16, "bold"))
         title.configure(background=self.root.style.colors.get("secondary"))
         title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=10)
         header_wrapper.columnconfigure(1, weight=1)
         
-        clear_btn = ttk.Label(header_wrapper, image=self.images.get("trash"), font=("Host Grotesk", 14, "bold"))
+        clear_btn = ttk.Label(header_wrapper, image=self.images.get("trash"), font=("Host Grotesk", 12 if sys.platform != "darwin" else 14, "bold"))
         clear_btn.configure(background=self.root.style.colors.get("secondary"), foreground="white")
         clear_btn.bind("<Button-1>", lambda e: self._clear_discord_logs())
         clear_btn.bind("<Enter>", lambda e: clear_btn.configure(foreground="lightgrey"))

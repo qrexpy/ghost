@@ -1,3 +1,4 @@
+import sys
 import ttkbootstrap as ttk
 from gui.components import RoundedFrame
 
@@ -15,7 +16,7 @@ class RoundedButton(ttk.Canvas):
         self.root = parent.winfo_toplevel()
         self.style = self.root.style
         self.padx = kwargs.get("padx", 2)
-        self.pady = kwargs.get("pady", 1)
+        self.pady = kwargs.get("pady", 0 if sys.platform != "darwin" else 1)
 
         self.configure(background=self._get_parent_background())
 
@@ -27,7 +28,7 @@ class RoundedButton(ttk.Canvas):
         self.frame.pack(fill=ttk.BOTH)
 
         # Create the label inside the rounded frame
-        self.button = ttk.Label(self.frame, text=text, image=image, style=bootstyle, anchor="center", borderwidth=0, relief="flat", font=("Host Grotesk",) if not kwargs.get("font") else kwargs.get("font"))
+        self.button = ttk.Label(self.frame, text=text, image=image, style=bootstyle, anchor="center", borderwidth=0, relief="flat", font=("Host Grotesk", "10") if sys.platform != "darwin" else ("Host Grotesk", ) if not kwargs.get("font") else kwargs.get("font"))
         self.button.pack(fill=ttk.BOTH, expand=True, padx=self.padx, pady=self.pady)
 
         # Bind events for clicking
