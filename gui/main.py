@@ -1,5 +1,5 @@
 import certifi
-import os
+import os, sys
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
 import ttkbootstrap as ttk
@@ -159,6 +159,9 @@ class GhostGUI:
             self.root.mainloop()
             return
         
+        if not self.bot_controller.running:
+            self.bot_controller.start()
+        
         self.layout.hide_titlebar()
         self.layout.stick_window()
         self.layout.resize(400, 90)
@@ -170,10 +173,15 @@ class GhostGUI:
     def quit(self):
         if str(Messagebox.yesno("Are you sure you want to quit?", title="Ghost")).lower() == "yes":
             # uninstall_fonts()
-            if os.name == "nt":
-                os.kill(os.getpid(), 9)
-            else:
-                os._exit(0)
+            # if os.name == "nt":
+            #     os.kill(os.getpid(), 9)
+            # else:
+            #     os._exit(0)
+            self.root.destroy()
+            sys.exit(0)
+                
+    def run_on_main_thread(self, func, *args, **kwargs):
+        self.root.after(0, lambda: func(*args, **kwargs))
 
 if __name__ == "__main__":
     gui = GhostGUI()

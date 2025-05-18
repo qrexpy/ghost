@@ -165,7 +165,8 @@ class BotController:
         
     def restart_gui(self):
         if self.gui:
-            self.gui._restart_bot()
+            # self.gui._restart_bot()
+            self.gui.run_on_main_thread(self.gui._restart_bot)
 
     def switch_account(self, token):
         self.cfg.set("token", token)

@@ -54,8 +54,8 @@ class OnboardingPage:
         self.cfg.save()
         # os.execl(sys.executable, sys.executable, *sys.argv)
         self.clear()
-        threading.Thread(target=self.bot_controller.start, daemon=True).start()
-        self.root.after(150, lambda: self.run())
+        # threading.Thread(target=self.bot_controller.start, daemon=True).start()
+        self.root.after(100, lambda: self.run())
         
     def _draw_token_entry(self):
         entry_wrapper = RoundedFrame(self.root, radius=(15, 15, 15, 15), bootstyle="dark.TFrame")
