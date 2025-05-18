@@ -1,3 +1,4 @@
+import sys
 import ttkbootstrap as ttk
 from ttkbootstrap.scrolled import ScrolledFrame
 
@@ -51,8 +52,8 @@ class Layout:
         sidebar = self.sidebar.draw()
         sidebar.pack(side=ttk.LEFT, fill=ttk.BOTH)
         
-    hide_titlebar  = lambda self: self.root.overrideredirect(True)
-    show_titlebar  = lambda self: self.root.overrideredirect(False)
+    hide_titlebar  = lambda self: self.root.overrideredirect(True) if sys.platform != "linux" else None
+    show_titlebar  = lambda self: self.root.overrideredirect(False) if sys.platform != "linux" else None
     stick_window   = lambda self: self.root.attributes("-topmost", True)
     unstick_window = lambda self: self.root.attributes("-topmost", False)
         

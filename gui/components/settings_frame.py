@@ -1,3 +1,4 @@
+import sys
 import ttkbootstrap as ttk
 from gui.components import RoundedFrame
 from utils.config import Config
@@ -42,7 +43,7 @@ class SettingsFrame:
         self.header = RoundedFrame(parent, radius=(15, 15, 0, 0), bootstyle="secondary.TFrame")
         self.header.pack(fill=ttk.BOTH, expand=False)
         
-        self.title = ttk.Label(self.header, text=self.header_text, font=("Host Grotesk", 20, "bold"))
+        self.title = ttk.Label(self.header, text=self.header_text, font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"))
         self.title.configure(background=self.root.style.colors.get("secondary"))
         self.title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=15)
         
