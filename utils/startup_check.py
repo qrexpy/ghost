@@ -16,8 +16,8 @@ REQUIRED_DIRS = [
 
 REQUIRED_FILES = {
     "data/sniped_codes.txt": "",
-    "data/privnote_saves.json": {},
-    "data/sensitive/tokens.json": [],
+    "data/privnote_saves.json": "{}",
+    "data/sensitive/tokens.json": "[]",
     "themes/ghost.json": DEFAULT_THEME,
     "config.json": DEFAULT_CONFIG,
     # "ghost.log": ""
@@ -37,6 +37,20 @@ def create_files():
                     json.dump(content, f, indent=4)
             print(f"Created missing file: {path}")
 
+# check contents of files, if they are empty fill them with default values
+def check_file_contents():
+    for path, content in REQUIRED_FILES.items():
+        if os.path.exists(BASE_PATH + path):
+            with open(BASE_PATH + path, "r") as f:
+                file_content = f.read()
+                if file_content == "" and content != "":
+                    with open(BASE_PATH + path, "w") as f:
+                        if isinstance(content, str):
+                            f.write(content)
+                        else:
+                            json.dump(content, f, indent=4)
+                    print(f"Filled empty file with default content: {path}")
+
 def clear_cache():
     for file in os.listdir(BASE_PATH + "data/cache"):
         if file not in ["CREATE_WEBHOOKS"]:
@@ -46,6 +60,7 @@ def clear_cache():
 def check():
     create_directories()
     create_files()
+    check_file_contents()
     clear_cache()
     print("Startup checks complete.")
     
