@@ -226,7 +226,7 @@ class ScriptsPage:
         inner_wrapper = ttk.Frame(frame, style="dark.TFrame")
         inner_wrapper.pack(fill=ttk.BOTH, padx=(15, 10), pady=10)
 
-        script_name = ttk.Label(inner_wrapper, text=script, font=("Host Grotesk", 16, "bold"))
+        script_name = ttk.Label(inner_wrapper, text=script, font=("Host Grotesk", 14 if sys.platform != "darwin" else 16, "bold"))
         script_name.configure(background=self.root.style.colors.get("dark"))
         script_name.grid(row=0, column=0, sticky=ttk.W)
         inner_wrapper.columnconfigure(0, weight=1)
@@ -294,7 +294,7 @@ class ScriptsPage:
         inner_wrapper = ttk.Frame(wrapper, style="warning.TFrame")
         inner_wrapper.pack(fill=ttk.BOTH, padx=15, pady=10, expand=True)
         
-        warning_label = ttk.Label(inner_wrapper, text="A restart is required to apply changes!", font=("Host Grotesk", 16, "bold"), anchor="center")
+        warning_label = ttk.Label(inner_wrapper, text="A restart is required to apply changes!", font=("Host Grotesk", 14 if sys.platform != "darwin" else 16, "bold"), anchor="center")
         warning_label.configure(background=self.root.style.colors.get("warning"))
         warning_label.pack(fill=ttk.BOTH, expand=True)
         
