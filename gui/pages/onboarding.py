@@ -124,7 +124,7 @@ class OnboardingPage:
         # text_wrapper.pack(fill=ttk.BOTH, side=ttk.LEFT, expand=True)
         text_wrapper.grid(row=0, column=0, sticky=ttk.NSEW, pady=(0, 4), padx=(2, 0))
 
-        title = ttk.Label(text_wrapper, text="Webhook Setup", font=("Host Grotesk", 20, "bold"))
+        title = ttk.Label(text_wrapper, text="Webhook Setup", font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"))
         title.configure(background=self.root.style.colors.get("dark"))
         title.grid(row=0, column=0, sticky=ttk.W)
 
