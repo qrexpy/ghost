@@ -22,6 +22,7 @@ Ghost has 150+ commands and a completely custom built GUI for endless customisat
 > pip install -r requirements.txt
 > python3 ghost.py
 > ```
+> Follow [this guide](https://gist.github.com/bennyscripts/49ecc1eade1796ee1d7cad9d165ffe67) on how to get your account token!  
 > _Ghost requires Python 3.10+_
 
 <!--
