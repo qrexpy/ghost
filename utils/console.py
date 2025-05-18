@@ -27,15 +27,15 @@ def set_gui(ghost_gui):
 
 def log_to_gui(prefix, text):
     if gui and gui.console:
-        gui.console.add_log(prefix, text)
+        gui.run_on_main_thread(gui.console.add_log, prefix, text)
 
 def log_sniper_to_gui(sniper_obj):
     if gui and gui.console:
-        gui.console.add_sniper(sniper_obj)
+        gui.run_on_main_thread(gui.console.add_sniper, sniper_obj)
 
 def clear_gui():
     if gui and gui.console:
-        gui.console.clear()
+        gui.run_on_main_thread(gui.console.clear)
 
 def clear():
     clear_gui()
