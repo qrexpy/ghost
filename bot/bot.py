@@ -136,7 +136,7 @@ class Ghost(commands.Bot):
 
             if self.session_spoofing:
                 console.print_info(f"Spoofing session as {self.session_spoofing_device}")
-                console.print_warning("Your account is at higher risk of termination by using session spoofer.")
+                # console.print_warning("Your account is at higher risk of termination by using session spoofer.")
             
             self._setup_scripts()
             await self.controller.setup_webhooks()
