@@ -3,7 +3,7 @@ The most advanced open source Discord Selfbot.
 Ghost has 150+ commands and a completely custom built GUI for endless customisation!  
 
 > [!WARNING]  
-> Using Ghost <ins>can</ins> result in account termination! To avoid termination, do not use any commands in bigger servers especially ones moderated by Discord staff and do not use any of the abuse commands. I do not take any responsibility for the actions that may be caused by using Ghost. Please use with caution!
+> Using Ghost is against Discord's TOS and <ins>can</ins> result in account termination! To avoid termination, do not use any commands in bigger servers especially ones moderated by Discord staff and do not use any of the abuse commands. I do not take any responsibility for the actions that may be caused by using Ghost. Please use with caution!
 
 <!--
 > [!NOTE]
