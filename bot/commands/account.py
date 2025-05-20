@@ -43,7 +43,7 @@ class Account(commands.Cog):
         backups = os.listdir("backups/")
 
         if len(backups) == 0:
-            await cmdhelper.send_message(ctx, {"title": "Backups", "description": "No backups found.", "colour": "ff0000"})
+            await cmdhelper.send_message(ctx, {"title": "Backups", "description": "No backups found.", "colour": "#ff0000"})
             return
         
         description = ""
@@ -68,7 +68,7 @@ class Account(commands.Cog):
             await cmdhelper.send_message(ctx, {"title": "Backup Commands", "description": description})
 
     @backup.command(name="account", description="Backup your account information.", usage="")
-    async def account(self, ctx):
+    async def backup_account(self, ctx):
         backup = {
             "id": self.bot.user.id,
             "name": self.bot.user.name,
@@ -88,7 +88,7 @@ class Account(commands.Cog):
         await cmdhelper.send_message(ctx, {"title": "Account Backup", "description": f"Saved some information about your account in account.json"})
 
     @backup.command(name="friends", description="Backup your friends.", usage="")
-    async def friends(self, ctx):
+    async def backup_friends(self, ctx):
         cfg = self.cfg
         resp = requests.get("https://discord.com/api/users/@me/relationships", headers={
             "Authorization": f"{cfg.get('token')}",
@@ -123,7 +123,7 @@ class Account(commands.Cog):
         await cmdhelper.send_message(ctx, {"title": "Friends Backup", "description": f"Saved {len(friends)} friends to friends.json"})
 
     @backup.command(name="guilds", description="Backup your guilds.", usage="", aliases=["servers"])
-    async def guilds(self, ctx):
+    async def backup_guilds(self, ctx):
         backup = {
             "created_at": time.time(),
             "type": "guilds",
@@ -160,7 +160,7 @@ class Account(commands.Cog):
         await cmdhelper.send_message(ctx, {"title": "Guilds Backup", "description": f"Saved {len(self.bot.guilds)} guilds to guilds.json"})
 
     @backup.command(name="restore", description="Restore a backup.", usage="[backup]")
-    async def restore(self, ctx, backup: str):
+    async def backup_restore(self, ctx, backup: str):
         if not os.path.exists(files.get_application_support() + "/backups/"):
             os.mkdir(files.get_application_support() + "/backups/")
         backup_path = files.get_application_support() + f"/backups/{backup}.json"
