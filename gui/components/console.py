@@ -18,7 +18,6 @@ class Console:
         
     def update(self):
         try:
-            self.textarea.config(state="normal")
             self.textarea.delete("1.0", "end")
             
             for time, prefix, text in self.console:
@@ -42,7 +41,6 @@ class Console:
                     self.textarea.insert("end", f"[{prefix}] ", f"prefix_{prefix.lower()}")
                     self.textarea.insert("end", f"{text}\n", "log_text")
             
-            self.textarea.config(state="disabled")
             self.textarea.yview_moveto(1)
         except:
             print("Console tried to update without being drawn.")
@@ -50,9 +48,7 @@ class Console:
     def clear(self):
         self.console = []
         try:
-            self.textarea.config(state="normal")
             self.textarea.delete("1.0", "end")
-            self.textarea.config(state="disabled")
         except:
             print("Console tried to clear without being drawn.")
     
@@ -102,23 +98,30 @@ class Console:
         clear_btn.grid(row=0, column=3, padx=(10, 8), pady=5, sticky="e")
     
     def _draw_main(self, parent):
-        # wrapper = RoundedFrame(parent, radius=(15, 15, 0, 0), bootstyle="dark.TFrame")
         wrapper = RoundedFrame(parent, radius=15, bootstyle="dark.TFrame")
         wrapper.pack(side="top", fill="both", expand=True)
-        
-        self.textarea = ttk.Text(wrapper, wrap="word", height=20, font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size))
+
+        self.textarea = ttk.Text(wrapper, wrap="word", height=20,
+            font=("JetBrainsMono NF Bold", self.non_darwin_font_size if sys.platform != "darwin" else self.darwin_font_size)
+        )
         self.textarea.config(
             border=0,
             background=self.root.style.colors.get("dark"),
             foreground="lightgrey",
             highlightcolor=self.root.style.colors.get("dark"),
             highlightbackground=self.root.style.colors.get("dark"),
-            state="disabled"
+            state="normal"
         )
-        self.textarea.pack(fill="both", expand=True, padx=5, pady=5)
-    
-        self._load_tags()
         
+        # Disable insert/delete actions
+        self.textarea.bind("<Key>", lambda e: "break")
+        self.textarea.bind("<Button-2>", lambda e: "break")  # Middle-click paste (Linux)
+        self.textarea.bind("<Control-v>", lambda e: "break")
+        self.textarea.bind("<Control-V>", lambda e: "break")
+
+        self.textarea.pack(fill="both", expand=True, padx=5, pady=5)
+        self._load_tags()
+
     def draw(self, parent):
         self.avatar = self.bot.get_avatar(size=15, radius=2)
         self._draw_main(parent)
