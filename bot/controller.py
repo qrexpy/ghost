@@ -28,6 +28,7 @@ class BotController:
         self.loop = None
         self.bot_thread = None
         self.running = False
+        self.bot_running = False
         self.startup_scripts = []
         self.presence = self.cfg.get_rich_presence()
 
@@ -87,6 +88,7 @@ class BotController:
 
     def stop(self):
         if self.bot and self.loop:
+            self.bot_running = False
             self.running = False
             print("[BotController] Stopping bot...")
 
@@ -99,6 +101,7 @@ class BotController:
 
     def restart(self):
         self.startup_scripts = []
+        self.bot_running = False
         self.running = False
         print("[BotController] Restarting bot...")
         self.stop()
