@@ -147,25 +147,30 @@ class Account(commands.Cog):
         }
 
         for guild in self.bot.guilds:
-            invite = None
+            invite = guild.vanity_url if guild.vanity_url else None
 
-            for channel in guild.channels:
-                if channel.type == discord.ChannelType.text:
-                    try:
-                        invite = await channel.create_invite(max_age=0, unique=False)
-                        console.print_success(f"Created and saved an invite for {guild.name}")
-                    except Exception as e:
-                        invite = None
-                        console.print_error(f"Failed to create invite for {guild.name}")
-                    break
-
+            if not invite:
+                for channel in guild.channels:
+                    if isinstance(channel, discord.TextChannel) and channel.permissions_for(guild.me).create_instant_invite:
+                        try:
+                            invite = await channel.create_invite(max_age=0, max_uses=1, unique=True)
+                        except Exception as e:
+                            break
+                        if invite: break
+            
+            if invite:
+                console.print_success(f"Got invite for {guild.name}.")
+            else:
+                console.print_warning(f"Failed to get invite for {guild.name}.")
+                invite = "None"
+            
             backup["list"].append({
                 "name": guild.name,
                 "id": guild.id,
                 "invite": str(invite)
             })
             
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.75)
 
         if not os.path.exists(files.get_application_support() + "/backups/"):
             os.mkdir(files.get_application_support() + "/backups/")
