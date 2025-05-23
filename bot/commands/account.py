@@ -37,10 +37,10 @@ class Account(commands.Cog):
 
     @commands.command(name="backups", description="List your backups.", usage="")
     async def backups(self, ctx):
-        if not os.path.exists("backups/"):
-            os.mkdir("backups/")
+        if not os.path.exists(files.get_application_support() + "/backups/"):
+            os.mkdir(files.get_application_support() + "/backups/")
 
-        backups = os.listdir("backups/")
+        backups = os.listdir(files.get_application_support() + "/backups/")
 
         if len(backups) == 0:
             await cmdhelper.send_message(ctx, {"title": "Backups", "description": "No backups found.", "colour": "#ff0000"})
@@ -49,7 +49,7 @@ class Account(commands.Cog):
         description = ""
         for backup in backups:
             if backup.endswith(".json"):
-                description += f"{backup}\n"
+                description += f"{backup[:len(backup)-5]}\n"
 
         await cmdhelper.send_message(ctx, {"title": "Backups", "description": description})
             
