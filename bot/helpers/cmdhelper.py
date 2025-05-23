@@ -186,7 +186,7 @@ async def send_message(ctx, embed_obj: dict, extra_title="", extra_message="", d
         embed.set_footer(text=footer)
         embed.set_thumbnail(url=thumbnail)
 
-        return await rich_embed(ctx, embed)
+        msg = await rich_embed(ctx, embed)
 
     if extra_message:
         extra_msg = await ctx.send(extra_message, delete_after=delete_after)

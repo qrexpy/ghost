@@ -126,20 +126,12 @@ class Mod(commands.Cog):
     
         attachments = [f"[{attachment.filename}]({attachment.url})" for attachment in message.attachments]
         attachments = "\n".join(attachments)
-        
-        if attachments:
-            await waiting.delete()
-            await cmdhelper.send_message(ctx, {
-                "title": "First Message",
-                "description": f"{message.author.name}: {message.content}\n{attachments}"
-            })
-            return
 
         await waiting.delete()
         await cmdhelper.send_message(ctx, {
             "title": "First Message",
-            "description": f"{message.author.name}: {message.content}"
-        })
+            "description": f"{message.author.name}: {message.content}" if not attachments else + "\n".join(attachments)
+        }, extra_message=message.jump_url)
 
     @commands.command(name="lock", description="Lock the channel.", usage="")
     async def lock(self, ctx):
