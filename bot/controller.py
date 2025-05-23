@@ -15,6 +15,7 @@ from utils.config import Config
 from bot.helpers import cmdhelper, imgembed
 import utils.webhook as webhook_client
 from gui.helpers.images import resize_and_sharpen
+from pypresence import Presence, ActivityType
 
 if getattr(sys, 'frozen', False):
     os.chdir(os.path.dirname(sys.executable))
@@ -28,6 +29,7 @@ class BotController:
         self.bot_thread = None
         self.running = False
         self.startup_scripts = []
+        self.presence = self.cfg.get_rich_presence()
 
     def add_startup_script(self, script):
         self.startup_scripts.append(script)
@@ -40,6 +42,25 @@ class BotController:
         if resp.status_code == 200:
             return True
         return False
+    def _setup_rich_presence(self):
+        try:
+            self.rpc = Presence(int(self.presence.client_id))
+            self.rpc.connect()
+            self.rpc.update(
+                **self.presence.to_dict(), 
+                activity_type=ActivityType.PLAYING,
+                # party_id="party1234",
+                # party_size=[8, 10],
+                # join="Ghost",
+            )
+            console.print_info("Rich Presence connected successfully!")
+        except Exception as e:
+            console.print_error(f"Rich Presence Error: {e}")
+
+    def _stop_rich_presence(self):
+        if self.rpc is not None:
+            self.rpc.close()
+            self.rpc = None
 
     def start(self):
         if self.cfg.get("token") == "":
@@ -49,18 +70,20 @@ class BotController:
             self.cfg.set("token", "", save=True)
             console.error("Invalid token! Token has been reset. Now restarting...")
             os.execl(sys.executable, sys.executable, *sys.argv)
+        else:
+            console.success("Token is valid.")
         
-        console.clear()
-        print("[BotController] Starting bot...")
+        # console.clear()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
         self.running = True
         self.bot = Ghost(self)
         if self.cfg.get("rich_presence")["enabled"]:
-            self.bot._setup_rich_presence()
+            self._setup_rich_presence()
         self.loop.create_task(self.bot.start(token=self.cfg.get("token"), reconnect=True))
         threading.Thread(target=self.loop.run_forever, daemon=True).start()
+        print("[BotController] Bot is running.")
 
     def stop(self):
         if self.bot and self.loop:

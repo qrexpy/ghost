@@ -10,7 +10,6 @@ import sys
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
 from discord.ext import commands, tasks
-from pypresence import Presence, ActivityType
 
 from utils import files
 from utils.config import Config
@@ -32,7 +31,6 @@ class Ghost(commands.Bot):
     def __init__(self, controller):
         self.cfg = Config()
         self.controller = controller
-        self.presence = self.cfg.get_rich_presence()
         self.session_spoofing, self.session_spoofing_device = self.cfg.get_session_spoofing()
 
         if self.session_spoofing:
@@ -92,26 +90,6 @@ class Ghost(commands.Bot):
 
             except Exception as e:
                 console.print_error(f"Error loading script: {script_name} - {e}")
-
-    def _setup_rich_presence(self):
-        try:
-            self.rpc = Presence(int(self.presence.client_id))
-            self.rpc.connect()
-            self.rpc.update(
-                **self.presence.to_dict(), 
-                activity_type=ActivityType.PLAYING,
-                # party_id="party1234",
-                # party_size=[8, 10],
-                # join="Ghost",
-            )
-            console.print_info("Rich Presence connected successfully!")
-        except Exception as e:
-            console.print_error(f"Rich Presence Error: {e}")
-
-    def _stop_rich_presence(self):
-        if self.rpc is not None:
-            self.rpc.close()
-            self.rpc = None
 
     async def on_ready(self):
         try:
