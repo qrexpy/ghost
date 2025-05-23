@@ -162,11 +162,13 @@ class GhostGUI:
         if not self.bot_controller.running:
             self.bot_controller.start()
         
-        self.layout.hide_titlebar()
-        self.layout.stick_window()
-        self.layout.resize(400, 90)
-        self.layout.center_window(400, 90)
+        self.layout.center_window(self.size[0], self.size[1])
+        # self.layout.hide_titlebar()
+        # self.layout.stick_window()
+        # self.layout.resize(400, 90)
+        # self.layout.center_window(400, 90)
         self.loading_page.draw()
+        
         self.root.after(100, self._check_bot_started)
         self.root.mainloop()
         
