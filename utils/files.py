@@ -55,3 +55,11 @@ def open_path_in_explorer(path):
         os.system(f'start "" "{path}"')
     else:
         os.system(f"xdg-open '{path}'")
+
+def open_file_in_editor(file_path):
+    if sys.platform == "darwin":
+        os.system(f"open -a TextEdit '{file_path}'")
+    elif sys.platform == "win32":
+        os.system(f"notepad '{file_path}'")
+    else:
+        os.system(f"gedit '{file_path}'")
