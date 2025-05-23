@@ -36,6 +36,7 @@ class HomePage:
         
         self.restart_title = None
         self.restart_title_elipsis = "..."
+        self.restart_title_text = "Ghost is restarting"
         
         self.root.bind("<Configure>", self._update_wraplength)
         
@@ -49,7 +50,7 @@ class HomePage:
                 self.restart_title_elipsis = "."
             else:
                 self.restart_title_elipsis += "."
-            self.restart_title.config(text=f"Ghost is restarting{self.restart_title_elipsis}")
+            self.restart_title.config(text=f"{self.restart_title_text}{self.restart_title_elipsis}")
         self.root.after(750, self._update_restart_title)
         
     def _update_account_details(self):
@@ -121,7 +122,7 @@ class HomePage:
             
             wrapper.grid_columnconfigure(2, weight=1)
         else:
-            self.restart_title = ttk.Label(wrapper, text="Ghost is restarting...", font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"), anchor="center")
+            self.restart_title = ttk.Label(wrapper, text=f"{self.restart_title_text}...", font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"), anchor="center")
             self.restart_title.configure(background=self.root.style.colors.get("secondary"))
             self.restart_title.grid(row=0, column=0, sticky=ttk.NSEW, pady=26, padx=15, columnspan=2)
             wrapper.grid_columnconfigure(0, weight=1)
@@ -145,7 +146,7 @@ class HomePage:
         if self.restart:
             return
         
-        title = ttk.Label(wrapper, text="Discord", font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"))
+        title = ttk.Label(wrapper, text="Discord", font=("Host Grotesk", 14 if sys.platform != "darwin" else 18, "bold"))
         title.configure(background=self.root.style.colors.get("dark"))
         title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=(10, 0))
         
@@ -167,7 +168,7 @@ class HomePage:
         if self.restart:
             return
         
-        title = ttk.Label(wrapper, text="Ghost", font=("Host Grotesk", 14 if sys.platform != "darwin" else 16, "bold"))
+        title = ttk.Label(wrapper, text="Ghost", font=("Host Grotesk", 14 if sys.platform != "darwin" else 18, "bold"))
         title.configure(background=self.root.style.colors.get("dark"))
         title.grid(row=0, column=0, sticky=ttk.W, padx=10, pady=(10, 0))
         
@@ -370,8 +371,9 @@ class HomePage:
 
         return wrapper
         
-    def draw(self, parent, restart=False):
-        self.restart = restart
+    def draw(self, parent, restart=False, start=False):
+        self.restart = restart or start
+        self.restart_title_text = "Ghost is starting" if start else "Ghost is restarting"
         self.avatar = self.bot_controller.get_avatar()
         self._draw_header(parent)
         
