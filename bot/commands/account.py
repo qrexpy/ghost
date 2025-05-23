@@ -67,6 +67,27 @@ class Account(commands.Cog):
             
             await cmdhelper.send_message(ctx, {"title": "Backup Commands", "description": description})
 
+    @backup.command(name="view", description="View a backup.", usage="[backup]")
+    async def backup_view(self, ctx, backup: str):
+        HEADLESS = "DISPLAY" not in os.environ and sys.platform == "linux"
+        
+        if not os.path.exists(files.get_application_support() + "/backups/"):
+            os.mkdir(files.get_application_support() + "/backups/")
+        backup_path = files.get_application_support() + f"/backups/{backup}.json"
+
+        if not os.path.exists(backup_path):
+            await cmdhelper.send_message(ctx, {"title": "Error", "description": f"Backup {backup} doesn't exist.", "colour": "ff0000"})
+            return
+        
+        if HEADLESS:
+            with open(backup_path, "r") as f:
+                backup_desc = json.loads(f.read())
+            console.print_info(f"Backup {backup}:\n{json.dumps(backup_desc, indent=4)}")
+            await cmdhelper.send_message(ctx, {"title": "Backup", "description": f"See console for backup {backup}."})
+        else:
+            files.open_file_in_editor(backup_path)
+            await cmdhelper.send_message(ctx, {"title": "Backup", "description": f"Opened backup {backup} in explorer."})
+
     @backup.command(name="account", description="Backup your account information.", usage="")
     async def backup_account(self, ctx):
         backup = {
