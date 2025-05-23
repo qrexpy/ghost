@@ -153,8 +153,9 @@ class GhostGUI:
 
     def run(self):
         if self.cfg.get("token") == "":
-            self.layout.resize(450, 372)
-            self.layout.center_window(450, 372)
+            self.layout.center_window(self.size[0], self.size[1])
+            # self.layout.resize(450, 372)
+            # self.layout.center_window(450, 372)
             self.onboarding_page.draw()
             self.root.mainloop()
             return
