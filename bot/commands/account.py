@@ -89,29 +89,17 @@ class Account(commands.Cog):
 
     @backup.command(name="friends", description="Backup your friends.", usage="")
     async def backup_friends(self, ctx):
-        cfg = self.cfg
-        resp = requests.get("https://discord.com/api/users/@me/relationships", headers={
-            "Authorization": f"{cfg.get('token')}",
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        })
-
-        if resp.status_code != 200:
-            await cmdhelper.send_message(ctx, {"title": "Error", "description": f"Failed to get friends. {resp.status_code} {resp.text}"})
-            return
-
-        friends = resp.json()
         backup = {
             "created_at": time.time(),
             "type": "friends",
             "list": []
         }
 
-        for friend in friends:
-            if friend["type"] == 1:
+        for friend in self.bot.friends:
+            if friend.type == discord.RelationshipType.friend:
                 backup["list"].append({
-                    "username": friend['user']['username'],
-                    "id": friend['user']['id']
+                    "username": friend.user.name,
+                    "id": friend.user.id
                 })
 
         if not os.path.exists(files.get_application_support() + "/backups/"):
@@ -120,7 +108,10 @@ class Account(commands.Cog):
         with open(files.get_application_support() + "/backups/friends.json", "w") as f:
             f.write(json.dumps(backup))
         
-        await cmdhelper.send_message(ctx, {"title": "Friends Backup", "description": f"Saved {len(friends)} friends to friends.json"})
+        console.success(f"Created a backup of your friends.")
+        console.info(f"Backup created at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(backup['created_at']))}")
+        console.info(f"Backup saved to {files.get_application_support()}/backups/friends.json")
+        await cmdhelper.send_message(ctx, {"title": "Friends Backup", "description": f"Saved {len(self.bot.friends)} friends to friends.json. See console for more information."})
 
     @backup.command(name="guilds", description="Backup your guilds.", usage="", aliases=["servers"])
     async def backup_guilds(self, ctx):
