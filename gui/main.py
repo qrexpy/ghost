@@ -73,11 +73,11 @@ class GhostGUI:
     def _show_window(self):
         self.root.deiconify()
         
-    def draw_home(self):
+    def draw_home(self, restart=False, start=False):
         self.sidebar.set_current_page("home")
         self.layout.clear()
         main = self.layout.main()
-        self.home_page.draw(main)
+        self.home_page.draw(main, restart=restart, start=start)
     
     def draw_console(self):
         self.sidebar.set_current_page("console")
@@ -128,9 +128,9 @@ class GhostGUI:
         self.root.after(500, self._check_bot_started)
         
     def _on_bot_ready(self):
-        self.layout.show_titlebar()
-        self.layout.unstick_window()
-        self.loading_page.clear()
+        # self.layout.show_titlebar()
+        # self.layout.unstick_window()
+        # self.loading_page.clear()
         
         if not self.root.winfo_ismapped():
             self.layout.resize(600, 530)
@@ -168,7 +168,9 @@ class GhostGUI:
         # self.layout.stick_window()
         # self.layout.resize(400, 90)
         # self.layout.center_window(400, 90)
-        self.loading_page.draw()
+        # self.loading_page.draw()
+        self.root.after(25, self.sidebar.disable)
+        self.draw_home(start=True)
         
         self.root.after(100, self._check_bot_started)
         self.root.mainloop()
