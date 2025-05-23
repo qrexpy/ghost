@@ -146,8 +146,8 @@ class GhostGUI:
         self.notifier.send("Ghost", "Ghost has successfully started!")
 
     def _check_bot_started(self):
-        if self.bot_controller.bot and self.bot_controller.bot.is_ready():
-            self.root.after(0, self._on_bot_ready)
+        if self.bot_controller.bot_running:
+            self.root.after(50, self._on_bot_ready)
         else:
             self.root.after(500, self._check_bot_started)
 

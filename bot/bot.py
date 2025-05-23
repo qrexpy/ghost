@@ -108,6 +108,7 @@ class Ghost(commands.Bot):
             except:
                 pass
             
+            self.controller.bot_running = True
             console.print_info(text)
             console.print_info(f"You can now use commands with {self.cfg.get('prefix')}")
             print()
