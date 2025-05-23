@@ -91,13 +91,17 @@ class Account(commands.Cog):
     @backup.command(name="account", description="Backup your account information.", usage="")
     async def backup_account(self, ctx):
         backup = {
-            "id": self.bot.user.id,
-            "name": self.bot.user.name,
-            "display_name": self.bot.user.display_name,
-            "accent_colour": self.bot.user.accent_colour,
-            "avatar": self.bot.user.avatar.url,
-            "banner": self.bot.user.banner.url,
-            "bio": self.bot.user.bio
+            "created_at": time.time(),
+            "type": "account",
+            "info": {
+                "id": self.bot.user.id,
+                "name": self.bot.user.name,
+                "display_name": self.bot.user.display_name,
+                "accent_colour": self.bot.user.accent_colour,
+                "avatar": self.bot.user.avatar.url,
+                "banner": self.bot.user.banner.url,
+                "bio": self.bot.user.bio
+            }
         }
 
         if not os.path.exists(files.get_application_support() + "/backups/"):
