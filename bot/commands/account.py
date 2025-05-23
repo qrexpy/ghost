@@ -152,7 +152,7 @@ class Account(commands.Cog):
             for channel in guild.channels:
                 if channel.type == discord.ChannelType.text:
                     try:
-                        invite = await channel.create_invite(max_age=0, max_uses=1, unique=True, validate=False, reason="sharing to a friend")
+                        invite = await channel.create_invite(max_age=0, unique=False)
                         console.print_success(f"Created and saved an invite for {guild.name}")
                     except Exception as e:
                         invite = None
@@ -172,6 +172,10 @@ class Account(commands.Cog):
 
         with open(files.get_application_support() + "/backups/guilds.json", "w") as f:
             f.write(json.dumps(backup))
+
+        console.success(f"Created a backup of your guilds.")
+        console.info(f"Backup created at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(backup['created_at']))}")
+        console.info(f"Backup saved to {files.get_application_support()}/backups/guilds.json")
 
         await cmdhelper.send_message(ctx, {"title": "Guilds Backup", "description": f"Saved {len(self.bot.guilds)} guilds to guilds.json"})
 
