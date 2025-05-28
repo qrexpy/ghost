@@ -134,8 +134,8 @@ class NitroSniper(commands.Cog):
                         "Time": f"{snipe_delta:.2f}ms"
                     }, success=success)
 
-                    if success:
-                        self.notifier.send("Nitro", f"Sniped a nitro gift. See console for details.")
+                if success:
+                    self.notifier.send("Nitro", f"Sniped a nitro gift. See console for details.")
 
                 if sniper.webhook is not None:
                     await self.send_webhook(message, sniper, code, success, resp, snipe_delta)

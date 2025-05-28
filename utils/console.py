@@ -73,13 +73,14 @@ def print_banner():
 get_formatted_time = lambda: datetime.datetime.now().strftime("%H:%M:%S")
 print_colour       = lambda colour, text: print(colour + text + colorama.Style.RESET_ALL)
 
-def _log_and_print(prefix, colour, text):
+def _log_and_print(prefix, colour, text, gui_log=True):
     # print(f"[{prefix}] {text}")
     print(f"{colorama.Style.NORMAL}{colorama.Fore.WHITE}[{get_formatted_time()}] {colour}{colorama.Style.BRIGHT}[{prefix}]{colorama.Style.RESET_ALL} {text}")
-    try:
-        log_to_gui(prefix, text)
-    except:
-        pass
+    if gui_log:
+        try:
+            log_to_gui(prefix, text)
+        except:
+            pass
 
 print_cmd     = lambda text: _log_and_print("COMMAND", colorama.Fore.LIGHTBLUE_EX, text)
 print_info    = lambda text: _log_and_print("INFO", colorama.Fore.LIGHTCYAN_EX, text)
@@ -100,6 +101,6 @@ rpc     = lambda text: print_rpc(text)
 def print_sniper(sniper, title, description, success=True):
     log_sniper_to_gui({"type": sniper, "title": title, "description": description})
     colour = colorama.Fore.LIGHTGREEN_EX if success else colorama.Fore.LIGHTRED_EX
-    _log_and_print(sniper.upper(), colour, title)
+    _log_and_print(sniper.upper(), colour, title, gui_log=False)
     for key, value in description.items():
         print(f"{' '*10} {colorama.Fore.LIGHTYELLOW_EX}{colorama.Style.NORMAL}{key}: {colorama.Style.RESET_ALL}{value}")
