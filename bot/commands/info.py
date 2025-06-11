@@ -161,98 +161,100 @@ class Info(commands.Cog):
 
     @commands.command(name="mutualservers", description="Get a list of all members in mutual servers.", usage="[server id]", aliases=["mutualservermembers"])
     async def mutualservers(self, ctx, guild_id: int = None):
-        if guild_id is None: guild_id = ctx.guild.id
-        given_guild = self.bot.get_guild(guild_id)
-        if not given_guild:
-            return await cmdhelper.send_message(ctx, {"title": "Error", "description": "Invalid server ID."})
+        return await ctx.send("> This command may flag your account. For now, it will be disabled until further notice.", delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
+        
+        # if guild_id is None: guild_id = ctx.guild.id
+        # given_guild = self.bot.get_guild(guild_id)
+        # if not given_guild:
+        #     return await cmdhelper.send_message(ctx, {"title": "Error", "description": "Invalid server ID."})
 
-        bot_guilds = self.bot.guilds
-        guilds_data = []
-        mutual_server_members = {}
-        formatted_data = {}
-        given_guild_members = {}
-        msg = None
-        read_from_cache = False
+        # bot_guilds = self.bot.guilds
+        # guilds_data = []
+        # mutual_server_members = {}
+        # formatted_data = {}
+        # given_guild_members = {}
+        # msg = None
+        # read_from_cache = False
 
-        if not os.path.exists(files.get_application_support() + "/data/cache/guilds.json"):
-            msg = await cmdhelper.send_message(ctx, {"title": "Mutual Server Members", "description": "This could take a while, watch the console for progress."}, delete_after=False)
-            console.print_info(f"Fetching members from {len(bot_guilds)} guilds...")
+        # if not os.path.exists(files.get_application_support() + "/data/cache/guilds.json"):
+        #     msg = await cmdhelper.send_message(ctx, {"title": "Mutual Server Members", "description": "This could take a while, watch the console for progress."}, delete_after=False)
+        #     console.print_info(f"Fetching members from {len(bot_guilds)} guilds...")
 
-            for guild in bot_guilds:
-                text_channels = [channel for channel in await guild.fetch_channels() if isinstance(channel, discord.TextChannel)]
-                members = []
+        #     for guild in bot_guilds:
+        #         text_channels = [channel for channel in await guild.fetch_channels() if isinstance(channel, discord.TextChannel)]
+        #         members = []
 
-                try:
-                    discord_members = await guild.fetch_members(channels=text_channels, cache=True, force_scraping=True, delay=0.1)
-                    for member in discord_members:
-                        if not member.bot: members.append({"id": member.id, "username": member.name})
+        #         try:
+        #             discord_members = await guild.fetch_members(channels=text_channels, cache=True, force_scraping=True, delay=0.1)
+        #             for member in discord_members:
+        #                 if not member.bot: members.append({"id": member.id, "username": member.name})
 
-                    console.print_success(f"Fetched {len(members)} members from {guild.name}!")
-                except Exception as e:
-                    console.print_error(f"Failed to fetch members from {guild.name}.")
+        #             console.print_success(f"Fetched {len(members)} members from {guild.name}!")
+        #         except Exception as e:
+        #             console.print_error(f"Failed to fetch members from {guild.name}.")
 
-                guilds_data.append({
-                    "id": guild.id,
-                    "name": guild.name,
-                    "members": members
-                })
+        #         guilds_data.append({
+        #             "id": guild.id,
+        #             "name": guild.name,
+        #             "members": members
+        #         })
 
-                await asyncio.sleep(0.3)
+        #         await asyncio.sleep(0.3)
 
-            with open(files.get_application_support() + "/data/cache/guilds.json", "w") as f:
-                f.write(json.dumps(guilds_data, indent=4, sort_keys=True, default=str))
-                console.print_success("Cached guilds data.")
-        else:
-            console.print_info("Reading guilds from cache...")
-            console.print_warning("This may be out of date. Clear cache using the 'clearcache' command.")
-            read_from_cache = True
+        #     with open(files.get_application_support() + "/data/cache/guilds.json", "w") as f:
+        #         f.write(json.dumps(guilds_data, indent=4, sort_keys=True, default=str))
+        #         console.print_success("Cached guilds data.")
+        # else:
+        #     console.print_info("Reading guilds from cache...")
+        #     console.print_warning("This may be out of date. Clear cache using the 'clearcache' command.")
+        #     read_from_cache = True
 
-            with open(files.get_application_support() + "/data/cache/guilds.json", "r") as f:
-                guilds_data = json.load(f)
+        #     with open(files.get_application_support() + "/data/cache/guilds.json", "r") as f:
+        #         guilds_data = json.load(f)
 
-        for guild in guilds_data:
-            if guild["id"] == guild_id:
-                for member in guild["members"]:
-                    given_guild_members[member["id"]] = member
+        # for guild in guilds_data:
+        #     if guild["id"] == guild_id:
+        #         for member in guild["members"]:
+        #             given_guild_members[member["id"]] = member
 
-        for guild in guilds_data:
-            for member in guild["members"]:
-                if member["id"] in given_guild_members and member["id"] != ctx.author.id:
-                    if member["id"] not in mutual_server_members:
-                        mutual_server_members[member["id"]] = {
-                            "id": member["id"],
-                            "username": member["username"],
-                            "guilds": []
-                        }
-                    mutual_server_members[member["id"]]["guilds"].append(guild["name"])
+        # for guild in guilds_data:
+        #     for member in guild["members"]:
+        #         if member["id"] in given_guild_members and member["id"] != ctx.author.id:
+        #             if member["id"] not in mutual_server_members:
+        #                 mutual_server_members[member["id"]] = {
+        #                     "id": member["id"],
+        #                     "username": member["username"],
+        #                     "guilds": []
+        #                 }
+        #             mutual_server_members[member["id"]]["guilds"].append(guild["name"])
 
-        for member_id, member_data in list(mutual_server_members.items()):
-            if len(member_data["guilds"]) == 1 and given_guild.name in member_data["guilds"]:
-                del mutual_server_members[member_id]
-            else:
-                formatted_data[member_data["username"]] = member_data["guilds"]
+        # for member_id, member_data in list(mutual_server_members.items()):
+        #     if len(member_data["guilds"]) == 1 and given_guild.name in member_data["guilds"]:
+        #         del mutual_server_members[member_id]
+        #     else:
+        #         formatted_data[member_data["username"]] = member_data["guilds"]
 
-        description = json.dumps(formatted_data, indent=4, sort_keys=True, default=str)
-        response_codeblock = codeblock.Codeblock(
-            title="mutual server members",
-            extra_title=f"guild: {given_guild.name.lower()}",
-            description=description,
-            style="json",
-            footer="this data may be inaccurate" if not read_from_cache else "this is cached data, use the 'clearcache' command and try again"
-        )
+        # description = json.dumps(formatted_data, indent=4, sort_keys=True, default=str)
+        # response_codeblock = codeblock.Codeblock(
+        #     title="mutual server members",
+        #     extra_title=f"guild: {given_guild.name.lower()}",
+        #     description=description,
+        #     style="json",
+        #     footer="this data may be inaccurate" if not read_from_cache else "this is cached data, use the 'clearcache' command and try again"
+        # )
 
-        if len(str(response_codeblock)) > 2000:
-            console.print_warning("The response is too large, sending as a file instead.")
-            with open(files.get_application_support() + "/mutual_server_members.json", "w") as f:
-                f.write(description)
+        # if len(str(response_codeblock)) > 2000:
+        #     console.print_warning("The response is too large, sending as a file instead.")
+        #     with open(files.get_application_support() + "/mutual_server_members.json", "w") as f:
+        #         f.write(description)
 
-            await ctx.send(file=discord.File(files.get_application_support() + "/mutual_server_members.json"), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
-            os.remove("mutual_server_members.json")
-            response_codeblock.description = "The data was too large, so it has been sent as a file instead."
+        #     await ctx.send(file=discord.File(files.get_application_support() + "/mutual_server_members.json"), delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
+        #     os.remove("mutual_server_members.json")
+        #     response_codeblock.description = "The data was too large, so it has been sent as a file instead."
 
-        console.print_success(f"Completed fetching members from {len(bot_guilds)} guilds!")
-        if msg: await msg.delete()
-        await ctx.send(response_codeblock, delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
+        # console.print_success(f"Completed fetching members from {len(bot_guilds)} guilds!")
+        # if msg: await msg.delete()
+        # await ctx.send(response_codeblock, delete_after=self.cfg.get("message_settings")["auto_delete_delay"])
 
     @commands.command(name="avatar", description="Get the avatar of a user.", aliases=["av"], usage="[user]")
     async def avatar(self, ctx, user: discord.User = None):
