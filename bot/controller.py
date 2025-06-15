@@ -43,20 +43,6 @@ class BotController:
         if resp.status_code == 200:
             return True
         return False
-    def _setup_rich_presence(self):
-        try:
-            self.rpc = Presence(int(self.presence.client_id))
-            self.rpc.connect()
-            self.rpc.update(
-                **self.presence.to_dict(), 
-                activity_type=ActivityType.PLAYING,
-                # party_id="party1234",
-                # party_size=[8, 10],
-                # join="Ghost",
-            )
-            console.print_info("Rich Presence connected successfully!")
-        except Exception as e:
-            console.print_error(f"Rich Presence Error: {e}")
 
     def _stop_rich_presence(self):
         if self.rpc is not None:
@@ -80,8 +66,6 @@ class BotController:
 
         self.running = True
         self.bot = Ghost(self)
-        if self.cfg.get("rich_presence")["enabled"]:
-            self._setup_rich_presence()
         self.loop.create_task(self.bot.start(token=self.cfg.get("token"), reconnect=True))
         threading.Thread(target=self.loop.run_forever, daemon=True).start()
         print("[BotController] Bot is running.")

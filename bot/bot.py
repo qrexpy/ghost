@@ -17,6 +17,7 @@ import utils.console as console
 
 import bot.helpers.sessionspoof as sessionspoof
 import bot.helpers.cmdhelper as cmdhelper
+from bot.helpers import get_external_asset, generate_activity_json
 
 import bot.commands as ghost_commands
 import bot.events as ghost_events
@@ -38,7 +39,6 @@ class Ghost(commands.Bot):
 
         super().__init__(command_prefix=self.cfg.get("prefix"), self_bot=True, help_command=None)
         self.start_time = None
-        self.rpc = None
         self.files = files
 
     def _setup_scripts(self):
@@ -119,9 +119,22 @@ class Ghost(commands.Bot):
             
             self._setup_scripts()
             await self.controller.setup_webhooks()
+            self.controller.spypet.set_bot(self)
+            
         except Exception as e:
             console.print_error(str(e))
 
+        cfg_rpc = self.cfg.get("rich_presence")
+        if cfg_rpc["enabled"]:
+            external_assets = {
+                "large_image": await get_external_asset(self, cfg_rpc.get("large_image"), cfg_rpc.get("client_id")) if cfg_rpc.get("large_image") else None,
+                "small_image": await get_external_asset(self, cfg_rpc.get("small_image"), cfg_rpc.get("client_id")) if cfg_rpc.get("small_image") else None
+            }
+            
+            activity_json = generate_activity_json(cfg_rpc, external_assets)
+            print(activity_json)
+            await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
+        
     async def load_cogs(self):
         cogs = [
             ghost_commands.Account, ghost_commands.Fun, ghost_commands.General, ghost_commands.Img,
