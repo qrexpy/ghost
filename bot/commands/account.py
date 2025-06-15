@@ -11,6 +11,7 @@ from utils import config
 from utils import console
 from utils import files
 import bot.helpers.cmdhelper as cmdhelper
+from bot.helpers import parse_external_asset
 
 class Account(commands.Cog):
     def __init__(self, bot):
@@ -351,9 +352,11 @@ class Account(commands.Cog):
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "You need to provide a user to yoink RPC from.", "colour": "ff0000"})
             return
         
+        print(user)
+        
         if isinstance(user, str):
             if user.startswith("<@") and user.endswith(">"):
-                user = int(user[3:-1])
+                user = int(user[2:-1])
             else:
                 user = int(user)
         
@@ -361,32 +364,34 @@ class Account(commands.Cog):
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "You can't yoink your own rich presence..", "colour": "ff0000"})
             return
         
+        print(user)
+        
         if guild_id is None:
             guild = ctx.guild
         else:
             guild = self.bot.get_guild(guild_id)
         
-        if not isinstance(user, discord.Member):
-            member = discord.utils.get(guild.members, id=user)
-            
-            if not member:
-                console.print_warning("Couldn't find member. Scraping members in attempt to find member...")
-                try:
-                    text_channels = [channel for channel in await guild.fetch_channels() if isinstance(channel, discord.TextChannel)]
-                    members = await guild.fetch_members(channels=text_channels, cache=True, force_scraping=True, delay=0.2)
-                    
-                    for member in members:
-                        if member.id == user:
-                            break
-                except Exception as e:
-                    console.print_error("Failed to scrape members.")
-                    await cmdhelper.send_message(ctx, {"title": "Error", "description": f"Failed to scrape members. Try using `yoinkmemberrpc <@{user}>` in a server this member is in.", "colour": "ff0000"})
-                    return
-        else:
-            member = user
+        # member = discord.utils.get(guild.members, id=user)
+        member = await guild.fetch_member(user) if guild else None
+        
+        if not member:
+            console.print_warning("Couldn't find member. Scraping members in attempt to find member...")
+            try:
+                text_channels = [channel for channel in await guild.fetch_channels() if isinstance(channel, discord.TextChannel)]
+                members = await guild.fetch_members(channels=text_channels, cache=True, force_scraping=True, delay=0.2)
+                
+                for member in members:
+                    if member.id == user:
+                        break
+            except Exception as e:
+                console.print_error("Failed to scrape members.")
+                await cmdhelper.send_message(ctx, {"title": "Error", "description": f"Failed to scrape members. Try using `yoinkmemberrpc <@{user}>` in a server this member is in.", "colour": "ff0000"})
+                return
         
         activities = member.activities
         rpc = None
+        
+        print(f"Activities: {activities}")
         
         if len(activities) == 0:
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "User has no RPC.", "colour": "ff0000"})
@@ -398,10 +403,9 @@ class Account(commands.Cog):
         if len(activities) > 1:
             for activity in activities:
                 if isinstance(activity, discord.Activity):
-                    if hasattr(activity, "application_id"):
-                        if activity.application_id is not None and len(str(activity.application_id)) == 19:                    
-                            rpc = activity
-                            break
+                    if activity.application_id:
+                        rpc = activity
+                        break
                 
         else:
             rpc = activities[0]
@@ -414,9 +418,9 @@ class Account(commands.Cog):
             print(assets)
         
         assets = {
-            "large_image": rpc.assets.get("large_image", ""),
+            "large_image": parse_external_asset(rpc.assets.get("large_image", "")),
             "large_text": rpc.assets.get("large_text", ""),
-            "small_image": rpc.assets.get("small_image", ""),
+            "small_image": parse_external_asset(rpc.assets.get("small_image", "")),
             "small_text": rpc.assets.get("small_text", ""),
         }
         
