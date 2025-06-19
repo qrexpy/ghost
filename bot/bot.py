@@ -132,7 +132,6 @@ class Ghost(commands.Bot):
             }
             
             activity_json = generate_activity_json(cfg_rpc, external_assets)
-            print(activity_json)
             await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
         
     async def load_cogs(self):
