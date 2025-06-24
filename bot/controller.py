@@ -16,6 +16,7 @@ from bot.helpers import cmdhelper, imgembed
 import utils.webhook as webhook_client
 from gui.helpers.images import resize_and_sharpen
 from pypresence import Presence
+from bot.helpers.spypet import Spypet
 
 if getattr(sys, 'frozen', False):
     os.chdir(os.path.dirname(sys.executable))
@@ -33,6 +34,7 @@ class BotController:
         self.bot_running = False
         self.startup_scripts = []
         self.presence = self.cfg.get_rich_presence()
+        self.spypet = Spypet()
 
     def add_startup_script(self, script):
         self.startup_scripts.append(script)
