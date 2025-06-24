@@ -3,8 +3,8 @@ DEFAULT_RPC = {
     "client_id": "1018195507560063039",
     "state": "ghost aint dead",
     "details": "",
-    "large_image": "ghost",
-    "large_text": "",
+    "large_image": "https://avatars.githubusercontent.com/u/187971942?s=200&v=4",
+    "large_text": "benny.fun/ghost",
     "small_image": "",
     "small_text": "",
     "name": "Ghost"
