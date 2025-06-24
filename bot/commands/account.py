@@ -352,8 +352,6 @@ class Account(commands.Cog):
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "You need to provide a user to yoink RPC from.", "colour": "ff0000"})
             return
         
-        print(user)
-        
         if isinstance(user, str):
             if user.startswith("<@") and user.endswith(">"):
                 user = int(user[2:-1])
@@ -363,8 +361,6 @@ class Account(commands.Cog):
         if user == self.bot.user.id:
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "You can't yoink your own rich presence..", "colour": "ff0000"})
             return
-        
-        print(user)
         
         if guild_id is None:
             guild = ctx.guild
@@ -390,8 +386,6 @@ class Account(commands.Cog):
         
         activities = member.activities
         rpc = None
-        
-        print(f"Activities: {activities}")
         
         if len(activities) == 0:
             await cmdhelper.send_message(ctx, {"title": "Error", "description": "User has no RPC.", "colour": "ff0000"})
