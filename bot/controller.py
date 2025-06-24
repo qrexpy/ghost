@@ -15,7 +15,6 @@ from utils.config import Config
 from bot.helpers import cmdhelper, imgembed
 import utils.webhook as webhook_client
 from gui.helpers.images import resize_and_sharpen
-from pypresence import Presence
 from bot.helpers.spypet import Spypet
 
 if getattr(sys, 'frozen', False):
