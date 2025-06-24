@@ -15,4 +15,3 @@ filetype
 toml
 pygments
 certifi
-pypresence
