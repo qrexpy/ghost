@@ -13,7 +13,7 @@ class ThemingPanel(SettingsPanel):
         self.themes = self.cfg.get_themes()
         self.theme_dict = self.cfg.theme.to_dict()
         
-    def _save_theme(self, _):
+    def _save_theme(self, _=None):
         for index, (key, _) in enumerate(self.theme_dict.items()):
             self.cfg.theme.set(key, self.theme_tk_entries[index].get())
             
