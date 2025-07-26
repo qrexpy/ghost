@@ -63,11 +63,23 @@ class ToolsPage:
         self.layout.sidebar.set_button_command("tools", self.draw_user_lookup)
         
     def draw(self, parent):
+        
+        
         for page in self.pages:
-            button = ttk.Button(
-                parent,
-                text=page["name"],
-                command=page["command"],
-                style="dark.TButton"
-            )
-            button.pack(side=ttk.TOP, fill=ttk.X, padx=(20, 20), pady=(0, 10))
+            page_wrapper = RoundedFrame(parent, radius=10, bootstyle="dark.TFrame")
+            page_wrapper.pack(fill="x", expand=True, pady=(0, 10))
+            page_wrapper.bind("<Button-1>", lambda e, cmd=page["command"]: cmd())
+
+            page_title = ttk.Label(page_wrapper, text=page["name"], font=("Host Grotesk", 14 if sys.platform != "darwin" else 20, "bold"))
+            page_title.configure(background=self.root.style.colors.get("dark"))
+            page_title.grid(row=0, column=0, sticky=ttk.NSEW, padx=15, pady=(15, 5))
+            page_title.bind("<Button-1>", lambda e, cmd=page["command"]: cmd())
+
+            page_description = ttk.Label(page_wrapper, text=page["description"], font=("Host Grotesk", 12 if sys.platform != "darwin" else 16), wraplength=450)
+            page_description.configure(background=self.root.style.colors.get("dark"))
+            page_description.grid(row=1, column=0, sticky=ttk.NSEW, padx=15, pady=(0, 15))
+            page_description.bind("<Button-1>", lambda e, cmd=page["command"]: cmd())
+            
+            # page_icon = ttk.Label(self.header, image=self.header_icon)
+            # page_icon.configure(background=self.root.style.colors.get("secondary"))
+            # page_icon.grid(row=0, column=2, sticky=ttk.E, padx=(0, 15), pady=15)

@@ -101,3 +101,8 @@ class RoundedFrame(ttk.Canvas):
         self.pack_propagate(False)  # prevent geometry propagation
         self.grid_propagate(False)
         self.on_resize()
+    
+    def bind(self, sequence=None, func=None, add=None):
+        if sequence == "<Configure>":
+            return super().bind(sequence, self.on_resize, add=add)
+        return super().bind(sequence, func, add=add)
