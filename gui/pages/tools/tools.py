@@ -19,17 +19,20 @@ class ToolsPage:
         
         self.pages = [
             {
-                "name": "spy.pet",
+                "name": "ghetto spy.pet",
+                "description": "A tool to look up every message sent by a user you share mutual servers with.",
                 "page": self.spypet_page,
                 "command": self.draw_spypet
             },
             {
                 "name": "Message Logger",
+                "description": "A tool to log deleted messages from every server you're in.",
                 "page": self.message_logger_page,
                 "command": self.draw_message_logger
             },
             {
                 "name": "User Lookup",
+                "description": "A tool to look up a user's information.",
                 "page": self.user_lookup_page,
                 "command": self.draw_user_lookup
             }
