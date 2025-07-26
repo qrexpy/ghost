@@ -15,7 +15,7 @@ class ToolPage(abc.ABC):
     def go_back(self):
         self.layout.sidebar.set_current_page("tools")
         self.layout.clear()
-        main = self.layout.main()
+        main = self.layout.main(scrollable=True)
         self.toolspage.draw(main)
         self.layout.sidebar.set_button_command("tools", self.go_back)
 
