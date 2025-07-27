@@ -180,8 +180,13 @@ class Ghost(commands.Bot):
             return
         delete_time = time.time()
         # Route to message logger in tools instead of home page
-        if self.controller.gui and hasattr(self.controller.gui, 'tools_page'):
-            self.controller.gui.tools_page.message_logger_page.add_discord_log(message.author, message, delete_time)
+        try:
+            if (self.controller.gui and 
+                hasattr(self.controller.gui, 'tools_page') and 
+                hasattr(self.controller.gui.tools_page, 'message_logger_page')):
+                self.controller.gui.tools_page.message_logger_page.add_discord_log(message.author, message, delete_time)
+        except Exception as e:
+            print(f"Error logging deleted message: {e}")
 
     def run_bot(self):
         try:

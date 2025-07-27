@@ -166,14 +166,29 @@ class MessageLoggerPage(ToolPage):
         
         self._update_blacklist()
 
+    def refresh_server_list(self):
+        """Refresh the server list in the blacklist panel."""
+        if self.blacklist_visible and self.blacklist_frame:
+            # Clear existing server vars
+            self.server_vars.clear()
+            
+            # Redraw the blacklist panel
+            self.blacklist_frame.destroy()
+            self.blacklist_frame = self._draw_blacklist_panel(self.blacklist_frame.master)
+            if self.blacklist_visible:
+                self.blacklist_frame.pack(fill=ttk.BOTH, expand=True, pady=(10, 0))
+
     def _update_blacklist(self):
         """Update the configuration with current blacklist selections."""
-        blacklisted_servers = []
-        for guild_id, var in self.server_vars.items():
-            if var.get():
-                blacklisted_servers.append(guild_id)
-        
-        self.cfg.set_message_logger_blacklist(blacklisted_servers)
+        try:
+            blacklisted_servers = []
+            for guild_id, var in self.server_vars.items():
+                if var.get():
+                    blacklisted_servers.append(guild_id)
+            
+            self.cfg.set_message_logger_blacklist(blacklisted_servers)
+        except Exception as e:
+            print(f"Error updating blacklist: {e}")
 
     def _draw_blacklist_panel(self, parent):
         """Draw the server blacklist configuration panel."""
@@ -201,33 +216,61 @@ class MessageLoggerPage(ToolPage):
         scroll_frame.pack(fill=ttk.BOTH, expand=True, padx=15, pady=(0, 15))
         
         # Get current blacklist
-        current_blacklist = self.cfg.get_message_logger_blacklist()
+        try:
+            current_blacklist = self.cfg.get_message_logger_blacklist()
+        except Exception as e:
+            print(f"Error getting blacklist: {e}")
+            current_blacklist = []
         
         # Add server checkboxes
-        if self.bot_controller and self.bot_controller.bot:
-            guilds = self.bot_controller.get_guilds()
-            if guilds:
-                for guild in guilds:
-                    guild_id = str(guild.id)
-                    var = ttk.BooleanVar()
-                    var.set(guild_id in current_blacklist)
-                    
-                    cb = ttk.Checkbutton(scroll_frame, text=f"{guild.name} ({guild.member_count} members)", 
-                                       variable=var, command=self._on_server_toggle)
-                    cb.configure(background=self.root.style.colors.get("dark"))
-                    cb.pack(fill=ttk.X, pady=2, padx=5)
-                    
-                    self.server_vars[guild_id] = var
+        try:
+            if self.bot_controller and hasattr(self.bot_controller, 'bot') and self.bot_controller.bot:
+                guilds = self.bot_controller.get_guilds()
+                if guilds:
+                    for guild in guilds:
+                        try:
+                            guild_id = str(guild.id)
+                            var = ttk.BooleanVar()
+                            var.set(guild_id in current_blacklist)
+                            
+                            # Safely get member count
+                            try:
+                                member_count = guild.member_count if hasattr(guild, 'member_count') else 'Unknown'
+                            except:
+                                member_count = 'Unknown'
+                            
+                            cb = ttk.Checkbutton(scroll_frame, text=f"{guild.name} ({member_count} members)", 
+                                               variable=var, command=self._on_server_toggle)
+                            cb.configure(background=self.root.style.colors.get("dark"))
+                            cb.pack(fill=ttk.X, pady=2, padx=5)
+                            
+                            self.server_vars[guild_id] = var
+                        except Exception as e:
+                            print(f"Error adding guild checkbox: {e}")
+                else:
+                    no_servers_label = ttk.Label(scroll_frame, text="No servers found. Make sure the bot is connected.", 
+                                               font=("Host Grotesk", 10 if sys.platform != "darwin" else 12))
+                    no_servers_label.configure(background=self.root.style.colors.get("dark"), foreground="lightgrey")
+                    no_servers_label.pack(pady=20)
             else:
-                no_servers_label = ttk.Label(scroll_frame, text="No servers found. Make sure the bot is connected.", 
-                                           font=("Host Grotesk", 10 if sys.platform != "darwin" else 12))
-                no_servers_label.configure(background=self.root.style.colors.get("dark"), foreground="lightgrey")
-                no_servers_label.pack(pady=20)
+                not_connected_label = ttk.Label(scroll_frame, text="Bot not connected. Please ensure Ghost is running.", 
+                                              font=("Host Grotesk", 10 if sys.platform != "darwin" else 12))
+                not_connected_label.configure(background=self.root.style.colors.get("dark"), foreground="lightgrey")
+                not_connected_label.pack(pady=20)
+        except Exception as e:
+            print(f"Error setting up server list: {e}")
+            error_label = ttk.Label(scroll_frame, text="Error loading servers. Please try again later.", 
+                                   font=("Host Grotesk", 10 if sys.platform != "darwin" else 12))
+            error_label.configure(background=self.root.style.colors.get("dark"), foreground="lightgrey")
+            error_label.pack(pady=20)
         
         # Update select all state
         if self.server_vars:
-            all_selected = all(var.get() for var in self.server_vars.values())
-            self.select_all_var.set(all_selected)
+            try:
+                all_selected = all(var.get() for var in self.server_vars.values())
+                self.select_all_var.set(all_selected)
+            except Exception as e:
+                print(f"Error updating select all state: {e}")
         
         return wrapper
 
