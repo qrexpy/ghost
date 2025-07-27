@@ -40,6 +40,9 @@ DEFAULT_CONFIG = {
         }
     },
     "rich_presence": DEFAULT_RPC,
+    "message_logger": {
+        "blacklisted_servers": []
+    },
     "rich_embed_webhook": ""
 }
 

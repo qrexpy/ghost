@@ -179,7 +179,9 @@ class Ghost(commands.Bot):
         if message.author.id == self.user.id:
             return
         delete_time = time.time()
-        self.controller.gui.home_page.add_discord_log(message.author, message, delete_time)
+        # Route to message logger in tools instead of home page
+        if self.controller.gui and hasattr(self.controller.gui, 'tools_page'):
+            self.controller.gui.tools_page.message_logger_page.add_discord_log(message.author, message, delete_time)
 
     def run_bot(self):
         try:

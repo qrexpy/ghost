@@ -253,6 +253,38 @@ class Config:
         script_files = os.listdir(files.get_scripts_path())
         return [script for script in script_files if script.endswith(".py")]
 
+    def get_message_logger_blacklist(self):
+        """Get the list of blacklisted server IDs for message logger."""
+        if "message_logger" not in self.config:
+            self.config["message_logger"] = {"blacklisted_servers": []}
+            self.save(notify=False)
+        return self.config["message_logger"].get("blacklisted_servers", [])
+
+    def set_message_logger_blacklist(self, server_ids):
+        """Set the list of blacklisted server IDs for message logger."""
+        if "message_logger" not in self.config:
+            self.config["message_logger"] = {}
+        self.config["message_logger"]["blacklisted_servers"] = server_ids
+        self.save()
+
+    def add_to_message_logger_blacklist(self, server_id):
+        """Add a server ID to the message logger blacklist."""
+        blacklist = self.get_message_logger_blacklist()
+        if server_id not in blacklist:
+            blacklist.append(server_id)
+            self.set_message_logger_blacklist(blacklist)
+
+    def remove_from_message_logger_blacklist(self, server_id):
+        """Remove a server ID from the message logger blacklist."""
+        blacklist = self.get_message_logger_blacklist()
+        if server_id in blacklist:
+            blacklist.remove(server_id)
+            self.set_message_logger_blacklist(blacklist)
+
+    def is_server_blacklisted_for_message_logger(self, server_id):
+        """Check if a server is blacklisted for message logger."""
+        return server_id in self.get_message_logger_blacklist()
+
     @staticmethod
     def get_python_path():
         return os.path.dirname(os.path.realpath(__file__))
