@@ -47,6 +47,12 @@ class MessageLoggerPage(ToolPage):
             self._display_log(log_entry)
             self.root.after_idle(lambda: self._update_canvas_after_add())
     
+    def _on_mousewheel(self, event):
+        if sys.platform == 'darwin':
+            self.discord_logs_canvas.yview_scroll(-1 * int(event.delta), "units")
+        else:
+            self.discord_logs_canvas.yview_scroll(-1 * int(event.delta / 120), "units")
+    
     def _update_canvas_after_add(self):
         try:
             if self.discord_logs_canvas and self.discord_logs_frame:
@@ -197,6 +203,14 @@ class MessageLoggerPage(ToolPage):
         self.discord_logs_canvas = canvas
         self.discord_logs_wrapper = wrapper
 
-        canvas.after(100, lambda: self._update_canvas_width(canvas, content_wrapper))
-        
+        canvas.after(100, lambda: self._update_canvas_width(canvas, wrapper))
+
+        self.discord_logs_canvas.bind("<Enter>", lambda e: self.discord_logs_canvas.bind_all("<MouseWheel>", self._on_mousewheel))
+        self.discord_logs_canvas.bind("<Leave>", lambda e: self.discord_logs_canvas.unbind_all("<MouseWheel>"))
+        self.discord_logs_canvas.bind("<Configure>", self._update_wraplength)
+        self.discord_logs_canvas.bind("<MouseWheel>", self._on_mousewheel)
+        self.discord_logs_canvas.bind("<Button-4>", self._on_mousewheel)
+        self.discord_logs_canvas.bind("<Button-5>", self._on_mousewheel)
+    
+
         self._load_discord_logs()
