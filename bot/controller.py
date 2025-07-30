@@ -21,6 +21,8 @@ if getattr(sys, 'frozen', False):
     os.chdir(os.path.dirname(sys.executable))
 
 class BotController:
+    spypet = None
+
     def __init__(self):
         self.cfg = Config()
         self.bot = None
