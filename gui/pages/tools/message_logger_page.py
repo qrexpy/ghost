@@ -207,7 +207,6 @@ class MessageLoggerPage(ToolPage):
 
         self.discord_logs_canvas.bind("<Enter>", lambda e: self.discord_logs_canvas.bind_all("<MouseWheel>", self._on_mousewheel))
         self.discord_logs_canvas.bind("<Leave>", lambda e: self.discord_logs_canvas.unbind_all("<MouseWheel>"))
-        self.discord_logs_canvas.bind("<Configure>", self._update_wraplength)
         self.discord_logs_canvas.bind("<MouseWheel>", self._on_mousewheel)
         self.discord_logs_canvas.bind("<Button-4>", self._on_mousewheel)
         self.discord_logs_canvas.bind("<Button-5>", self._on_mousewheel)
