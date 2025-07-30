@@ -217,16 +217,19 @@ class BotController:
         return self.bot.get_user(user_id)
 
     def get_avatar_from_url(self, url, size=50, radius=5):
-        url = url.split("?")[0]
-        if url.endswith(".gif"):
-            url = url.replace(".gif", ".png")
-        response = requests.get(url)
-        if response.status_code == 200:
-            image = Image.open(BytesIO(response.content))
-            # image = image.resize((size, size))
-            image = resize_and_sharpen(image, (size, size))
-            image = imgembed.add_corners(image, radius)
-            return ImageTk.PhotoImage(image)
+        try:
+            url = url.split("?")[0]
+            if url.endswith(".gif"):
+                url = url.replace(".gif", ".png")
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                image = Image.open(BytesIO(response.content))
+                # image = image.resize((size, size))
+                image = resize_and_sharpen(image, (size, size))
+                image = imgembed.add_corners(image, radius)
+                return ImageTk.PhotoImage(image)
+        except Exception as e:
+            print(f"Error processing avatar from URL {url}: {e}")
         
         return None
 

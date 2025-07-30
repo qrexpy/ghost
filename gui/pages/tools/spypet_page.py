@@ -440,6 +440,9 @@ class SpyPetPage(ToolPage):
 
     def _apply_message_filter(self):
         try:
+            if not self.messages_textarea:
+                return
+                
             self.messages_textarea.delete("1.0", "end")
             self.messages_displayed = []
 
@@ -454,7 +457,7 @@ class SpyPetPage(ToolPage):
             print(f"Error applying message filter: {e}")
     
     def update_messages(self):
-        if self.messages_textarea_updating:
+        if self.messages_textarea_updating and self.messages_textarea:
             try:
                 data = self.spypet.data
                 current_yview = self.messages_textarea.yview()

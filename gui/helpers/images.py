@@ -8,9 +8,20 @@ from collections import Counter
 
 def resize_and_sharpen(image, size):
     try:
+        # Convert palette images to RGB to avoid "cannot filter palette images" error
+        if image.mode == 'P':
+            image = image.convert('RGB')
+        elif image.mode == 'RGBA':
+            # Keep RGBA for transparency support
+            pass
+        elif image.mode not in ['RGB', 'RGBA']:
+            # Convert other modes to RGB
+            image = image.convert('RGB')
+            
         resized_image = image.resize(size, Image.LANCZOS)
     except Exception as e:
         print("error resizing image:", e)
+        return image
     try:
         sharpened_image = ImageEnhance.Sharpness(resized_image).enhance(2.0)
     except Exception as e:
