@@ -120,7 +120,7 @@ class MessageLoggerPage(ToolPage):
         
         try:
             frame = RoundedFrame(self.discord_logs_frame, radius=(8, 8, 8, 8), bootstyle="secondary.TFrame", parent_background=self.root.style.colors.get("dark"))
-            frame.pack(fill=ttk.X, pady=(0, 8))
+            frame.pack(fill=ttk.X, pady=(0, 8), padx=(0, 8))
             
             content_frame = ttk.Frame(frame, style="secondary.TFrame")
             content_frame.pack(fill=ttk.BOTH, expand=True, padx=(12, 20), pady=10)
@@ -138,34 +138,34 @@ class MessageLoggerPage(ToolPage):
                 if self.avatars[author.id]:
                     avatar_label = ttk.Label(author_frame, image=self.avatars[author.id])
                     avatar_label.configure(background=self.root.style.colors.get("secondary"))
-                    avatar_label.pack(side=ttk.LEFT, padx=(0, 10))
+                    avatar_label.pack(side=ttk.LEFT, padx=(0, 5))
             
-            author_label = ttk.Label(author_frame, text=author.display_name, font=("Host Grotesk", 12, "bold"))
+            author_label = ttk.Label(author_frame, text=author.display_name, font=("Host Grotesk", 12 if sys.platform != "darwin" else 14, "bold"))
             author_label.configure(background=self.root.style.colors.get("secondary"), foreground="white")
             author_label.pack(side=ttk.LEFT)
             
             formatted_time = time.strftime("%H:%M:%S", time.localtime(delete_time))
-            time_label = ttk.Label(author_frame, text=formatted_time, font=("Host Grotesk", 10))
+            time_label = ttk.Label(author_frame, text=formatted_time, font=("Host Grotesk", 8 if sys.platform != "darwin" else 10))
             time_label.configure(background=self.root.style.colors.get("secondary"), foreground="lightgrey")
-            time_label.pack(side=ttk.RIGHT, padx=(10, 15))
+            time_label.pack(side=ttk.LEFT, padx=(5, 0), pady=(2, 0))
             
             channel_label_text = f"Deleted in DMs" if isinstance(message.channel, discord.DMChannel) else f"Deleted in {message.guild.name} > #{message.channel.name}"
-            channel_label = ttk.Label(content_frame, text=channel_label_text, font=("Host Grotesk", 9))
-            channel_label.configure(background=self.root.style.colors.get("secondary"), foreground="lightblue")
+            channel_label = ttk.Label(content_frame, text=channel_label_text, font=("Host Grotesk", 8 if sys.platform != "darwin" else 10, "italic"))
+            channel_label.configure(background=self.root.style.colors.get("secondary"), foreground="lightgrey")
             channel_label.pack(fill=ttk.X, pady=(0, 8))
             
             if message.content:
-                content_label = ttk.Label(content_frame, text=message.content, font=("Host Grotesk", 10), wraplength=450)
+                content_label = ttk.Label(content_frame, text=message.content, font=("Host Grotesk", 10 if sys.platform != "darwin" else 12), wraplength=420)
                 content_label.configure(background=self.root.style.colors.get("secondary"), foreground="white")
                 content_label.pack(fill=ttk.X)
             else:
-                content_label = ttk.Label(content_frame, text="[No text content]", font=("Host Grotesk", 10, "italic"))
+                content_label = ttk.Label(content_frame, text="[No text content]", font=("Host Grotesk", 10 if sys.platform != "darwin" else 12, "italic"))
                 content_label.configure(background=self.root.style.colors.get("secondary"), foreground="grey")
                 content_label.pack(fill=ttk.X)
                 
             if message.attachments:
                 attachments_label = ttk.Label(content_frame, text=f"📎 {len(message.attachments)} attachment(s)", font=("Host Grotesk", 9, "italic"))
-                attachments_label.configure(background=self.root.style.colors.get("secondary"), foreground="lightblue")
+                attachments_label.configure(background=self.root.style.colors.get("secondary"), foreground="lightgrey")
                 attachments_label.pack(fill=ttk.X, pady=(4, 0))
             
         except Exception as e:
@@ -174,11 +174,8 @@ class MessageLoggerPage(ToolPage):
     def draw_content(self, wrapper):
         self.root.bind("<Configure>", self._update_wraplength)
         
-        content_wrapper = RoundedFrame(wrapper, radius=15, style="dark.TFrame")
-        content_wrapper.pack(fill=ttk.BOTH, expand=True, pady=(20, 0))
-        
-        self.discord_logs_inner_wrapper = ttk.Frame(content_wrapper)
-        self.discord_logs_inner_wrapper.pack(fill=ttk.BOTH, expand=True, padx=10, pady=10)
+        self.discord_logs_inner_wrapper = ttk.Frame(wrapper)
+        self.discord_logs_inner_wrapper.pack(fill=ttk.BOTH, expand=True, padx=10, pady=(10, 10))
 
         canvas = ttk.Canvas(self.discord_logs_inner_wrapper)
         scrollbar = ttk.Scrollbar(self.discord_logs_inner_wrapper, orient="vertical", command=canvas.yview)
@@ -198,7 +195,7 @@ class MessageLoggerPage(ToolPage):
 
         self.discord_logs_frame = scroll_frame
         self.discord_logs_canvas = canvas
-        self.discord_logs_wrapper = content_wrapper
+        self.discord_logs_wrapper = wrapper
 
         canvas.after(100, lambda: self._update_canvas_width(canvas, content_wrapper))
         
