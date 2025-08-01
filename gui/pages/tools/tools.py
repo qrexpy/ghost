@@ -80,7 +80,7 @@ class ToolsPage:
         
     def draw(self, parent):
         for page in self.pages:
-            page_wrapper = RoundedFrame(parent, radius=10, bootstyle="secondary.TFrame")
+            page_wrapper = RoundedFrame(parent, radius=15, bootstyle="secondary.TFrame")
             page_wrapper.pack(fill="x", expand=True, pady=(0, 10))
             page_wrapper.bind("<Button-1>", lambda e, cmd=page["command"]: cmd())
 
