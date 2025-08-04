@@ -150,7 +150,7 @@ class Ghost(commands.Bot):
             print()
 
             if self.session_spoofing:
-                console.print_info(f"Spoofing session as {self.session_spoofing_device}")
+                console.success(f"Spoofing session as {self.session_spoofing_device}")
                 # console.print_warning("Your account is at higher risk of termination by using session spoofer.")
             
             await self._setup_scripts()
@@ -160,15 +160,24 @@ class Ghost(commands.Bot):
         except Exception as e:
             console.print_error(str(e))
 
-        cfg_rpc = self.cfg.get("rich_presence")
-        if cfg_rpc["enabled"]:
+        cfg_rpc = self.cfg.get_rich_presence()
+        if cfg_rpc.enabled:
             external_assets = {
-                "large_image": await get_external_asset(self, cfg_rpc.get("large_image"), cfg_rpc.get("client_id")) if cfg_rpc.get("large_image") else None,
-                "small_image": await get_external_asset(self, cfg_rpc.get("small_image"), cfg_rpc.get("client_id")) if cfg_rpc.get("small_image") else None
+                "large_image": await get_external_asset(self, cfg_rpc.large_image) if cfg_rpc.large_image else None,
+                "small_image": await get_external_asset(self, cfg_rpc.small_image) if cfg_rpc.small_image else None
             }
             
-            activity_json = generate_activity_json(cfg_rpc, external_assets)
-            await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
+            await self.ws.send_as_json({
+                "op": 3,
+                "d": {
+                    "since": int(time.time() * 1000),
+                    "activities": [generate_activity_json(external_assets)],
+                    "status": "online",
+                    "afk": True
+                }
+            })
+            
+            console.success("Rich Presence enabled")
         
     async def load_cogs(self):
         cogs = [
