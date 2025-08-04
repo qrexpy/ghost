@@ -150,7 +150,7 @@ class Ghost(commands.Bot):
             print()
 
             if self.session_spoofing:
-                console.print_info(f"Spoofing session as {self.session_spoofing_device}")
+                console.success(f"Spoofing session as {self.session_spoofing_device}")
                 # console.print_warning("Your account is at higher risk of termination by using session spoofer.")
             
             await self._setup_scripts()
@@ -177,7 +177,7 @@ class Ghost(commands.Bot):
                 }
             })
             
-            console.print_info("Rich Presence enabled")
+            console.success("Rich Presence enabled")
         
     async def load_cogs(self):
         cogs = [
