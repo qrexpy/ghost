@@ -1,12 +1,17 @@
 import discord
 
+from utils import Config
+
+cfg = Config()
+rpc = cfg.get_rich_presence()
+
 # Cheers Nes for the method!
-async def get_external_asset(bot, asset_url, app_id):
+async def get_external_asset(bot, asset_url):
     if not asset_url or asset_url == "":
         return None
     if not asset_url.startswith("https://"):
         return asset_url
-    assets = await bot.http.request(discord.http.Route("POST", f"/applications/{app_id}/external-assets"), json={"urls": [asset_url]})
+    assets = await bot.http.request(discord.http.Route("POST", f"/applications/{rpc.client_id}/external-assets"), json={"urls": [asset_url]})
     for asset in assets:
         return f"mp:{str(asset['external_asset_path'])}"
     
@@ -16,22 +21,22 @@ def parse_external_asset(asset_url):
     
     return asset_url if asset_url else None
 
-def generate_activity_json(cfg_rpc, external_assets):
+def generate_activity_json(external_assets):
     activity_json = {
-        "name": cfg_rpc.get("name", "Ghost"),
+        "name": rpc.name,
         "type": 0,  # ActivityType.playing
-        "application_id": "1018195507560063039",  # Default client ID for Ghost
-        "state": cfg_rpc.get("state", None),
-        "state_url": cfg_rpc.get("state_url", None),
-        "details": cfg_rpc.get("details", None),
-        "details_url": cfg_rpc.get("details_url", None),
+        "application_id": rpc.client_id,  # Default client ID for Ghost
+        "state": rpc.state,
+        "state_url": rpc.state_url,
+        "details": rpc.details,
+        "details_url": rpc.details_url,
         "assets": {
             "large_image": external_assets["large_image"],
-            "large_text": cfg_rpc.get("large_text", None),
-            "large_url": cfg_rpc.get("large_url", None),
+            "large_text": rpc.large_text,
+            "large_url": rpc.large_url,
             "small_image": external_assets["small_image"],
-            "small_text": cfg_rpc.get("small_text", None),
-            "small_url": cfg_rpc.get("small_url", None)
+            "small_text": rpc.small_text,
+            "small_url": rpc.small_url
         }
     }
     
