@@ -168,7 +168,6 @@ class Ghost(commands.Bot):
             }
             
             activity_json = generate_activity_json(cfg_rpc, external_assets)
-            print(activity_json)
             
             # Dont use this, the new URL features wont work as not updated in discord.py-self yet
             # await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
