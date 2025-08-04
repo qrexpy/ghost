@@ -1,6 +1,5 @@
 DEFAULT_RPC = {
     "enabled": False,
-    "client_id": "1018195507560063039",
     "state": "ghost aint dead",
     "state_url": "",
     "details": "",

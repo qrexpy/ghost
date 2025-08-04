@@ -10,8 +10,7 @@ class RichPresencePanel(SettingsPanel):
         self.rpc_tk_entries = {}
         self.rpc_entries = {
             "enabled": "Enabled",
-            "client_id": "Client ID",
-            # "name": "Name",
+            "name": "Name",
             "details": "Details",
             "details_url": "Details URL",
             "state": "State",
@@ -25,7 +24,6 @@ class RichPresencePanel(SettingsPanel):
         }
         self.last_saved_state = {
             "enabled": self.rpc.enabled,
-            "client_id": self.rpc.client_id,
             "state": self.rpc.state,
             "details": self.rpc.details,
             "large_image": self.rpc.large_image,

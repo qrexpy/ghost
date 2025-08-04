@@ -5,7 +5,7 @@ from utils.defaults import DEFAULT_RPC
 class RichPresence:
     def __init__(self, config, **kwargs):
         self.enabled = kwargs.get("enabled", False)
-        self.client_id = kwargs.get("client_id", None)
+        self.client_id = "1018195507560063039" # Default client ID for Ghost
         self.state = kwargs.get("state", None)
         self.state_url = kwargs.get("state_url", None)
         self.details = kwargs.get("details", None)

@@ -20,7 +20,7 @@ def generate_activity_json(cfg_rpc, external_assets):
     activity_json = {
         "name": cfg_rpc.get("name", "Ghost"),
         "type": 0,  # ActivityType.playing
-        "application_id": str(cfg_rpc.get("client_id")),
+        "application_id": "1018195507560063039",  # Default client ID for Ghost
         "state": cfg_rpc.get("state", None),
         "state_url": cfg_rpc.get("state_url", None),
         "details": cfg_rpc.get("details", None),
