@@ -22,12 +22,16 @@ def generate_activity_json(cfg_rpc, external_assets):
         "type": 0,  # ActivityType.playing
         "application_id": str(cfg_rpc.get("client_id")),
         "state": cfg_rpc.get("state", None),
+        "state_url": cfg_rpc.get("state_url", None),
         "details": cfg_rpc.get("details", None),
+        "details_url": cfg_rpc.get("details_url", None),
         "assets": {
             "large_image": external_assets["large_image"],
             "large_text": cfg_rpc.get("large_text", None),
+            "large_url": cfg_rpc.get("large_url", None),
             "small_image": external_assets["small_image"],
-            "small_text": cfg_rpc.get("small_text", None)
+            "small_text": cfg_rpc.get("small_text", None),
+            "small_url": cfg_rpc.get("small_url", None)
         }
     }
     

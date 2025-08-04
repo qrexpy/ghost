@@ -168,7 +168,22 @@ class Ghost(commands.Bot):
             }
             
             activity_json = generate_activity_json(cfg_rpc, external_assets)
-            await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
+            print(activity_json)
+            
+            # Dont use this, the new URL features wont work as not updated in discord.py-self yet
+            # await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
+            
+            await self.ws.send_as_json({
+                "op": 3,
+                "d": {
+                    "since": int(time.time() * 1000),
+                    "activities": [activity_json],
+                    "status": "online",
+                    "afk": True
+                }
+            })
+            
+            console.print_info("Rich Presence enabled")
         
     async def load_cogs(self):
         cogs = [
