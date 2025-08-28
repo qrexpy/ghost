@@ -49,7 +49,7 @@ DEFAULT_CONFIG = {
 DEFAULT_THEME = {
     "title": "ghost selfbot",
     "emoji": "\ud83d\udc7b",
-    "image": "https://ghost.benny.fun/assets/ghost.png",
+    "image": "https://ghostt.cc/assets/ghost.png",
     "colour": "#575757",
     "footer": "ghost aint dead"
 }
