@@ -1,12 +1,15 @@
 DEFAULT_RPC = {
     "enabled": False,
-    "client_id": "1018195507560063039",
     "state": "ghost aint dead",
+    "state_url": "",
     "details": "",
+    "details_url": "",
     "large_image": "https://avatars.githubusercontent.com/u/187971942?s=200&v=4",
-    "large_text": "benny.fun/ghost",
+    "large_text": "ghostt.cc",
+    "large_url": "https://ghostt.cc/",
     "small_image": "",
     "small_text": "",
+    "small_url": "",
     "name": "Ghost"
 }
 
@@ -46,7 +49,7 @@ DEFAULT_CONFIG = {
 DEFAULT_THEME = {
     "title": "ghost selfbot",
     "emoji": "\ud83d\udc7b",
-    "image": "https://ghost.benny.fun/assets/ghost.png",
+    "image": "https://ghostt.cc/assets/ghost.png",
     "colour": "#575757",
     "footer": "ghost aint dead"
 }

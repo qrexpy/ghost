@@ -100,6 +100,8 @@ async def rich_embed(ctx, embed):
     webhook_client.send(embed=embed.to_dict())
 
     async for message in webhook_channel.history(limit=1):
+        await message.ack()
+        
         try:
             resp = requests.post(
                 f"https://discord.com/api/v9/channels/{ctx.channel.id}/messages", 

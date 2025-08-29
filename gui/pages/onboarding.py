@@ -36,6 +36,9 @@ class OnboardingPage:
         token = self.token_entry.get()
         prefix = self.prefix_entry.get()
         
+        token = token.strip()
+        prefix = prefix.strip()
+        
         if token == self.token_entry_placeholder or token == "":
             print("Please enter a valid token.")
             return

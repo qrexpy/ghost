@@ -40,8 +40,8 @@ class Ghost(commands.Bot):
         super().__init__(command_prefix=self.cfg.get("prefix"), self_bot=True, help_command=None)
         self.start_time = None
         self.files = files
-
-    def _setup_scripts(self):
+                
+    async def _setup_scripts(self):
         scripts = self.cfg.get_scripts()
 
         for script in scripts:
@@ -49,43 +49,79 @@ class Ghost(commands.Bot):
             script_path = files.get_application_support() + f"/scripts/{script}"
 
             try:
-                os.chmod(script_path, 0o755)  # Give execute permissions
-                spec = importlib.util.spec_from_file_location(script_name, script_path)
-                if spec is None or spec.loader is None:
-                    raise ImportError(f"Invalid spec for {script_name} (spec: {spec})")
-
-                module = importlib.util.module_from_spec(spec)
-
-                # Inject dependencies before execution
-                ghost = commands  # Alias for commands
-                module.discord = discord
-                module.bot = self
-                module.commands = commands
-                module.ghost = ghost
-                module.console = console
-                module.cmdhelper = cmdhelper
-                module.asyncio = asyncio
-                module.time = time
-                module.tasks = tasks
-                module.random = random
-                module.os = os
-                module._ghost_config = self.cfg
-                module._ghost_session_spoofer = sessionspoof
-                module._ghost_bot_controller = self.controller
-                module.files = self.files
-
-                sys.modules[f"scripts.{script_name}"] = module  # Register module
-                spec.loader.exec_module(module)  # Execute the script after injection
-
-                module._themes_path = files.get_themes_path
-                for _, obj in inspect.getmembers(module):
+                script_globals = {
+                    'discord': discord,
+                    'commands': commands,
+                    'console': console,
+                    'cmdhelper': cmdhelper,
+                    'asyncio': asyncio,
+                    'time': time,
+                    'tasks': tasks,
+                    'random': random,
+                    'os': os,
+                    '_ghost_config': self.cfg,
+                    '_ghost_session_spoofer': sessionspoof,
+                    '_ghost_bot_controller': self.controller,
+                    'files': self.files,
+                    '_themes_path': files.get_themes_path,
+                    'command': self.command,
+                    'event': self.event,
+                    'ghost': self
+                }
+                
+                # Execute script
+                with open(script_path, 'r') as f:
+                    script_code = f.read()
+                
+                exec(script_code, script_globals)
+                
+                # Collect commands and events from the script
+                script_commands = []
+                script_events = {}
+                
+                for name, obj in script_globals.items():
                     if isinstance(obj, commands.Command):
-                        self.add_command(obj)
-                    
-                    if isinstance(obj, commands.Cog):
-                        self.add_cog(obj)
+                        script_commands.append(obj)
+                    elif callable(obj) and name.startswith('on_'):
+                        script_events[name] = obj
+                
+                # Create dynamic cog class
+                def create_script_cog(script_name, script_commands, script_events, bot):
+                    # Create a unique class name using the script name
+                    cog_class_name = f'{script_name.capitalize()}ScriptCog'
 
-                self.controller.add_startup_script(script_name + ".py")
+                    class ScriptCog(commands.Cog, name=cog_class_name):
+                        def __init__(self, bot):
+                            self.bot = bot
+                            
+                            # Add commands
+                            for cmd in script_commands:
+                                setattr(self, cmd.name, cmd.callback)
+                            
+                            # Store event functions but don't add them as listeners here
+                            self.script_events = script_events
+                        
+                        # Add on_message as a proper cog listener if it exists
+                        if 'on_message' in script_events:
+                            @commands.Cog.listener()
+                            async def on_message(self, message):
+                                await self.bot.process_commands(message)
+                                await script_events['on_message'](message)
+                            
+                            # Add the method to the class
+                            self.on_message = on_message
+                                        
+                    ScriptCog.__name__ = f'{script_name}Cog'
+                    ScriptCog.__module__ = f'scripts.{script_name}'
+                    ScriptCog.__qualname__ = cog_class_name
+                    return ScriptCog
+
+                # Replace your dynamic cog creation with:
+                ScriptCog = create_script_cog(script_name, script_commands, script_events, self)
+
+                # Add the cog
+                await self.add_cog(ScriptCog(self))
+                
                 console.print_info(f"Loaded script: {script_name}")
 
             except Exception as e:
@@ -114,25 +150,34 @@ class Ghost(commands.Bot):
             print()
 
             if self.session_spoofing:
-                console.print_info(f"Spoofing session as {self.session_spoofing_device}")
+                console.success(f"Spoofing session as {self.session_spoofing_device}")
                 # console.print_warning("Your account is at higher risk of termination by using session spoofer.")
             
-            self._setup_scripts()
+            await self._setup_scripts()
             await self.controller.setup_webhooks()
             self.controller.spypet.set_bot(self)
             
         except Exception as e:
             console.print_error(str(e))
 
-        cfg_rpc = self.cfg.get("rich_presence")
-        if cfg_rpc["enabled"]:
+        cfg_rpc = self.cfg.get_rich_presence()
+        if cfg_rpc.enabled:
             external_assets = {
-                "large_image": await get_external_asset(self, cfg_rpc.get("large_image"), cfg_rpc.get("client_id")) if cfg_rpc.get("large_image") else None,
-                "small_image": await get_external_asset(self, cfg_rpc.get("small_image"), cfg_rpc.get("client_id")) if cfg_rpc.get("small_image") else None
+                "large_image": await get_external_asset(self, cfg_rpc.large_image) if cfg_rpc.large_image else None,
+                "small_image": await get_external_asset(self, cfg_rpc.small_image) if cfg_rpc.small_image else None
             }
             
-            activity_json = generate_activity_json(cfg_rpc, external_assets)
-            await self.change_presence(activity=discord.Activity(**activity_json), afk=True)
+            await self.ws.send_as_json({
+                "op": 3,
+                "d": {
+                    "since": int(time.time() * 1000),
+                    "activities": [generate_activity_json(external_assets)],
+                    "status": "online",
+                    "afk": True
+                }
+            })
+            
+            console.success("Rich Presence enabled")
         
     async def load_cogs(self):
         cogs = [
