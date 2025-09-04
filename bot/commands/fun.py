@@ -474,6 +474,65 @@ class Fun(commands.Cog):
         await ctx.send(f"{user.mention} {response}")
         await ctx.send(gif)
 
+    @commands.command(name="wordle", description="Get today's or a specific date's Wordle answer.", usage="[yyyy] [mm] [dd]")
+    async def wordle(self, ctx, year: int = None, month: int = None, day: int = None):
+        if year is None or month is None or day is None:
+            today = datetime.date.today()
+            year = today.year
+            month = today.month
+            day = today.day
+            date_str = f"Today's"
+        else:
+            date_str = f"{year}-{month:02d}-{day:02d}'s"
+        
+        url = f"https://www.nytimes.com/svc/wordle/v2/{year}-{month:02d}-{day:02d}.json"
+        
+        try:
+            response = requests.get(url)
+            
+            if response.status_code == 200:
+                data = response.json()
+                solution = data.get("solution", "Unknown")
+                
+                embed = discord.Embed(
+                    title="Wordle Solution",
+                    description=f"{date_str} wordle solution is **{solution.upper()}**",
+                    color=0x00ff00
+                )
+                await cmdhelper.send_message(ctx, embed.to_dict())
+                
+            else:
+                try:
+                    error_data = response.json()
+                    if "errors" in error_data and "Not Found" in error_data["errors"]:
+                        embed = discord.Embed(
+                            title="Wordle Error",
+                            description=f"No Wordle found for {year}-{month:02d}-{day:02d}. The date might not exist or be too far in the past/future.",
+                            color=0xff0000
+                        )
+                    else:
+                        embed = discord.Embed(
+                            title="Wordle Error",
+                            description="Failed to fetch Wordle data.",
+                            color=0xff0000
+                        )
+                except:
+                    embed = discord.Embed(
+                        title="Wordle Error",
+                        description=f"No Wordle found for {year}-{month:02d}-{day:02d}.",
+                        color=0xff0000
+                    )
+                
+                await cmdhelper.send_message(ctx, embed.to_dict())
+                
+        except requests.RequestException:
+            embed = discord.Embed(
+                title="Wordle Error",
+                description="Failed to connect to Wordle API.",
+                color=0xff0000
+            )
+            await cmdhelper.send_message(ctx, embed.to_dict())
+
     @commands.command(name="playsound", description="Play a 5 second sound.", usage="[mp3_url]")
     async def playsound(self, ctx, mp3_url = None):
         cfg = self.cfg

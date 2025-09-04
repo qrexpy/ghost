@@ -69,7 +69,8 @@ class RichPresencePanel(SettingsPanel):
             
             rpc_value = self.rpc.get(key)
             entry = ttk.Entry(self.body, bootstyle="secondary", font=("Host Grotesk",))
-            entry.insert(0, rpc_value)
+            # Fix: Handle None values by converting to empty string
+            entry.insert(0, rpc_value if rpc_value is not None else "")
             entry.bind("<Return>", lambda event: self._save_rpc())
             entry.bind("<FocusOut>", lambda event: self._save_rpc())
                 

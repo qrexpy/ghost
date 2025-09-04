@@ -9,6 +9,21 @@ import importlib.util
 import sys
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
+
+def monkey_patch_discord():
+    import discord.state
+    original_parse_ready_supplemental = discord.state.ConnectionState.parse_ready_supplemental
+    
+    def patched_parse_ready_supplemental(self, data):
+        # Fix the pending_payments issue by ensuring it's always a list
+        if 'pending_payments' in data and data['pending_payments'] is None:
+            data['pending_payments'] = []
+        return original_parse_ready_supplemental(self, data)
+    
+    discord.state.ConnectionState.parse_ready_supplemental = patched_parse_ready_supplemental
+
+monkey_patch_discord()
+
 from discord.ext import commands, tasks
 
 from utils import files
